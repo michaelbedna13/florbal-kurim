@@ -680,9 +680,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
         <div class="pole"><label>Sraz</label><input type="time" id="f-sraz" value="18:00"></div>
         <div class="pole"><label>Kde hrajete</label><select id="f-doma"><option value="ano">Doma</option><option value="ne">Venku</option></select></div>
       </div>
-      <div class="pole"><label>Poznámka</label><textarea placeholder="Vezměte tmavé i světlé dresy."></textarea></div>
-      <div class="pole"><label>Opakovat týdně do</label><input type="date"></div>
-      <button class="tlacitko-hlavni" onclick="toast('Událost by se založila — tohle je návrh')">Založit událost</button>
+      <div class="pole"><label>Poznámka</label><textarea id="f-poznamka" placeholder="Vezměte tmavé i světlé dresy."></textarea></div>
+      <div class="pole"><label>Opakovat týdně do <span style="color:var(--bila-18)">nepovinné</span></label><input type="date" id="f-opakovat"></div>
+      <button class="tlacitko-hlavni" onclick="zalozUdalost()">Založit událost</button>
       <button class="tlacitko-vedlejsi" onclick="prepni('udalosti')">Zobrazit všechny události</button>
     </div>
 
