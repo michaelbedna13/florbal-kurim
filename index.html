@@ -574,6 +574,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
     <p class="brana-podnadpis">Tréninky, zápasy a kdo na ně jde</p>
 
 
+    <div class="prepinac-vstupu" id="prepinac-vstupu">
+      <button class="aktivni" data-rezim="prihlaseni">Přihlásit se</button>
+      <button data-rezim="registrace">Registrace</button>
+    </div>
+
     <div id="blok-prihlaseni">
       <div class="pole"><label>E-mail</label>
         <input type="email" id="b-email" placeholder="ty@email.cz" autocomplete="email"></div>
@@ -583,6 +588,20 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
       <button class="zapomenute" onclick="obnovaHesla()">Zapomenuté heslo?</button>
       <p class="chyba" id="b-chyba"></p>
       <button class="tlacitko-hlavni" id="tlacitko-vstup" onclick="prihlasit()">Přihlásit se</button>
+    </div>
+
+    <div id="blok-registrace" style="display:none">
+      <div class="pole"><label>Jméno a příjmení</label>
+        <input type="text" id="r-jmeno" placeholder="Michael Bednář"></div>
+      <div class="pole"><label>E-mail</label>
+        <input type="email" id="r-email" placeholder="ty@email.cz" autocomplete="email"></div>
+      <div class="pole"><label>Heslo</label>
+        <input type="password" id="r-heslo" placeholder="alespoň 8 znaků" autocomplete="new-password"></div>
+      <div class="pole"><label>Klubový kód</label>
+        <input type="text" id="r-kod" placeholder="dostal jsi ho ve skupině"
+               onkeydown="if(event.key==='Enter')registrovat()"></div>
+      <p class="chyba" id="r-chyba"></p>
+      <button class="tlacitko-hlavni" id="tlacitko-registrace" onclick="registrovat()">Vytvořit účet</button>
     </div>
 
     <div id="blok-nove-heslo" style="display:none">
@@ -595,8 +614,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
     </div>
 
     <p class="brana-pata">
-      Účet vzniká jen na <b>pozvánku od trenéra</b>.<br>
-      Odkaz ti přijde e-mailem, heslo si nastavíš sám.
+      K registraci potřebuješ <b>klubový kód</b>.<br>
+      Dostaneš ho od trenéra ve skupině.
     </p>
   </div>
 </div>
@@ -684,6 +703,17 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
       <div class="pole"><label>Opakovat týdně do <span style="color:var(--bila-18)">nepovinné</span></label><input type="date" id="f-opakovat"></div>
       <button class="tlacitko-hlavni" onclick="zalozUdalost()">Založit událost</button>
       <button class="tlacitko-vedlejsi" onclick="prepni('udalosti')">Zobrazit všechny události</button>
+    </div>
+
+    <div class="nadpis-sekce">Klubový kód <span class="kolik">pro registraci nových hráčů</span></div>
+    <div class="karta" style="padding:20px">
+      <p style="font-size:12.5px;color:var(--bila-38);margin:0 0 14px;line-height:1.55">
+        Kdo zná kód, může si založit účet. Když ho někdo rozšíří dál, změň ho — starým kódem
+        se pak nikdo nezaregistruje, ale už založené účty zůstanou.
+      </p>
+      <div class="pole"><label>Kód</label><input type="text" id="k-kod" placeholder="KURIM13"></div>
+      <button class="tlacitko-hlavni" onclick="ulozKod()">Uložit kód</button>
+      <button class="tlacitko-vedlejsi" onclick="zkopirujPozvanku()">Zkopírovat text do skupiny</button>
     </div>
 
     <div class="nadpis-sekce">Hlášky <span class="kolik">co appka napíše po odpovědi</span></div>
@@ -872,6 +902,49 @@ async function prihlasit(){
   await nastartuj();
 }
 
+async function registrovat(){
+  const jmeno = document.getElementById('r-jmeno').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const heslo = document.getElementById('r-heslo').value;
+  const kod   = document.getElementById('r-kod').value.trim();
+  chyba('r-chyba','');
+
+  if(!jmeno){ chyba('r-chyba','Napiš jméno a příjmení.'); return; }
+  if(!email){ chyba('r-chyba','Vyplň e-mail.'); return; }
+  if(heslo.length<8){ chyba('r-chyba','Heslo musí mít aspoň 8 znaků.'); return; }
+  if(!kod){ chyba('r-chyba','Bez klubového kódu to nejde.'); return; }
+
+  const tl=document.getElementById('tlacitko-registrace');
+  tl.textContent='Zakládám…'; tl.disabled=true;
+
+  const {error} = await db.auth.signUp({
+    email, password: heslo,
+    options:{ data:{ jmeno, kod } }
+  });
+
+  tl.textContent='Vytvořit účet'; tl.disabled=false;
+
+  if(error){
+    chyba('r-chyba', error.message.includes('already registered')
+      ? 'Tenhle e-mail už je zaregistrovaný — přihlas se.' : error.message);
+    return;
+  }
+
+  // profil vzniká jen se správným kódem — ověříme to
+  const {data:{session}} = await db.auth.getSession();
+  if(!session){
+    chyba('r-chyba','Účet vznikl, ale přihlášení neproběhlo. Zkus se přihlásit.');
+    return;
+  }
+  const {data: profil} = await db.from('profily').select('id').eq('id',session.user.id).maybeSingle();
+  if(!profil){
+    await db.auth.signOut();
+    chyba('r-chyba','Klubový kód nesedí. Zeptej se trenéra na správný.');
+    return;
+  }
+  await nastartuj();
+}
+
 async function obnovaHesla(zProfilu){
   const email = zProfilu ? stav.ja.email : document.getElementById('b-email').value.trim();
   if(!email){ chyba('b-chyba','Nejdřív vyplň e-mail, pošlu na něj odkaz.'); return; }
@@ -902,7 +975,10 @@ async function odhlasit(){
   stav.ja=null;
   document.getElementById('brana').classList.remove('pryc');
   document.getElementById('blok-prihlaseni').style.display='block';
+  document.getElementById('blok-registrace').style.display='none';
   document.getElementById('blok-nove-heslo').style.display='none';
+  document.querySelectorAll('#prepinac-vstupu button').forEach((x,i)=>x.classList.toggle('aktivni',i===0));
+  document.getElementById('prepinac-vstupu').style.display='grid';
   document.getElementById('b-heslo').value='';
   window.scrollTo({top:0});
 }
@@ -967,6 +1043,8 @@ async function nastartuj(){
     document.getElementById('nacitani').style.display='none';
     document.getElementById('brana').classList.remove('pryc');
     document.getElementById('blok-prihlaseni').style.display='none';
+    document.getElementById('blok-registrace').style.display='none';
+    document.getElementById('prepinac-vstupu').style.display='none';
     document.getElementById('blok-nove-heslo').style.display='block';
     return;
   }
@@ -975,7 +1053,7 @@ async function nastartuj(){
     .select('*').eq('id', session.user.id).single();
 
   if(error || !profil){
-    toast('Účet nemá profil. Ozvi se trenérovi.');
+    toast('Účet není v klubu. Zaregistruj se s klubovým kódem.');
     await db.auth.signOut();
     document.getElementById('nacitani').style.display='none';
     document.getElementById('brana').classList.remove('pryc');
@@ -1593,6 +1671,31 @@ async function prepniZruseni(id){
   otevriDetail(id, true);
 }
 
+async function nactiKod(){
+  if(!jeTrener()) return;
+  const {data} = await db.from('nastaveni').select('hodnota').eq('klic','registracni_kod').maybeSingle();
+  const e=document.getElementById('k-kod');
+  if(e && data) e.value=data.hodnota;
+}
+
+async function ulozKod(){
+  const kod=document.getElementById('k-kod').value.trim();
+  if(kod.length<4){ toast('Kód ať má aspoň čtyři znaky.'); return; }
+  const {error} = await db.from('nastaveni')
+    .update({hodnota:kod, zmeneno:new Date().toISOString()}).eq('klic','registracni_kod');
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  toast('Kód uložen.');
+}
+
+function zkopirujPozvanku(){
+  const kod=document.getElementById('k-kod').value.trim() || '???';
+  const text = `Appka na přihlašování na tréninky a zápasy:\n${window.location.href.split('#')[0]}\n\n`
+             + `Klikni na Registrace, vyplň jméno, e-mail a heslo.\nKlubový kód: ${kod}`;
+  navigator.clipboard.writeText(text)
+    .then(()=>toast('Zkopírováno, vlož to do skupiny.'))
+    .catch(()=>toast('Nepovedlo se zkopírovat.'));
+}
+
 async function ulozHlasky(){
   const klice=['jdu','jdu_pozde','mozna','mozna_pozde','nejdu','nejdu_pozde'];
   for(const k of klice){
@@ -1628,7 +1731,7 @@ function prepni(cil){
   document.querySelectorAll('.obrazovka').forEach(o=>o.classList.remove('aktivni'));
   document.getElementById('o-'+cil).classList.add('aktivni');
   document.querySelectorAll('.navbar button').forEach(b=>b.classList.toggle('aktivni', b.dataset.cil===cil));
-  if(cil==='admin') naplnHlasky();
+  if(cil==='admin'){ naplnHlasky(); nactiKod(); }
   window.scrollTo({top:0});
 }
 function prepniMenu(e){
@@ -1637,6 +1740,15 @@ function prepniMenu(e){
 }
 function zavriMenu(){ document.getElementById('menu-plachta').classList.remove('otevreno'); }
 function zMenu(cil){ zavriMenu(); prepni(cil); }
+
+document.getElementById('prepinac-vstupu').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#prepinac-vstupu button').forEach(x=>x.classList.remove('aktivni'));
+  b.classList.add('aktivni');
+  const reg = b.dataset.rezim==='registrace';
+  document.getElementById('blok-prihlaseni').style.display = reg?'none':'block';
+  document.getElementById('blok-registrace').style.display = reg?'block':'none';
+});
 
 function toast(text){
   const t=document.getElementById('toast');
