@@ -515,6 +515,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 }
 .zapas-tydne b{font-weight:600}
 .zapas-tydne .sip{margin-left:auto;opacity:.7}
+.zapas-tydne.samostatny{
+  margin-top:10px;background:var(--panel);border:1px solid var(--linka);color:var(--bila-60);
+}
+.zapas-tydne.samostatny b{color:var(--nebeska)}
+.zapas-tydne.samostatny .sip{color:var(--bila-18)}
 
 /* ---------- menu pod avatarem ---------- */
 .avatar-hl{cursor:pointer}
@@ -1026,7 +1031,7 @@ function upozorneniNaZapas(nejblizsi){
   const z=budouci().find(u=>u.typ==='zapas' && u.zacatek<=h);
   if(!z) return '';
   return `
-    <button class="zapas-tydne" onclick="event.stopPropagation();otevriDetail(${z.id})">
+    <button class="zapas-tydne samostatny" onclick="event.stopPropagation();otevriDetail(${z.id})">
       <span>Tento týden zápas — <b>${DNY_KR[z.zacatek.getDay()]} ${cas(z.zacatek)} ${nazevUdalosti(z)}</b></span>
       <span class="sip">→</span>
     </button>`;
@@ -1071,7 +1076,6 @@ function vykresliNejblizsi(){
           <span><i style="background:var(--mozna)"></i>${p.mozna} možná</span>
           <span><i style="background:var(--nejdu)"></i>${p.nejdu} nejde</span>
         </div>
-        ${upozorneniNaZapas(u)}
         ${pozdeUz&&o&&o.stav==='jdu'?`<div class="pozdni-varovani">Dnes už je pozdě — odhlášení bude chtít důvod.</div>`:''}
         <div class="volba">
           ${['jdu','mozna','nejdu'].map(s=>`
@@ -1081,7 +1085,8 @@ function vykresliNejblizsi(){
             </button>`).join('')}
         </div>
       </div>
-    </div>`;
+    </div>
+    ${upozorneniNaZapas(u)}`;
 }
 
 /* ---------- statistiky ---------- */
