@@ -1256,7 +1256,7 @@ function vykresliNejblizsi(){
           <div style="flex:1;min-width:0">
             <span class="stitek"><i></i>${t.nazev}</span>
             <h2 class="kdy">${zaDni===0?'Dnes':zaDni===1?'Zítra':DNY[u.zacatek.getDay()].charAt(0).toUpperCase()+DNY[u.zacatek.getDay()].slice(1)} ${cas(u.zacatek)}</h2>
-            <p class="nazev-akce">${nazevUdalosti(u)}</p>
+            ${u.typ==='trenink'?'':`<p class="nazev-akce">${nazevUdalosti(u)}</p>`}
             <p class="kde">${u.misto||''}${u.sraz?` · sraz ${cas(u.sraz)}`:''}</p>
           </div>
           <div class="odpocet"><span class="cislo">${cislo}</span><span class="jednotka">${jednotka}</span></div>
