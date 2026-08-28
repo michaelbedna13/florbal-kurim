@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#06080C">
+<meta name="theme-color" content="#0A1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Florbal Kuřim</title>
@@ -46,7 +46,10 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:var(--cerna);color:var(--bila);
+  background:var(--cerna);
+  background-image:linear-gradient(180deg,#0A1220 0,#06080C 320px);
+  background-repeat:no-repeat;background-attachment:fixed;
+  color:var(--bila);
   font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.45;
   -webkit-font-smoothing:antialiased;
 }
@@ -56,7 +59,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 .pozadi{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .pozadi .z{position:absolute;border-radius:50%;filter:blur(110px)}
-.pozadi .z1{width:460px;height:460px;background:rgba(22,55,92,.62);top:-190px;left:-150px}
+.pozadi .z1{width:520px;height:520px;background:rgba(22,55,92,.55);top:-240px;left:-140px}
 .pozadi .z2{width:320px;height:320px;background:rgba(124,182,224,.09);top:44%;right:-170px}
 
 .app{
@@ -68,6 +71,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 /* ---------- hlavička ---------- */
 .hlavicka{display:flex;align-items:center;gap:12px;padding:calc(20px + env(safe-area-inset-top)) 20px 18px}
 .logo{width:40px;height:40px;flex:none;display:block;object-fit:contain}
+.domu{display:flex;align-items:center;gap:12px;padding:4px;margin:-4px;border-radius:14px;
+      -webkit-tap-highlight-color:transparent}
+.domu:active{opacity:.7}
 .znacka{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:18px;letter-spacing:.01em}
 .avatar-hl{
   margin-left:auto;width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;
@@ -274,10 +280,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
   font-weight:600;text-align:right;padding:0 0 12px;
 }
-.tabulka th:first-child{text-align:left;width:38%}
+.tabulka th:first-child{text-align:left;width:36%}
+.tabulka th:not(:first-child),.tabulka td:not(:first-child){padding-left:7px}
 .tabulka td{
   padding:12px 0;border-top:1px solid var(--linka);text-align:right;
   font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+  white-space:nowrap;
 }
 .tabulka td:first-child{
   text-align:left;font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila);
@@ -403,14 +411,19 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   padding:3px 9px;border-radius:99px;
 }
 .chat-hlava .ikona-chat{width:20px;height:20px;stroke:var(--nebeska);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.zprava{display:flex;gap:10px;margin-bottom:14px}
+.zprava{display:flex;gap:10px;margin-bottom:14px;align-items:flex-end}
+.zprava > span:last-child{min-width:0;max-width:calc(100% - 44px);display:flex;flex-direction:column;align-items:flex-start}
+.zprava.moje > span:last-child{align-items:flex-end}
 .avatar{
   width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;
   font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;color:var(--bila-60);
   background:var(--panel);border:1px solid var(--linka);
 }
 .zprava .autor{font-size:11px;font-weight:500;color:var(--bila-18);margin-bottom:4px}
-.zprava .bublina{background:var(--panel);border-radius:4px 18px 18px 18px;padding:11px 15px;font-size:14px}
+.zprava .bublina{
+  background:var(--panel);border-radius:4px 18px 18px 18px;padding:11px 15px;font-size:14px;
+  overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap;max-width:100%;
+}
 .zprava.moje{flex-direction:row-reverse}
 .zprava.moje .autor{display:none}
 .zprava.moje .bublina{background:var(--namorni);border-radius:18px 4px 18px 18px}
@@ -455,6 +468,16 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .toast.videt{opacity:1;transform:translateX(-50%)}
 
 .prazdno{text-align:center;padding:34px 20px;color:var(--bila-18);font-size:13.5px}
+
+/* úzké displeje — ať se hlavičky tabulky neslepí */
+@media (max-width:400px){
+  .tabulka{font-size:12px}
+  .tabulka th{font-size:8.5px;letter-spacing:0}
+  .tabulka td{font-size:12.5px}
+  .tabulka th:not(:first-child),.tabulka td:not(:first-child){padding-left:5px}
+  .tabulka th:first-child{width:34%}
+  .tabulka td:first-child{font-size:12.5px}
+}
 
 /* ---------- animace ---------- */
 @keyframes naskoc{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -590,13 +613,31 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 /* ---------- akce trenéra v detailu ---------- */
 .akce-trenera{display:flex;gap:9px;margin-bottom:18px}
 .akce-trenera button{
-  flex:1;padding:12px;border-radius:14px;font-size:13px;font-weight:500;
+  flex:1;padding:12px 6px;border-radius:14px;font-size:12.5px;font-weight:500;white-space:nowrap;
   background:var(--panel);border:1px solid var(--linka);color:var(--bila-60);
 }
 .akce-trenera button:hover{color:var(--bila)}
 .akce-trenera button.nebezpecna{color:#E58AA0}
 
 /* ---------- profil ---------- */
+.hrac-radek{display:flex;align-items:center;gap:11px;padding:10px 2px;border-top:1px solid var(--linka)}
+.hrac-radek:first-child{border-top:none}
+.hrac-radek.vyrazeny{opacity:.45}
+.hrac-jmeno{flex:1;min-width:0;font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vyber-role{
+  flex:none;padding:7px 26px 7px 10px;border-radius:10px;font-size:12.5px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-60);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EDF3F8' stroke-width='2' stroke-linecap='round' opacity='.5'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:13px;
+}
+.vyber-role option{background:var(--panel);color:var(--bila)}
+.vyradit{
+  flex:none;width:32px;height:32px;border-radius:9px;font-size:13px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-38);
+}
+.vyradit:active{color:var(--nejdu)}
+
 .udaj{display:flex;align-items:center;padding:14px 0;border-top:1px solid var(--linka);font-size:14px}
 .udaj:first-child{border-top:none}
 .udaj .popisek-u{color:var(--bila-38);font-size:12.5px}
@@ -666,8 +707,10 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 <main class="app">
   <header class="hlavicka">
-    <img class="logo" src="logo-256.png" alt="Florbal Kuřim">
-    <span class="znacka">Florbal Kuřim</span>
+    <button class="domu" onclick="prepni('dnes')" aria-label="Na hlavní stránku">
+      <img class="logo" src="logo-256.png" alt="Florbal Kuřim">
+      <span class="znacka">Florbal Kuřim</span>
+    </button>
     <button class="avatar-hl" id="avatar-hl" onclick="prepniMenu(event)" aria-label="Účet a správa">··</button>
   </header>
 
@@ -745,6 +788,22 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
       <div class="pole"><label>Opakovat týdně do <span style="color:var(--bila-18)">nepovinné</span></label><input type="date" id="f-opakovat"></div>
       <button class="tlacitko-hlavni" onclick="zalozUdalost()">Založit událost</button>
       <button class="tlacitko-vedlejsi" onclick="prepni('udalosti')">Zobrazit všechny události</button>
+    </div>
+
+    <div class="nadpis-sekce">Uzávěrky <span class="kolik">dokdy se dá odpovědět</span></div>
+    <div class="karta" style="padding:20px">
+      <p style="font-size:12.5px;color:var(--bila-38);margin:0 0 16px;line-height:1.55">
+        Hodina předchozího dne, po které se odpověď počítá jako pozdní.
+        Trénink ve středu při hodnotě 20 znamená uzávěrku v úterý ve 20:00.
+      </p>
+      <div class="dvojice">
+        <div class="pole"><label>Hráči</label>
+          <select id="u-hrac"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+        <div class="pole"><label>Golmani</label>
+          <select id="u-golman"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+      </div>
+      <div class="pole"><label>Trenéři</label><select id="u-trener"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+      <button class="tlacitko-hlavni" onclick="ulozUzaverky()">Uložit uzávěrky</button>
     </div>
 
     <div class="nadpis-sekce">Klubový kód <span class="kolik">pro registraci nových hráčů</span></div>
@@ -881,6 +940,7 @@ const MESICE_1 = ['Leden','Únor','Březen','Duben','Květen','Červen',
 /* ---------- stav v paměti ---------- */
 const stav = {
   ja: null,           // řádek z profily + e-mail
+  nastaveni: {},      // uzávěrky, registrační kód
   profily: [],        // aktivní hráči
   udalosti: [],
   prihlasky: {},      // id události -> { id hráče: {stav,pozde,duvod,zmeneno} }
@@ -889,16 +949,22 @@ const stav = {
 };
 
 const jeTrener = () => stav.ja?.role === 'trener';
+const ROLE = {hrac:'Hráč', golman:'Golman', trener:'Trenér'};
+
+/* uzávěrka = předchozí den ve zvolenou hodinu, podle role */
+function uzaverkaPro(u, role){
+  const h = parseInt(stav.nastaveni['uzaverka_'+(role||'hrac')] ?? '20', 10);
+  const d = new Date(u.zacatek);
+  d.setDate(d.getDate()-1);
+  d.setHours(isNaN(h)?20:h, 0, 0, 0);
+  return d;
+}
 const jmenoHrace = (id) => stav.profily.find(p=>p.id===id)?.jmeno || 'Neznámý';
 const iniciály = (jmeno) => (jmeno||'').split(' ').filter(Boolean).map(s=>s[0]).join('').slice(0,2).toUpperCase();
 const cas = (d) => d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
 
 const mojeOdpoved = (id) => stav.prihlasky[id]?.[stav.ja.id] || null;
-const jePozde = (u) => {
-  const a=new Date(); a.setHours(0,0,0,0);
-  const b=new Date(u.zacatek); b.setHours(0,0,0,0);
-  return a>=b;
-};
+const jePozde = (u) => new Date() > uzaverkaPro(u, stav.ja?.role);
 const budouci = () => stav.udalosti.filter(u=>u.zacatek>=new Date() && !u.zruseno)
                                    .sort((a,b)=>a.zacatek-b.zacatek);
 const vseBudouci = () => stav.udalosti.filter(u=>u.zacatek>=new Date())
@@ -910,7 +976,7 @@ const cekajici = () => {
 };
 const nazevUdalosti = (u) => {
   if(u.typ==='akce') return u.nazev || 'Akce';
-  if(u.typ==='trenink') return u.nazev ? `Trénink — ${u.nazev}` : 'Trénink';
+  if(u.typ==='trenink') return u.nazev || 'Trénink';
   if(u.souper1 && u.souper2) return `vs. ${u.souper1} & ${u.souper2}`;
   return 'vs. ' + (u.souper1 || u.souper2 || '');
 };
@@ -1030,12 +1096,16 @@ async function odhlasit(){
    ============================================================ */
 
 async function nactiVse(){
-  const [profily, udalosti, prihlasky, hlasky] = await Promise.all([
+  const [profily, udalosti, prihlasky, hlasky, nastaveni] = await Promise.all([
     db.from('profily').select('*').order('jmeno'),
     db.from('udalosti').select('*').order('zacatek'),
     db.from('prihlasky').select('*'),
-    db.from('hlasky').select('*')
+    db.from('hlasky').select('*'),
+    db.from('nastaveni').select('*')
   ]);
+
+  stav.nastaveni = {};
+  (nastaveni.data||[]).forEach(n=>{ stav.nastaveni[n.klic]=n.hodnota; });
 
   for(const r of [profily, udalosti, prihlasky, hlasky]){
     if(r.error){ toast('Chyba načítání: '+r.error.message); throw r.error; }
@@ -1170,7 +1240,7 @@ function vykresliNejblizsi(){
   Object.values(stav.prihlasky[u.id]||{}).forEach(x=>p[x.stav]++);
 
   el.innerHTML=`
-    <div class="nejblizsi">
+    <div class="nejblizsi" onclick="otevriDetail(${u.id})">
       <div class="pruhy">
         <svg viewBox="0 0 400 260" preserveAspectRatio="none">
           <g stroke="#fff" fill="none" stroke-linecap="round">
@@ -1198,7 +1268,8 @@ function vykresliNejblizsi(){
         </div>
         <div class="volba">
           ${['jdu','mozna','nejdu'].map(s=>`
-            <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}" onclick="odpoved(${u.id},'${s}')">
+            <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}"
+                    onclick="event.stopPropagation();odpoved(${u.id},'${s}')">
               <span class="znak">${s==='jdu'?'✓':s==='mozna'?'?':'✕'}</span>
               <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
             </button>`).join('')}
@@ -1354,7 +1425,7 @@ function vykresliVyzvu(){
 function vykresliProfil(){
   document.getElementById('p-jmeno').textContent = stav.ja.jmeno;
   document.getElementById('p-email').textContent = stav.ja.email;
-  document.getElementById('p-role').textContent  = jeTrener() ? 'Trenér' : 'Hráč';
+  document.getElementById('p-role').textContent  = ROLE[stav.ja.role] || 'Hráč';
 }
 
 function vykresliNeodpovedele(){
@@ -1374,29 +1445,55 @@ function vykresliNeodpovedele(){
 
 function vykresliSpravuHracu(){
   const el=document.getElementById('spravaHracu'); if(!el) return;
+  const barva={trener:'var(--nebeska)', golman:'var(--mozna)', hrac:'var(--bila-18)'};
   el.innerHTML = (stav.vsechnyProfily||[]).map(p=>`
-    <div class="ucastnik">
-      <span class="pruh-stav" style="background:${p.role==='trener'?'var(--nebeska)':'var(--bila-18)'}"></span>
-      <span>
-        <span class="jmeno">${p.jmeno}</span>
-        ${p.aktivni?'':'<br><span class="duvod">neaktivní</span>'}
+    <div class="hrac-radek ${p.aktivni?'':'vyrazeny'}">
+      <span class="pruh-stav" style="background:${barva[p.role]||'var(--bila-18)'}"></span>
+      <span class="hrac-jmeno">
+        ${p.jmeno}${p.aktivni?'':' <span class="duvod">vyřazen</span>'}
       </span>
-      <span class="cas">
-        <button style="color:var(--nebeska);font-size:11.5px;padding:6px 8px"
-                onclick="prepniRoli('${p.id}','${p.role}')">
-          ${p.role==='trener'?'trenér':'hráč'}
-        </button>
-      </span>
+      <select class="vyber-role" onchange="zmenRoli('${p.id}', this.value)">
+        ${Object.entries(ROLE).map(([k,v])=>
+          `<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}
+      </select>
+      <button class="vyradit" onclick="prepniAktivitu('${p.id}', ${p.aktivni})"
+              aria-label="${p.aktivni?'Vyřadit':'Vrátit'}">${p.aktivni?'✕':'↺'}</button>
     </div>`).join('') || '<p class="prazdno">Zatím tu nikdo není.</p>';
 }
 
-async function prepniRoli(id, role){
-  if(id===stav.ja.id){ toast('Vlastní roli si měnit nemůžeš.'); return; }
-  const nova = role==='trener' ? 'hrac' : 'trener';
+async function zmenRoli(id, nova){
+  if(id===stav.ja.id){ toast('Vlastní roli si měnit nemůžeš.'); prekresli(); return; }
   const {error} = await db.from('profily').update({role:nova}).eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); prekresli(); return; }
+  await nactiVse(); prekresli();
+  toast('Role změněna na ' + ROLE[nova].toLowerCase() + '.');
+}
+
+async function prepniAktivitu(id, jeAktivni){
+  if(id===stav.ja.id){ toast('Sám sebe vyřadit nemůžeš.'); return; }
+  if(jeAktivni && !confirm('Vyřadit hráče? Zmizí ze soupisky, ale historie zůstane.')) return;
+  const {error} = await db.from('profily').update({aktivni: !jeAktivni}).eq('id',id);
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
-  toast('Role změněna na ' + (nova==='trener'?'trenéra':'hráče') + '.');
+  toast(jeAktivni?'Hráč vyřazen.':'Hráč vrácen do soupisky.');
+}
+
+async function ulozUzaverky(){
+  for(const r of ['hrac','golman','trener']){
+    const h=document.getElementById('u-'+r).value;
+    const {error} = await db.from('nastaveni')
+      .update({hodnota:String(h), zmeneno:new Date().toISOString()}).eq('klic','uzaverka_'+r);
+    if(error){ toast('Nepovedlo se: '+error.message); return; }
+    stav.nastaveni['uzaverka_'+r]=String(h);
+  }
+  prekresli();
+  toast('Uzávěrky uloženy.');
+}
+function naplnUzaverky(){
+  ['hrac','golman','trener'].forEach(r=>{
+    const e=document.getElementById('u-'+r);
+    if(e) e.value = stav.nastaveni['uzaverka_'+r] ?? '20';
+  });
 }
 
 /* ============================================================
@@ -1422,10 +1519,13 @@ async function otevriDetail(id, jenPrekresli){
 
   const kdy=(od)=>{
     if(!od.zmeneno) return '';
-    if(od.pozde) return 'v den akce';
-    const dni=Math.round((new Date(u.zacatek)-new Date(od.zmeneno))/864e5);
+    const d=new Date(od.zmeneno);
+    if(od.pozde) return `${DNY_KR[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. ${cas(d)}`;
+    const dni=Math.round((new Date(u.zacatek)-d)/864e5);
     return dni<=0 ? 'dnes' : dni===1 ? 'den předem' : `${dni} dní předem`;
   };
+  const uz=uzaverkaPro(u, stav.ja.role);
+  const poUzaverce = new Date() > uz;
 
   const radek=(x,barva)=>`
     <div class="ucastnik">
@@ -1448,6 +1548,10 @@ async function otevriDetail(id, jenPrekresli){
       <p class="detail-radek"><b>${DNY[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}</b> · ${cas(u.zacatek)}</p>
       <p class="detail-radek">${u.misto||''}${u.doma!==null&&u.doma!==undefined?(u.doma?' · doma':' · venku'):''}${u.sraz?` · sraz ${cas(u.sraz)}`:''}</p>
       ${(u.vysledek1||u.vysledek2)?`<p class="detail-radek"><b>Výsledky:</b> ${[u.vysledek1,u.vysledek2].filter(Boolean).join(' · ')}</p>`:''}
+      ${!probehla&&!u.zruseno?`<p class="detail-radek" style="margin-top:9px">
+        <span style="color:${poUzaverce?'#E58AA0':'var(--bila-38)'}">
+          ${poUzaverce?'Uzávěrka byla':'Odpovědět do'} ${DNY_KR[uz.getDay()]} ${uz.getDate()}. ${MESICE[uz.getMonth()]} ${cas(uz)}
+        </span></p>`:''}
       ${u.poznamka?`<p class="detail-poznamka">${u.poznamka}</p>`:''}
     </div>
     <div class="detail-telo">
@@ -1455,8 +1559,9 @@ async function otevriDetail(id, jenPrekresli){
         <div class="akce-trenera">
           <button onclick="upravUdalost(${id})">Upravit</button>
           <button class="${u.zruseno?'':'nebezpecna'}" onclick="prepniZruseni(${id})">
-            ${u.zruseno?'Obnovit akci':'Zrušit akci'}
+            ${u.zruseno?'Obnovit':'Zrušit'}
           </button>
+          <button class="nebezpecna" onclick="smazUdalost(${id})">Smazat</button>
         </div>`:''}
       ${!probehla&&!u.zruseno?`
         <div class="volba tmava">
@@ -1567,8 +1672,8 @@ function odpoved(id, novyStav){
     cekaNaDuvod={id, stav:novyStav};
     document.getElementById('modal-nadpis').textContent = novyStav==='mozna'?'Na čem to visí?':'Proč nemůžeš?';
     document.getElementById('modal-text').textContent = novyStav==='mozna'
-      ? 'Měníš odpověď v den akce. Napiš, na čem to závisí, ať se s tebou dá počítat.'
-      : 'Měníš odpověď v den akce. Napiš ostatním důvod, ať vědí, na čem jsou.';
+      ? 'Měníš odpověď po uzávěrce. Napiš, na čem to závisí, ať se s tebou dá počítat.'
+      : 'Měníš odpověď po uzávěrce. Napiš ostatním důvod, ať vědí, na čem jsou.';
     document.getElementById('modal-duvod').value='';
     document.getElementById('modal-chyba').classList.remove('videt');
     document.getElementById('modal').classList.add('otevreno');
@@ -1598,7 +1703,7 @@ async function ulozOdpoved(id, novyStav, duvod){
 
   if(error){
     toast(error.message.includes('důvod')
-      ? 'Změna v den akce potřebuje důvod.'
+      ? 'Změna po uzávěrce potřebuje důvod.'
       : 'Nepovedlo se uložit: '+error.message);
     return;
   }
@@ -1738,6 +1843,26 @@ async function ulozUpravu(id){
   otevriDetail(id);
 }
 
+async function smazUdalost(id){
+  const u=stav.udalosti.find(x=>x.id===id);
+  const pocet=Object.keys(stav.prihlasky[id]||{}).length;
+  const zprav=(stav.zpravy[id]||[]).length;
+
+  const varovani = `Smazat „${nazevUdalosti(u)}" natrvalo?\n\n`
+    + `Zmizí i ${pocet} ${pocet===1?'odpověď':pocet<5?'odpovědi':'odpovědí'}`
+    + (zprav?` a ${zprav} ${zprav===1?'zpráva':zprav<5?'zprávy':'zpráv'} v chatu`:'')
+    + `.\nTohle se nedá vrátit — na odpadlý trénink použij radši Zrušit.`;
+  if(!confirm(varovani)) return;
+
+  const {error} = await db.from('udalosti').delete().eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  delete stav.zpravy[id];
+  zavriDetail();
+  await nactiVse(); prekresli();
+  toast('Událost smazána.');
+}
+
 async function prepniZruseni(id){
   const u=stav.udalosti.find(x=>x.id===id);
   const {error} = await db.from('udalosti').update({zruseno: !u.zruseno}).eq('id',id);
@@ -1807,7 +1932,7 @@ function prepni(cil){
   document.querySelectorAll('.obrazovka').forEach(o=>o.classList.remove('aktivni'));
   document.getElementById('o-'+cil).classList.add('aktivni');
   document.querySelectorAll('.navbar button').forEach(b=>b.classList.toggle('aktivni', b.dataset.cil===cil));
-  if(cil==='admin'){ naplnHlasky(); nactiKod(); }
+  if(cil==='admin'){ naplnHlasky(); nactiKod(); naplnUzaverky(); }
   window.scrollTo({top:0});
 }
 function prepniMenu(e){
