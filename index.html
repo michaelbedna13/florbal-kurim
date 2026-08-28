@@ -64,7 +64,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 .app{
   max-width:440px;margin:0 auto;min-height:100vh;position:relative;z-index:1;
-  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px);
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 48px);
 }
 @media(min-width:600px){body{padding:28px 0}.app{min-height:calc(100vh - 56px)}}
 
@@ -306,9 +306,32 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   border:1px solid var(--linka);background:var(--panel-2);color:var(--bila);
   font-family:'Inter',sans-serif;font-size:14.5px;
 }
+/* iOS si datum a čas centruje a dělá jim jinou výšku */
+.pole input[type="date"],.pole input[type="time"]{
+  -webkit-appearance:none;appearance:none;
+  text-align:left;min-height:50px;display:block;
+}
+.pole input[type="date"]::-webkit-date-and-time-value,
+.pole input[type="time"]::-webkit-date-and-time-value{text-align:left}
+.pole input[type="date"]::-webkit-calendar-picker-indicator,
+.pole input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.7)}
 .pole input::placeholder,.pole textarea::placeholder{color:var(--bila-18)}
 .pole input:focus,.pole textarea:focus,.pole select:focus{border-color:rgba(124,182,224,.45);background:rgba(124,182,224,.06)}
 .pole textarea{resize:vertical;min-height:66px}
+/* iOS si pole pro datum a čas jinak vykresluje po svém — vycentruje text
+   a zvětší výšku, což rozbíjí zarovnání zbytku formuláře */
+.pole input[type="date"],
+.pole input[type="time"]{
+  -webkit-appearance:none;appearance:none;
+  text-align:left;display:block;min-height:48px;line-height:1.25;
+  font-family:'Inter',sans-serif;font-size:14.5px;
+}
+.pole input[type="date"]::-webkit-date-and-time-value,
+.pole input[type="time"]::-webkit-date-and-time-value{text-align:left}
+.pole input[type="date"]::-webkit-calendar-picker-indicator,
+.pole input[type="time"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);opacity:.45;
+}
 .pole select{
   appearance:none;-webkit-appearance:none;padding-right:40px;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EDF3F8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='.6'><polyline points='6 9 12 15 18 9'/></svg>");
