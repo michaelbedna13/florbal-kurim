@@ -385,7 +385,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .plachta{position:fixed;inset:0;background:rgba(3,5,9,.8);z-index:60;display:none;align-items:flex-end;justify-content:center}
 .plachta.otevreno{display:flex}
 .plachta-obsah{
-  background:var(--cerna);width:100%;max-width:440px;max-height:92vh;overflow-x:hidden;position:relative;
+  background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
+  width:100%;max-width:440px;max-height:92vh;overflow-x:hidden;position:relative;
   padding-bottom:env(safe-area-inset-bottom);
   border-radius:28px 28px 0 0;overflow-y:auto;border-top:1px solid var(--linka);
   animation:vyjed .3s cubic-bezier(.2,.85,.3,1);
@@ -401,13 +402,23 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 }
 .zavrit-detail:active{background:var(--panel-2);color:var(--bila)}
 .uchyt-plocha{padding:6px 0 2px;cursor:grab;touch-action:none}
-.detail-hlava{padding:18px 20px 20px}
+.detail-hlava{padding:18px 20px 20px;position:relative}
+.detail-hlava::before{
+  content:"";position:absolute;inset:-40px 0 0;pointer-events:none;
+  background:radial-gradient(120% 90% at 12% 0%, var(--zare-typu, transparent), transparent 62%);
+}
+.detail-hlava > *{position:relative}
+/* tenký proužek nahoře v barvě typu */
+.plachta-obsah::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
+  background:var(--pruh-typu, transparent);
+}
 .detail-nazev{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;margin:8px 0 12px;letter-spacing:-.01em}
 .detail-radek{display:flex;gap:9px;font-size:13.5px;color:var(--bila-38);margin:0 0 5px}
 .detail-radek b{color:var(--bila);font-weight:600}
 .detail-poznamka{
   margin-top:14px;padding:13px 15px;border-radius:16px;font-size:13px;color:var(--bila-60);
-  background:var(--panel);border:1px solid var(--linka);
+  background:rgba(255,255,255,.05);border:1px solid var(--hrana, rgba(255,255,255,.09));
 }
 .detail-telo{padding:0 16px 30px}
 
@@ -491,6 +502,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .toast.videt{opacity:1;transform:translateX(-50%)}
 
 .prazdno{text-align:center;padding:34px 20px;color:var(--bila-18);font-size:13.5px}
+
+
 
 /* ---------- tabulka soutěže ---------- */
 .soutez{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
@@ -997,9 +1010,12 @@ const VYZVA_DNI = 14;
 
 const ZAVAZNOST = {jdu:2, mozna:1, nejdu:0};
 const TYPY = {
-  trenink:{nazev:'Trénink', barva:'var(--trenink)'},
-  zapas:  {nazev:'Zápas',   barva:'var(--zapas)'},
-  akce:   {nazev:'Akce',    barva:'var(--akce)'}
+  trenink:{nazev:'Trénink', barva:'var(--trenink)',
+           zare:'rgba(124,182,224,.20)', pruh:'var(--trenink)'},
+  zapas:  {nazev:'Zápas',   barva:'var(--zapas)',
+           zare:'rgba(190,220,245,.22)', pruh:'linear-gradient(90deg,#7CB6E0,#F2F7FB)'},
+  akce:   {nazev:'Akce',    barva:'var(--akce)',
+           zare:'rgba(242,247,251,.13)', pruh:'var(--akce)'}
 };
 const DNY = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
 const DNY_KR = ['Ne','Po','Út','St','Čt','Pá','So'];
@@ -1710,6 +1726,10 @@ async function otevriDetail(id, jenPrekresli){
         </div>
       </div>
     </div>`;
+
+  const obsah=document.getElementById('plachta-obsah');
+  obsah.style.setProperty('--zare-typu', t.zare);
+  obsah.style.setProperty('--pruh-typu', t.pruh);
 
   document.getElementById('plachta').classList.add('otevreno');
   document.body.style.overflow='hidden';
