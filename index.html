@@ -503,7 +503,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   padding:9px 0;border-top:1px solid var(--linka);text-align:right;white-space:nowrap;
   font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
 }
-.soutez td.poradi{width:26px;text-align:left;color:var(--bila-18);font-size:12px}
+.soutez td.poradi{width:28px;text-align:left;color:var(--bila-18);font-size:12px}
+.soutez th.tym,.soutez td.tym{width:auto}
 .soutez td.tym{
   text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
   overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
@@ -1474,7 +1475,7 @@ async function vykresliSoutez(){
     el.innerHTML = `
       <table class="soutez">
         <thead><tr>
-          <th></th><th class="tym">Tým</th><th>Z</th><th>V</th><th>P</th><th>Skóre</th><th class="body">B</th>
+          <th></th><th class="tym">Tým</th><th>Z</th><th>Skóre</th><th class="body">B</th>
         </tr></thead>
         <tbody>${d.tymy.map(t=>`
           <tr class="${t.nas?'nas':''}">
@@ -1482,11 +1483,9 @@ async function vykresliSoutez(){
             <td class="tym"><span>
               ${t.logo?`<img class="znak" src="${t.logo}" alt="" loading="lazy"
                           onerror="this.style.visibility='hidden'">`:''}
-              <em>${t.nazev}</em>
+              <em>${t.kratky || t.nazev}</em>
             </span></td>
             <td>${t.zapasy}</td>
-            <td>${t.vyhry + t.vyhry_p}</td>
-            <td>${t.prohry + t.prohry_p}</td>
             <td>${t.branky_vstrelene}:${t.branky_obdrzene}</td>
             <td class="body">${t.body}</td>
           </tr>`).join('')}</tbody>
