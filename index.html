@@ -1574,8 +1574,11 @@ async function otevriDetail(id, jenPrekresli){
     }
   });
 
-  // kolik golmanů chcete mít; dá se přenést do Správy, zatím napevno
-  const golmanuPotreba = parseInt(stav.nastaveni['golmanu_potreba'] ?? '2', 10) || 2;
+  // kolik golmanů je potřeba — na zápas stačí jeden, na trénink dva.
+  // Dá se přenést do Správy, zatím se berou výchozí hodnoty.
+  const golmanuPotreba = u.typ==='zapas'
+    ? (parseInt(stav.nastaveni['golmanu_zapas']   ?? '1', 10) || 1)
+    : (parseInt(stav.nastaveni['golmanu_trenink'] ?? '2', 10) || 2);
   const golmanuDost = jdeGolmanu >= golmanuPotreba;
 
   const sestava = u.typ==='akce' ? '' : `
