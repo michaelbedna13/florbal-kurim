@@ -503,16 +503,20 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   padding:9px 0;border-top:1px solid var(--linka);text-align:right;white-space:nowrap;
   font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
 }
-.soutez td.poradi{width:28px;text-align:left;color:var(--bila-18);font-size:12px}
-.soutez th.tym,.soutez td.tym{width:auto}
+.soutez td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
+/* číselné sloupce dostanou jen tolik, kolik potřebují — zbytek patří názvu */
+.soutez col.c-poradi{width:26px}
+.soutez col.c-zapasy{width:30px}
+.soutez col.c-skore{width:46px}
+.soutez col.c-body{width:30px}
 .soutez td.tym{
   text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
   overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
 }
-.soutez td.tym span{display:flex;align-items:center;gap:8px;min-width:0}
+.soutez td.tym span{display:flex;align-items:center;gap:7px;min-width:0}
 .soutez td.tym em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .soutez .znak{width:20px;height:20px;flex:none;object-fit:contain;border-radius:4px;background:rgba(255,255,255,.06)}
-.soutez th.body,.soutez td.body{padding-left:8px}
+.soutez th.body,.soutez td.body{padding-left:4px}
 .soutez td.body{color:var(--bila);font-weight:700}
 .soutez tr.nas td{background:rgba(124,182,224,.08)}
 .soutez tr.nas td.tym{color:var(--nebeska);font-weight:600}
@@ -1474,6 +1478,9 @@ async function vykresliSoutez(){
     const kdy = new Date(d.aktualizovano);
     el.innerHTML = `
       <table class="soutez">
+        <colgroup>
+          <col class="c-poradi"><col><col class="c-zapasy"><col class="c-skore"><col class="c-body">
+        </colgroup>
         <thead><tr>
           <th></th><th class="tym">Tým</th><th>Z</th><th>Skóre</th><th class="body">B</th>
         </tr></thead>
