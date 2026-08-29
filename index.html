@@ -822,6 +822,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
       <button data-filtr="trenink">Tréninky</button>
       <button data-filtr="zapas">Zápasy</button>
       <button data-filtr="akce">Akce</button>
+      <button data-filtr="probehle">Proběhlé</button>
     </div>
     <div class="seznam" id="seznam"></div>
   </section>
@@ -1479,11 +1480,16 @@ function kartaUdalosti(u, sDatem=true){
 
 function vykresliSeznam(){
   const filtr=document.querySelector('#filtry button.aktivni').dataset.filtr;
-  let sez=[...vseBudouci(), ...minule().sort((a,b)=>b.zacatek-a.zacatek)];
-  if(filtr!=='vse') sez=sez.filter(u=>u.typ===filtr);
+  let sez;
+  if(filtr==='probehle'){
+    sez = minule().sort((a,b)=>b.zacatek-a.zacatek);
+  } else {
+    sez = [...vseBudouci(), ...minule().sort((a,b)=>b.zacatek-a.zacatek)];
+    if(filtr!=='vse') sez = sez.filter(u=>u.typ===filtr);
+  }
   document.getElementById('seznam').innerHTML = sez.length
     ? sez.map(u=>kartaUdalosti(u,true)).join('')
-    : `<div class="karta"><p class="prazdno">Nic tu není.</p></div>`;
+    : `<div class="karta"><p class="prazdno">${filtr==='probehle'?'Zatím nic neproběhlo.':'Nic tu není.'}</p></div>`;
 }
 
 async function vykresliSoutez(){
@@ -2102,7 +2108,9 @@ function toast(text){
 document.getElementById('filtry').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
   document.querySelectorAll('#filtry button').forEach(x=>x.classList.remove('aktivni'));
-  b.classList.add('aktivni'); vykresliSeznam();
+  b.classList.add('aktivni');
+  document.getElementById('seznam').classList.toggle('jen-probehle', b.dataset.filtr==='probehle');
+  vykresliSeznam();
 });
 document.getElementById('typ-prepinac').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
