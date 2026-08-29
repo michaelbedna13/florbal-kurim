@@ -514,6 +514,39 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 
 .prazdno{text-align:center;padding:34px 20px;color:var(--bila-18);font-size:13.5px}
 
+/* ---------- kanadské bodování ---------- */
+.kb{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.kb th{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
+  font-weight:600;text-align:right;padding:0 0 11px;border-bottom:1px solid var(--linka);
+}
+.kb th.hrac{text-align:left}
+.kb td{
+  padding:10px 0;text-align:right;white-space:nowrap;
+  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+}
+.kb td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
+.kb td.hrac{
+  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
+}
+.kb td.body{color:var(--bila);font-weight:700;padding-left:6px}
+.kb tbody tr.ja td{background:rgba(124,182,224,.10)}
+.kb tbody tr.ja td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.10)}
+.kb tbody tr.ja td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.10)}
+.kb tbody tr.ja td.hrac,.kb tbody tr.ja td.body{color:var(--nebeska)}
+.kb col.c-poradi{width:26px}
+.kb col.c-cislo{width:32px}
+.kb col.c-body{width:34px}
+.kb-nadpis{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;
+  color:var(--bila-60);margin:20px 0 10px;
+}
+@media (max-width:400px){
+  .kb{font-size:12px}
+  .kb td,.kb td.hrac{font-size:12.5px}
+}
+
 
 
 /* ---------- tabulka soutěže ---------- */
@@ -737,10 +770,12 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
   background-repeat:no-repeat;background-position:right 8px center;background-size:13px;
 }
 .vyber-role option{background:var(--panel);color:var(--bila)}
-.vyradit{
+.vyradit,.parovani{
   flex:none;width:32px;height:32px;border-radius:9px;font-size:13px;
   border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-38);
 }
+.parovani.sedi{color:var(--jdu);border-color:rgba(67,183,140,.30)}
+.parovani.nesedi{color:var(--bila-18)}
 .vyradit:active{color:var(--nejdu)}
 
 .udaj{display:flex;align-items:center;padding:14px 0;border-top:1px solid var(--linka);font-size:14px}
@@ -835,6 +870,9 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice"></div>
 
+    <div class="nadpis-sekce">Kanadské bodování</div>
+    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
+
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
   </section>
@@ -860,6 +898,9 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
     <div class="karta" style="padding:18px 20px">
       <table class="tabulka" id="tabulka-tymu"></table>
     </div>
+
+    <div class="nadpis-sekce">Kanadské bodování</div>
+    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
 
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
@@ -1257,6 +1298,38 @@ async function nactiVse(){
   hlasky.data.forEach(h=>{ stav.hlasky[h.klic]=h.text; });
 }
 
+/* ---------- statistiky z Českého florbalu ---------- */
+let cfStatistiky = null;
+
+function bezDiakritiky(t){
+  return (t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function klicJmena(jmeno){
+  return bezDiakritiky(jmeno).toLowerCase().match(/[\p{L}\p{N}]+/gu)?.sort().join(' ') || '';
+}
+
+async function nactiStatistiky(){
+  if(cfStatistiky) return cfStatistiky;
+  try{
+    const o = await fetch('hraci.json?v='+Date.now());
+    if(!o.ok) throw new Error();
+    cfStatistiky = await o.json();
+  }catch(e){
+    cfStatistiky = {hraci:[], brankari:[]};
+  }
+  cfStatistiky.mapa = {};
+  [...(cfStatistiky.hraci||[]), ...(cfStatistiky.brankari||[])]
+    .forEach(z=>{ cfStatistiky.mapa[z.klic || klicJmena(z.jmeno)] = z; });
+  return cfStatistiky;
+}
+
+/* statistika konkrétního profilu, nebo null */
+function cfProProfil(profil){
+  if(!cfStatistiky) return null;
+  const klic = klicJmena(profil.cf_jmeno || profil.jmeno);
+  return cfStatistiky.mapa[klic] || null;
+}
+
 async function nactiZpravy(idUdalosti){
   const {data, error} = await db.from('zpravy')
     .select('*').eq('udalost_id', idUdalosti).order('vytvoreno');
@@ -1302,6 +1375,7 @@ async function nastartuj(){
   stav.ja = {...profil, email: session.user.email};
 
   await nactiVse();
+  await nactiStatistiky();
   pripojRealtime();
 
   document.getElementById('brana').classList.add('pryc');
@@ -1431,11 +1505,24 @@ function poradiVTymu(idHrace){
 function vykresliDlazdice(kam){
   const el=document.getElementById(kam); if(!el) return;
   const s=statistikaHrace(stav.ja.id), poradi=poradiVTymu(stav.ja.id);
+  const cf=cfProProfil(stav.ja);
+  const jeGolman = stav.ja.role==='golman';
+
+  // dokud nejsou v soutěži data, zůstávají dlaždice o docházce
+  const spodni = !cf ? `
+    <div class="d"><span class="cislo">${s.mlcel}</span><span class="popis">Bez odpovědi</span></div>
+    <div class="d"><span class="cislo ${s.pozdniOdhlaseni?'varovne':''}">${s.pozdniOdhlaseni}</span><span class="popis">Odhlášen pozdě</span></div>`
+    : jeGolman ? `
+    <div class="d"><span class="cislo">${cf.obdrzene ?? 0}</span><span class="popis">Obdržených branek</span></div>
+    <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>`
+    : `
+    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'} v soutěži</span></div>
+    <div class="d"><span class="cislo">${cf.asistence ?? 0}</span><span class="popis">${(cf.asistence ?? 0)===1?'Asistence':'Asistencí'}</span></div>`;
+
   el.innerHTML=`
     <div class="d zvyraznena"><span class="cislo">${s.procenta} %</span><span class="popis">Účast v sezóně</span></div>
     <div class="d"><span class="cislo">${poradi}.<span style="color:var(--bila-18);font-size:20px"> z ${stav.profily.length}</span></span><span class="popis">V týmu podle docházky</span></div>
-    <div class="d"><span class="cislo">${s.mlcel}</span><span class="popis">Bez odpovědi</span></div>
-    <div class="d"><span class="cislo ${s.pozdniOdhlaseni?'varovne':''}">${s.pozdniOdhlaseni}</span><span class="popis">Odhlášen pozdě</span></div>`;
+    ${spodni}`;
 }
 
 /* ---------- karta a seznam ---------- */
@@ -1482,6 +1569,55 @@ function vykresliSeznam(){
   document.getElementById('seznam').innerHTML = sez.length
     ? sez.map(u=>kartaUdalosti(u,true)).join('')
     : `<div class="karta"><p class="prazdno">${filtr==='probehle'?'Zatím nic neproběhlo.':'Nic tu není.'}</p></div>`;
+}
+
+function vykresliKanadske(){
+  const el=document.getElementById('kanadskeBodovani');
+  if(!el) return;
+  const d=cfStatistiky;
+  if(!d || (!d.hraci?.length && !d.brankari?.length)){
+    el.innerHTML='<p class="prazdno">Statistiky naskočí po prvním turnaji.</p>';
+    return;
+  }
+
+  const mujKlic = klicJmena(stav.ja.cf_jmeno || stav.ja.jmeno);
+  const kdy = new Date(d.aktualizovano);
+
+  const tabulkaHracu = !d.hraci?.length ? '' : `
+    <table class="kb">
+      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-cislo"><col class="c-body"></colgroup>
+      <thead><tr><th></th><th class="hrac">Hráč</th><th>Z</th><th>B</th><th>A</th><th class="body">KB</th></tr></thead>
+      <tbody>${d.hraci.map((h,i)=>`
+        <tr class="${h.klic===mujKlic?'ja':''}">
+          <td class="poradi">${i+1}.</td>
+          <td class="hrac">${h.jmeno}</td>
+          <td>${h.zapasy ?? 0}</td>
+          <td>${h.branky ?? 0}</td>
+          <td>${h.asistence ?? 0}</td>
+          <td class="body">${h.body ?? 0}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+
+  const tabulkaBrankaru = !d.brankari?.length ? '' : `
+    <div class="kb-nadpis">Brankáři</div>
+    <table class="kb">
+      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-body"></colgroup>
+      <thead><tr><th></th><th class="hrac">Brankář</th><th>ZCH</th><th>BO</th><th class="body">SO</th></tr></thead>
+      <tbody>${d.brankari.map((b,i)=>`
+        <tr class="${b.klic===mujKlic?'ja':''}">
+          <td class="poradi">${i+1}.</td>
+          <td class="hrac">${b.jmeno}</td>
+          <td>${b.odchytane ?? 0}</td>
+          <td>${b.obdrzene ?? 0}</td>
+          <td class="body">${b.cista_konta ?? 0}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+
+  el.innerHTML = tabulkaHracu + tabulkaBrankaru + `
+    <div class="soutez-pata">
+      <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+      <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
+    </div>`;
 }
 
 async function vykresliSoutez(){
@@ -1585,7 +1721,34 @@ function vykresliSpravuHracu(){
       </select>
       <button class="vyradit" onclick="prepniAktivitu('${p.id}', ${p.aktivni})"
               aria-label="${p.aktivni?'Vyřadit':'Vrátit'}">${p.aktivni?'✕':'↺'}</button>
+      <button class="parovani ${cfProProfil(p)?'sedi':'nesedi'}"
+              onclick="nastavCfJmeno('${p.id}')"
+              aria-label="Párování se soutěží"
+              title="${cfProProfil(p) ? 'Spárováno: '+cfProProfil(p).jmeno : 'Nespárováno se statistikami'}">
+        ${cfProProfil(p)?'⚑':'⚐'}
+      </button>
     </div>`).join('') || '<p class="prazdno">Zatím tu nikdo není.</p>';
+}
+
+async function nastavCfJmeno(id){
+  const p=(stav.vsechnyProfily||[]).find(x=>x.id===id);
+  if(!p) return;
+  const nalezene = cfProProfil(p);
+  const napoveda = nalezene
+    ? `Teď se páruje na „${nalezene.jmeno}".`
+    : 'Zatím se nepodařilo spárovat.';
+  const nove = prompt(
+    `Jak se ${p.jmeno} jmenuje na webu Českého florbalu?\n${napoveda}\n\n`
+    + 'Prázdné pole = párovat automaticky podle jména.',
+    p.cf_jmeno || '');
+  if(nove === null) return;
+
+  const {error} = await db.from('profily')
+    .update({cf_jmeno: nove.trim() || null}).eq('id', id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  await nactiVse(); prekresli();
+  toast(nove.trim() ? 'Párování nastaveno.' : 'Párování vráceno na automatické.');
 }
 
 async function zmenRoli(id, nova){
@@ -2198,7 +2361,7 @@ function prekresli(){
   if(!stav.ja) return;
   vykresliVyzvu(); vykresliNejblizsi();
   vykresliDlazdice('dlazdice'); vykresliDlazdice('dlazdice2'); vykresliDlazdice('dlazdice3');
-  vykresliSeznam(); vykresliTabulku(); vykresliSoutez();
+  vykresliSeznam(); vykresliTabulku(); vykresliSoutez(); vykresliKanadske();
   vykresliProfil(); vykresliNeodpovedele(); vykresliSpravuHracu();
 }
 
