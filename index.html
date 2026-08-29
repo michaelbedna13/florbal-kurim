@@ -870,11 +870,11 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice"></div>
 
-    <div class="nadpis-sekce">Kanadské bodování</div>
-    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
-
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
+
+    <div class="nadpis-sekce">Kanadské bodování</div>
+    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
   </section>
 
   <!-- ============ UDÁLOSTI ============ -->
@@ -899,11 +899,11 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
       <table class="tabulka" id="tabulka-tymu"></table>
     </div>
 
-    <div class="nadpis-sekce">Kanadské bodování</div>
-    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
-
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
+
+    <div class="nadpis-sekce">Kanadské bodování</div>
+    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
   </section>
 
   <!-- ============ SPRÁVA ============ -->
@@ -1505,14 +1505,11 @@ function poradiVTymu(idHrace){
 function vykresliDlazdice(kam){
   const el=document.getElementById(kam); if(!el) return;
   const s=statistikaHrace(stav.ja.id), poradi=poradiVTymu(stav.ja.id);
-  const cf=cfProProfil(stav.ja);
+  const cf=cfProProfil(stav.ja) || {};
   const jeGolman = stav.ja.role==='golman';
 
-  // dokud nejsou v soutěži data, zůstávají dlaždice o docházce
-  const spodni = !cf ? `
-    <div class="d"><span class="cislo">${s.mlcel}</span><span class="popis">Bez odpovědi</span></div>
-    <div class="d"><span class="cislo ${s.pozdniOdhlaseni?'varovne':''}">${s.pozdniOdhlaseni}</span><span class="popis">Odhlášen pozdě</span></div>`
-    : jeGolman ? `
+  // statistiky ze soutěže; než se odehraje první turnaj, jsou to nuly
+  const spodni = jeGolman ? `
     <div class="d"><span class="cislo">${cf.obdrzene ?? 0}</span><span class="popis">Obdržených branek</span></div>
     <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>`
     : `
