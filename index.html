@@ -496,13 +496,17 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .soutez{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
 .soutez th{
   font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
-  font-weight:600;text-align:right;padding:0 0 10px;
+  font-weight:600;text-align:right;padding:0 0 11px;border-bottom:1px solid var(--linka);
 }
 .soutez th.tym{text-align:left}
 .soutez td{
-  padding:9px 0;border-top:1px solid var(--linka);text-align:right;white-space:nowrap;
+  padding:10px 0;text-align:right;white-space:nowrap;
   font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
 }
+/* místo dělicích čar jemné prokládání — logo řádky odděluje samo */
+.soutez tbody tr:nth-child(even) td{background:rgba(255,255,255,.022)}
+.soutez tbody tr:nth-child(even) td:first-child{box-shadow:-14px 0 0 rgba(255,255,255,.022)}
+.soutez tbody tr:nth-child(even) td:last-child{box-shadow:14px 0 0 rgba(255,255,255,.022)}
 .soutez td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
 /* číselné sloupce dostanou jen tolik, kolik potřebují — zbytek patří názvu */
 .soutez col.c-poradi{width:26px}
@@ -518,10 +522,10 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .soutez .znak{width:20px;height:20px;flex:none;object-fit:contain;border-radius:4px;background:rgba(255,255,255,.06)}
 .soutez th.body,.soutez td.body{padding-left:4px}
 .soutez td.body{color:var(--bila);font-weight:700}
-.soutez tr.nas td{background:rgba(124,182,224,.08)}
+.soutez tbody tr.nas td{background:rgba(124,182,224,.10)}
 /* zvýraznění protáhnout přes okraje karty (ta má po stranách 14px) */
-.soutez tr.nas td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.08)}
-.soutez tr.nas td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.08)}
+.soutez tbody tr.nas td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.10)}
+.soutez tbody tr.nas td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.10)}
 .soutez tr.nas td.tym{color:var(--nebeska);font-weight:600}
 .soutez tr.nas td.body{color:var(--nebeska)}
 .soutez-pata{
