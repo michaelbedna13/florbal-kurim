@@ -1510,7 +1510,7 @@ function vykresliDlazdice(kam){
     <div class="d"><span class="cislo">${cf.obdrzene ?? 0}</span><span class="popis">Obdržených branek</span></div>
     <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>`
     : `
-    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'} v soutěži</span></div>
+    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'}</span></div>
     <div class="d"><span class="cislo">${cf.asistence ?? 0}</span><span class="popis">${(cf.asistence ?? 0)===1?'Asistence':'Asistencí'}</span></div>`;
 
   el.innerHTML=`
