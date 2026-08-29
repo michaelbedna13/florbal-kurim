@@ -1,5 +1,5 @@
 {
- "aktualizovano": "2026-08-29T00:00+01:00",
+ "aktualizovano": "2026-08-29T23:28+01:00",
  "soutez": "Jihomoravská liga mužů",
  "odkaz": "https://repre.ceskyflorbal.cz/competition/detail/overview/6JM6?divisionId=5598&competitionFisId=4653",
  "tymy": [
@@ -17,8 +17,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Aligators"
+   "rozdil": 0
   },
   {
    "poradi": 2,
@@ -34,8 +33,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Pohořelice"
+   "rozdil": 0
   },
   {
    "poradi": 3,
@@ -51,8 +49,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Kuřim"
+   "rozdil": 0
   },
   {
    "poradi": 4,
@@ -68,8 +65,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Hornets"
+   "rozdil": 0
   },
   {
    "poradi": 5,
@@ -85,8 +81,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Židenice"
+   "rozdil": 0
   },
   {
    "poradi": 6,
@@ -102,8 +97,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Bojanovice"
+   "rozdil": 0
   },
   {
    "poradi": 7,
@@ -119,8 +113,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Shooters Beta"
+   "rozdil": 0
   },
   {
    "poradi": 8,
@@ -136,8 +129,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Gullivers"
+   "rozdil": 0
   },
   {
    "poradi": 9,
@@ -153,8 +145,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Letovice"
+   "rozdil": 0
   },
   {
    "poradi": 10,
@@ -170,8 +161,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "Troopers"
+   "rozdil": 0
   },
   {
    "poradi": 11,
@@ -187,8 +177,7 @@
    "body": 0,
    "branky_vstrelene": 0,
    "branky_obdrzene": 0,
-   "rozdil": 0,
-   "kratky": "VUT Brno"
+   "rozdil": 0
   }
  ]
 }
