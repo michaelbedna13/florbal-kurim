@@ -1506,8 +1506,6 @@ async function vykresliSoutez(){
         <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
       </div>`;
 
-    const nadpis=document.getElementById('nadpis-soutez');
-    if(nadpis && d.soutez) nadpis.innerHTML = `Tabulka soutěže <span class="kolik">${d.soutez}</span>`;
   }catch(e){
     el.innerHTML = '<p class="prazdno">Tabulka se nenačetla.</p>';
   }
