@@ -492,6 +492,42 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 .prazdno{text-align:center;padding:34px 20px;color:var(--bila-18);font-size:13.5px}
 
+/* ---------- tabulka soutěže ---------- */
+.soutez{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.soutez th{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
+  font-weight:600;text-align:right;padding:0 0 10px;
+}
+.soutez th.tym{text-align:left}
+.soutez td{
+  padding:9px 0;border-top:1px solid var(--linka);text-align:right;white-space:nowrap;
+  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+}
+.soutez td.poradi{width:26px;text-align:left;color:var(--bila-18);font-size:12px}
+.soutez td.tym{
+  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
+}
+.soutez td.tym span{display:flex;align-items:center;gap:8px;min-width:0}
+.soutez td.tym em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.soutez .znak{width:20px;height:20px;flex:none;object-fit:contain;border-radius:4px;background:rgba(255,255,255,.06)}
+.soutez th.body,.soutez td.body{padding-left:8px}
+.soutez td.body{color:var(--bila);font-weight:700}
+.soutez tr.nas td{background:rgba(124,182,224,.08)}
+.soutez tr.nas td.tym{color:var(--nebeska);font-weight:600}
+.soutez tr.nas td.body{color:var(--nebeska)}
+.soutez-pata{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:13px;padding-top:12px;border-top:1px solid var(--linka);
+  font-size:11px;color:var(--bila-18);
+}
+.soutez-pata a{color:var(--bila-38);text-decoration:none}
+@media (max-width:400px){
+  .soutez{font-size:12px}
+  .soutez td.tym{font-size:12.5px}
+  .soutez td{font-size:12.5px;padding:8px 0}
+}
+
 /* úzké displeje — ať se hlavičky tabulky neslepí */
 @media (max-width:400px){
   .tabulka{font-size:12px}
@@ -772,6 +808,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   <section class="obrazovka" id="o-statistiky">
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice2"></div>
+
+    <div class="nadpis-sekce" id="nadpis-soutez">Tabulka soutěže</div>
+    <div class="karta" id="tabulkaSouteze" style="padding:16px 14px"></div>
 
     <div class="nadpis-sekce">Tým podle účasti</div>
     <div class="karta" style="padding:18px 20px">
@@ -1420,6 +1459,48 @@ function vykresliSeznam(){
   document.getElementById('seznam').innerHTML = sez.length
     ? sez.map(u=>kartaUdalosti(u,true)).join('')
     : `<div class="karta"><p class="prazdno">Nic tu není.</p></div>`;
+}
+
+async function vykresliSoutez(){
+  const el=document.getElementById('tabulkaSouteze');
+  if(!el) return;
+  try{
+    const odpoved = await fetch('tabulka.json?v=' + Date.now());
+    if(!odpoved.ok) throw new Error('nenačteno');
+    const d = await odpoved.json();
+    if(!d.tymy || !d.tymy.length) throw new Error('prázdné');
+
+    const kdy = new Date(d.aktualizovano);
+    el.innerHTML = `
+      <table class="soutez">
+        <thead><tr>
+          <th></th><th class="tym">Tým</th><th>Z</th><th>V</th><th>P</th><th>Skóre</th><th class="body">B</th>
+        </tr></thead>
+        <tbody>${d.tymy.map(t=>`
+          <tr class="${t.nas?'nas':''}">
+            <td class="poradi">${t.poradi}.</td>
+            <td class="tym"><span>
+              ${t.logo?`<img class="znak" src="${t.logo}" alt="" loading="lazy"
+                          onerror="this.style.visibility='hidden'">`:''}
+              <em>${t.nazev}</em>
+            </span></td>
+            <td>${t.zapasy}</td>
+            <td>${t.vyhry + t.vyhry_p}</td>
+            <td>${t.prohry + t.prohry_p}</td>
+            <td>${t.branky_vstrelene}:${t.branky_obdrzene}</td>
+            <td class="body">${t.body}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+      <div class="soutez-pata">
+        <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+        <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
+      </div>`;
+
+    const nadpis=document.getElementById('nadpis-soutez');
+    if(nadpis && d.soutez) nadpis.innerHTML = `Tabulka soutěže <span class="kolik">${d.soutez}</span>`;
+  }catch(e){
+    el.innerHTML = '<p class="prazdno">Tabulka se nenačetla.</p>';
+  }
 }
 
 function vykresliTabulku(){

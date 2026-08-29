@@ -5,15 +5,20 @@ Statická stránka na GitHub Pages, data v Supabase.
 
 ## Stav
 
-Zatím je nasazený **návrh s vymyšlenými daty** — všechno funguje,
-ale nic se neukládá. Po refreshi je to zase jako na začátku.
-Napojení na Supabase je další krok.
+Appka je napojená na Supabase — přihlášení, události, účast,
+chat i statistiky jedou z databáze.
+
+Účet vzniká jen pozvánkou z Supabase (Authentication → Users).
+Veřejná registrace je vypnutá.
 
 ## Co je v repozitáři
 
 ```
 index.html                 celá appka, jeden soubor
 manifest.json              aby šla přidat na plochu telefonu
+tabulka.json               tabulka soutěže, aktualizuje ji robot
+scripts/tabulka.py         stahovač tabulky z Českého florbalu
+.github/workflows/         denní spouštění stahovače
 logo.svg                   klubové logo ve křivkách
 logo-256.png               logo pro použití v appce
 icon-192.png               ikona aplikace
@@ -40,7 +45,10 @@ Safari → Sdílet → Přidat na plochu. Appka se pak otevírá bez adresního
 ## Další kroky
 
 - [x] Klubové logo v hlavičce, na přihlašovací obrazovce i v ikonách
-- [ ] Supabase projekt + schéma (`florbal-schema.sql`)
-- [ ] Napojit index.html na Supabase (přihlášení, události, účast, chat)
+- [x] Supabase projekt + schéma (`florbal-schema.sql`)
+- [x] Napojení na Supabase (přihlášení, události, účast, chat)
+- [x] Tabulka soutěže z Českého florbalu
+- [ ] Statistiky hráčů (až budou v soutěži data)
+- [ ] Pozvat hráče
 - [ ] Vlastní doména
 - [ ] SMTP přes Resend, aby chodily pozvánky a obnova hesla
