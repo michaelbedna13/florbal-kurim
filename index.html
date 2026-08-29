@@ -875,7 +875,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
     <div style="margin-top:26px">
       <button class="tlacitko-vedlejsi" onclick="zmenJmeno()" style="margin-top:0">Změnit jméno</button>
-      <button class="tlacitko-vedlejsi" onclick="obnovaHesla(true)">Změnit heslo</button>
+      <button class="tlacitko-vedlejsi" onclick="zmenHeslo()">Změnit heslo</button>
       <button class="tlacitko-vedlejsi" onclick="odhlasit()">Odhlásit se</button>
     </div>
   </section>
@@ -1935,6 +1935,16 @@ function naplnHlasky(){
     const e=document.getElementById('h-'+k);
     if(e) e.value=stav.hlasky[k]||'';
   });
+}
+
+async function zmenHeslo(){
+  const nove = prompt('Nové heslo (alespoň 8 znaků):');
+  if(nove === null) return;
+  if(nove.trim().length < 8){ toast('Heslo musí mít aspoň 8 znaků.'); return; }
+
+  const {error} = await db.auth.updateUser({password: nove.trim()});
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  toast('Heslo změněno. Příště se přihlas novým.');
 }
 
 async function zmenJmeno(){
