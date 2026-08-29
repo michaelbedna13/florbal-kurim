@@ -1,0 +1,38 @@
+name: Aktualizace tabulky
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tabulka:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalace knihoven
+        run: pip install requests beautifulsoup4
+
+      - name: Stažení tabulky
+        run: python scripts/tabulka.py
+
+      - name: Uložení změn
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          if git diff --quiet tabulka.json; then
+            echo "Tabulka se nezměnila, není co ukládat."
+          else
+            git add tabulka.json
+            git commit -m "Aktualizace tabulky soutěže"
+            git push
+          fi
