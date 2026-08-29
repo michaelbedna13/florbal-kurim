@@ -782,8 +782,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice"></div>
 
-    <div class="nadpis-sekce" id="nadpis-soutez">Tabulka soutěže</div>
-    <div class="karta" id="tabulkaSouteze" style="padding:16px 14px"></div>
+    <div class="nadpis-sekce">Tabulka soutěže</div>
+    <div class="karta karta-soutez" style="padding:16px 14px"></div>
   </section>
 
   <!-- ============ UDÁLOSTI ============ -->
@@ -807,6 +807,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
     <div class="karta" style="padding:18px 20px">
       <table class="tabulka" id="tabulka-tymu"></table>
     </div>
+
+    <div class="nadpis-sekce">Tabulka soutěže</div>
+    <div class="karta karta-soutez" style="padding:16px 14px"></div>
   </section>
 
   <!-- ============ SPRÁVA ============ -->
@@ -1408,8 +1411,9 @@ function vykresliSeznam(){
 }
 
 async function vykresliSoutez(){
-  const el=document.getElementById('tabulkaSouteze');
-  if(!el) return;
+  const mista=[...document.querySelectorAll('.karta-soutez')];
+  if(!mista.length) return;
+  const vloz=(html)=>mista.forEach(m=>m.innerHTML=html);
   try{
     const odpoved = await fetch('tabulka.json?v=' + Date.now());
     if(!odpoved.ok) throw new Error('nenačteno');
@@ -1417,7 +1421,7 @@ async function vykresliSoutez(){
     if(!d.tymy || !d.tymy.length) throw new Error('prázdné');
 
     const kdy = new Date(d.aktualizovano);
-    el.innerHTML = `
+    vloz(`
       <table class="soutez">
         <colgroup>
           <col class="c-poradi"><col><col class="c-zapasy"><col class="c-skore"><col class="c-body">
@@ -1441,10 +1445,10 @@ async function vykresliSoutez(){
       <div class="soutez-pata">
         <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
         <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
-      </div>`;
+      </div>`);
 
   }catch(e){
-    el.innerHTML = '<p class="prazdno">Tabulka se nenačetla.</p>';
+    vloz('<p class="prazdno">Tabulka se nenačetla.</p>');
   }
 }
 
