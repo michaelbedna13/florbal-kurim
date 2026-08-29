@@ -193,11 +193,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .udalost:active{transform:scale(.99)}
 .udalost:hover{border-color:rgba(237,243,248,.14)}
 .udalost.probehla{opacity:.4}
-.udalost.dalsi{
-  background:linear-gradient(140deg,var(--nebeska-tm),var(--namorni));
-  border-color:transparent;box-shadow:0 16px 34px -22px rgba(78,146,196,.9);
-}
-.udalost.dalsi .u-detail{color:rgba(255,255,255,.7)}
 .u-telo{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .u-radek1{display:flex;align-items:center;gap:10px}
 .u-radek1 .odznak{margin-left:auto;flex:none}
@@ -210,17 +205,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 }
 .u-ucast .lidi{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;
   stroke-linecap:round;stroke-linejoin:round;opacity:.75}
-.udalost.dalsi .u-detail{color:rgba(255,255,255,.72)}
-.udalost.dalsi .u-ucast{color:#fff}
 .odznak{font-size:10.5px;padding:5px 11px;border-radius:99px;font-weight:600;white-space:nowrap}
 .odznak.jdu{background:rgba(67,183,140,.18);color:#67CBA4}
 .odznak.mozna{background:rgba(222,148,64,.18);color:#EDAE68}
 .odznak.nejdu{background:rgba(216,96,122,.18);color:#E58AA0}
 .odznak.ceka{background:var(--nebeska);color:#06121F}
 .odznak.zadny{color:var(--bila-18)}
-.udalost.dalsi .odznak.jdu{background:#fff;color:#0E7A57}
-.udalost.dalsi .odznak.mozna{background:#fff;color:#A6641C}
-.udalost.dalsi .odznak.nejdu{background:#fff;color:#B23A54}
 
 /* ---------- seznam ---------- */
 .filtry{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding:2px;scrollbar-width:none}
@@ -614,10 +604,28 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .typ-chip.trenink{background:rgba(124,182,224,.16);color:var(--trenink)}
 .typ-chip.akce{background:rgba(242,247,251,.14);color:var(--akce)}
 .typ-chip.zapas{background:linear-gradient(90deg,#7CB6E0,#F2F7FB);color:#06121F}
-.udalost.dalsi .typ-chip.trenink,.udalost.dalsi .typ-chip.akce{background:rgba(255,255,255,.18);color:#fff}
 
 /* zápas dostane navíc rámeček, ať nesplyne */
 .udalost.je-zapas{border-color:rgba(124,182,224,.28)}
+/* karta se barví podle tvé odpovědi */
+.udalost.ceka-odpoved{
+  background:linear-gradient(100deg,rgba(124,182,224,.11),rgba(124,182,224,.04));
+  border-color:rgba(124,182,224,.32);
+}
+.udalost.stav-jdu{
+  background:linear-gradient(100deg,rgba(67,183,140,.10),rgba(67,183,140,.03));
+  border-color:rgba(67,183,140,.26);
+}
+.udalost.stav-mozna{
+  background:linear-gradient(100deg,rgba(222,148,64,.10),rgba(222,148,64,.03));
+  border-color:rgba(222,148,64,.26);
+}
+.udalost.stav-nejdu{
+  background:linear-gradient(100deg,rgba(216,96,122,.09),rgba(216,96,122,.03));
+  border-color:rgba(216,96,122,.24);
+}
+/* proběhlé a zrušené zůstávají neutrální */
+.udalost.probehla,.udalost.zrusena{background:var(--panel);border-color:var(--linka)}
 
 /* ---------- zrušená akce ---------- */
 .udalost.zrusena{opacity:.5}
@@ -1369,14 +1377,15 @@ function vykresliDlazdice(kam){
 /* ---------- karta a seznam ---------- */
 function kartaUdalosti(u, sDatem=true){
   const o=mojeOdpoved(u.id), probehla=u.zacatek<new Date();
-  const jeDalsi=budouci()[0]?.id===u.id && !u.zruseno;
   let jde=0; Object.values(stav.prihlasky[u.id]||{}).forEach(x=>{if(x.stav==='jdu')jde++});
   const stavOdznak = u.zruseno
     ? '<span class="odznak zruseno">zrušeno</span>'
     : o ? `<span class="odznak ${o.stav}">${o.stav==='jdu'?'jdu':o.stav==='mozna'?'možná':'nejdu'}</span>`
         : probehla ? '<span class="odznak zadny">—</span>' : '<span class="odznak ceka">odpověz</span>';
+  const zivá = !probehla && !u.zruseno;
+  const barva = !zivá ? '' : (o ? 'stav-'+o.stav : 'ceka-odpoved');
   return `
-    <button class="udalost ${probehla?'probehla':''} ${jeDalsi?'dalsi':''} ${u.zruseno?'zrusena':''} ${u.typ==='zapas'?'je-zapas':''}"
+    <button class="udalost ${probehla?'probehla':''} ${u.zruseno?'zrusena':''} ${u.typ==='zapas'?'je-zapas':''} ${barva}"
             onclick="otevriDetail(${u.id})">
       <span class="u-telo">
         <span class="u-radek1">
