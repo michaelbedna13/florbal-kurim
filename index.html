@@ -53,7 +53,7 @@ body{
   font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.45;
   -webkit-font-smoothing:antialiased;
 }
-button,a,input,select,textarea,.kal-den{touch-action:manipulation}
+button,a,input,select,textarea{touch-action:manipulation}
 button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 :focus-visible{outline:2px solid var(--nebeska);outline-offset:3px;border-radius:8px}
 
@@ -182,46 +182,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .dlazdice .popis{font-size:12px;color:var(--bila-38);font-weight:500}
 .dlazdice .cislo.varovne{color:var(--nejdu)}
 
-/* ---------- kalendář ---------- */
-.kalendar{padding:20px 16px 18px}
-.kal-hlava{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px}
-.kal-hlava button{color:var(--bila-38);font-size:15px;padding:6px 10px;border-radius:10px}
-.kal-hlava button:hover{color:var(--bila)}
-.kal-mesic{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:16px;min-width:118px;text-align:center}
-.kal-mriz{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.kal-den-nazev{text-align:center;font-size:11px;color:var(--bila-18);padding-bottom:9px;font-weight:500}
-.kal-den{
-  aspect-ratio:1;border-radius:16px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:4px;
-  font-size:13.5px;font-weight:500;color:var(--bila-60);position:relative;
-}
-.kal-den.mimo{color:rgba(237,243,248,.09)}
-.kal-den.ma-akci{cursor:pointer;background:rgba(255,255,255,.04)}
-.kal-den.ma-akci:hover{background:rgba(255,255,255,.09)}
-/* zápas — stejný jazyk jako štítek ZÁPAS v seznamu */
-.kal-den.ma-zapas{
-  background:linear-gradient(135deg,#7CB6E0,#F2F7FB);
-  color:#06121F;font-weight:700;
-}
-.kal-den.ma-zapas:hover{background:linear-gradient(135deg,#8FC2E7,#FFFFFF)}
-/* dnešek jen kroužkem, ať se to nebije se zápasem */
-.kal-den.dnes{box-shadow:inset 0 0 0 2px var(--nebeska);color:var(--bila);font-weight:700}
-.kal-den.dnes.ma-zapas{color:#06121F}
-.kal-den.vybrany:not(.dnes){box-shadow:inset 0 0 0 1.5px var(--nebeska)}
-/* proužky místo teček — širší, lépe čitelné */
-.tecky{display:flex;gap:2.5px;height:4px;align-items:center;position:absolute;bottom:6px}
-.tecky i{width:9px;height:3.5px;border-radius:99px;font-style:normal}
-.kal-den.ma-zapas .tecky i{background:rgba(6,18,31,.5)!important}
+/* zápasový přechod — používá ho štítek ZÁPAS a legenda */
 .grad-zapas{background:linear-gradient(90deg,#7CB6E0,#F2F7FB)!important}
 
-/* ---------- rozvrh dne ---------- */
-.rozvrh{display:flex;flex-direction:column}
-.radek{display:flex;gap:13px;align-items:stretch}
-.radek .cas{
-  flex:none;width:46px;padding-top:16px;text-align:right;
-  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:12px;color:var(--bila-18);
-}
-.radek .obsah{flex:1;padding:5px 0}
 .udalost{
   display:flex;gap:13px;padding:15px 16px;width:100%;text-align:left;align-items:center;
   border-radius:20px;background:var(--panel);border:1px solid var(--linka);
@@ -596,7 +559,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .zprava{animation:naskoc .26s ease backwards}
 .menu{transform-origin:top right}
 @keyframes menuIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
-.kal-den.ma-akci{transition:background .18s,box-shadow .18s}
 .udalost,.filtry button,.typ-prepinac button{-webkit-tap-highlight-color:transparent}
 
 @media (prefers-reduced-motion:reduce){
@@ -656,15 +618,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 
 /* zápas dostane navíc rámeček, ať nesplyne */
 .udalost.je-zapas{border-color:rgba(124,182,224,.28)}
-.kal-legenda-typy{display:flex;gap:13px;padding:16px 4px 0;margin-top:14px;border-top:1px solid var(--linka);font-size:11px;color:var(--bila-38);flex-wrap:wrap}
-.kal-legenda-typy span{display:flex;align-items:center;gap:7px}
-.kal-legenda-typy i{width:11px;height:3.5px;border-radius:99px;font-style:normal}
 
 /* ---------- zrušená akce ---------- */
 .udalost.zrusena{opacity:.5}
 .udalost.zrusena .u-nazev{text-decoration:line-through;text-decoration-color:var(--bila-18)}
 .odznak.zruseno{background:rgba(216,96,122,.18);color:#E58AA0}
-.kal-den .tecky i.zrusena{background:var(--bila-18)!important}
 
 /* ---------- upozornění na zápas v týdnu ---------- */
 .zapas-tydne{
@@ -824,8 +782,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice"></div>
 
-    <div class="nadpis-sekce">Kalendář</div>
-    <div class="karta kalendar" id="kalendar"></div>
+    <div class="nadpis-sekce" id="nadpis-soutez">Tabulka soutěže</div>
+    <div class="karta" id="tabulkaSouteze" style="padding:16px 14px"></div>
   </section>
 
   <!-- ============ UDÁLOSTI ============ -->
@@ -844,9 +802,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   <section class="obrazovka" id="o-statistiky">
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice2"></div>
-
-    <div class="nadpis-sekce" id="nadpis-soutez">Tabulka soutěže</div>
-    <div class="karta" id="tabulkaSouteze" style="padding:16px 14px"></div>
 
     <div class="nadpis-sekce">Tým podle účasti</div>
     <div class="karta" style="padding:18px 20px">
@@ -1406,57 +1361,6 @@ function vykresliDlazdice(kam){
     <div class="d"><span class="cislo">${poradi}.<span style="color:var(--bila-18);font-size:20px"> z ${stav.profily.length}</span></span><span class="popis">V týmu podle docházky</span></div>
     <div class="d"><span class="cislo">${s.mlcel}</span><span class="popis">Bez odpovědi</span></div>
     <div class="d"><span class="cislo ${s.pozdniOdhlaseni?'varovne':''}">${s.pozdniOdhlaseni}</span><span class="popis">Odhlášen pozdě</span></div>`;
-}
-
-/* ---------- kalendář ---------- */
-const dnes=new Date();
-let kalMesic=dnes.getMonth(), kalRok=dnes.getFullYear();
-
-function vykresliKalendar(){
-  const prvni=new Date(kalRok,kalMesic,1);
-  const posun=(prvni.getDay()+6)%7;
-  const pocet=new Date(kalRok,kalMesic+1,0).getDate();
-  const minuly=new Date(kalRok,kalMesic,0).getDate();
-
-  let b='';
-  for(let i=posun-1;i>=0;i--) b+=`<div class="kal-den mimo">${minuly-i}</div>`;
-  for(let d=1;d<=pocet;d++){
-    const datum=new Date(kalRok,kalMesic,d);
-    const jeDnes=datum.toDateString()===dnes.toDateString();
-    const toho=stav.udalosti.filter(u=>u.zacatek.toDateString()===datum.toDateString());
-    const maZapas=toho.some(u=>u.typ==='zapas' && !u.zruseno);
-    const ostatni=toho.filter(u=>u.typ!=='zapas');
-    const proužky=ostatni.length
-      ?`<div class="tecky">${ostatni.slice(0,3).map(u=>
-          `<i style="background:${u.zruseno?'var(--bila-18)':TYPY[u.typ].barva}"></i>`).join('')}</div>`:'';
-    b+=`<div class="kal-den ${jeDnes?'dnes':''} ${maZapas?'ma-zapas':''} ${toho.length?'ma-akci':''}"
-         ${toho.length?`onclick="otevriDetail(${(toho.find(x=>x.typ==='zapas')||toho[0]).id})"`:''}>${d}${proužky}</div>`;
-  }
-  const zbyva=(7-((posun+pocet)%7))%7;
-  for(let i=1;i<=zbyva;i++) b+=`<div class="kal-den mimo">${i}</div>`;
-
-  document.getElementById('kalendar').innerHTML=`
-    <div class="kal-hlava">
-      <button onclick="posunMesic(-1)" aria-label="Předchozí měsíc">‹</button>
-      <span class="kal-mesic">${MESICE_1[kalMesic]} ${kalRok}</span>
-      <button onclick="posunMesic(1)" aria-label="Další měsíc">›</button>
-    </div>
-    <div class="kal-mriz">
-      ${['Po','Út','St','Čt','Pá','So','Ne'].map(d=>`<div class="kal-den-nazev">${d}</div>`).join('')}
-      ${b}
-    </div>
-    <div class="kal-legenda-typy">
-      <span><i style="background:none;box-shadow:inset 0 0 0 2px var(--nebeska);width:14px;height:14px;border-radius:5px"></i>Dnes</span>
-      <span><i class="grad-zapas" style="width:14px;height:14px;border-radius:5px"></i>Zápas</span>
-      <span><i style="background:var(--trenink)"></i>Trénink</span>
-      <span><i style="background:var(--akce)"></i>Akce</span>
-    </div>`;
-}
-function posunMesic(k){
-  kalMesic+=k;
-  if(kalMesic<0){kalMesic=11;kalRok--}
-  if(kalMesic>11){kalMesic=0;kalRok++}
-  vykresliKalendar();
 }
 
 /* ---------- karta a seznam ---------- */
@@ -2165,7 +2069,7 @@ function prekresli(){
   if(!stav.ja) return;
   vykresliVyzvu(); vykresliNejblizsi();
   vykresliDlazdice('dlazdice'); vykresliDlazdice('dlazdice2'); vykresliDlazdice('dlazdice3');
-  vykresliKalendar(); vykresliSeznam(); vykresliTabulku(); vykresliSoutez();
+  vykresliSeznam(); vykresliTabulku(); vykresliSoutez();
   vykresliProfil(); vykresliNeodpovedele(); vykresliSpravuHracu();
 }
 
