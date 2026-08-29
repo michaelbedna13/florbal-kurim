@@ -235,7 +235,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   border-color:transparent;box-shadow:0 16px 34px -22px rgba(78,146,196,.9);
 }
 .udalost.dalsi .u-detail{color:rgba(255,255,255,.7)}
-.u-pruh{width:3px;align-self:stretch;border-radius:99px;flex:none;min-height:44px}
 .u-telo{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .u-radek1{display:flex;align-items:center;gap:10px}
 .u-radek1 .odznak{margin-left:auto;flex:none}
@@ -1458,8 +1457,6 @@ function kartaUdalosti(u, sDatem=true){
   return `
     <button class="udalost ${probehla?'probehla':''} ${jeDalsi?'dalsi':''} ${u.zruseno?'zrusena':''} ${u.typ==='zapas'?'je-zapas':''}"
             onclick="otevriDetail(${u.id})">
-      <span class="u-pruh ${u.typ==='zapas'&&!jeDalsi?'grad-zapas':''}"
-            style="background:${jeDalsi?'rgba(255,255,255,.5)':TYPY[u.typ].barva}"></span>
       <span class="u-telo">
         <span class="u-radek1">
           <span class="typ-chip ${u.typ}">${TYPY[u.typ].nazev}</span>
