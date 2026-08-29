@@ -519,6 +519,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .soutez th.body,.soutez td.body{padding-left:4px}
 .soutez td.body{color:var(--bila);font-weight:700}
 .soutez tr.nas td{background:rgba(124,182,224,.08)}
+/* zvýraznění protáhnout přes okraje karty (ta má po stranách 14px) */
+.soutez tr.nas td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.08)}
+.soutez tr.nas td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.08)}
 .soutez tr.nas td.tym{color:var(--nebeska);font-weight:600}
 .soutez tr.nas td.body{color:var(--nebeska)}
 .soutez-pata{
