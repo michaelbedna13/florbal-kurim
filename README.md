@@ -1,54 +1,32 @@
 # Florbal Kuřim
 
 Appka na přihlašování na tréninky, zápasy a klubové akce.
+
 Statická stránka na GitHub Pages, data v Supabase.
+Účet si založí každý sám na webu, potřebuje k tomu klubový kód.
 
-## Stav
-
-Appka je napojená na Supabase — přihlášení, události, účast,
-chat i statistiky jedou z databáze.
-
-Účet vzniká jen pozvánkou z Supabase (Authentication → Users).
-Veřejná registrace je vypnutá.
-
-## Co je v repozitáři
-
+## Soubory
 ```
-index.html                 celá appka, jeden soubor
-manifest.json              aby šla přidat na plochu telefonu
-tabulka.json               tabulka soutěže, aktualizuje ji robot
-scripts/tabulka.py         stahovač tabulky z Českého florbalu
-.github/workflows/         denní spouštění stahovače
-logo.svg                   klubové logo ve křivkách
-logo-256.png               logo pro použití v appce
-icon-192.png               ikona aplikace
-icon-512.png
-icon-maskable-512.png      varianta s okrajem pro Android
-.nojekyll                  ať GitHub soubory nezpracovává Jekyllem
+index.html           celá appka, jeden soubor
+tabulka.json         tabulka soutěže, přepisuje ji robot
+scripts/tabulka.py   stahovač tabulky z Českého florbalu
+.github/workflows/   spouští stahovače dvakrát denně
+manifest.json        aby šla appka přidat na plochu
+logo.svg             klubové logo ve křivkách
+logo-256.png         logo v appce
+icon-*.png           ikony aplikace
+CNAME                doména
+.nojekyll            ať GitHub soubory nezpracovává Jekyllem
 ```
 
-## Nasazení
+## Kde se co mění
 
-1. Nahraj obsah téhle složky do kořene repozitáře (větev `main`).
-2. **Settings → Pages** → Source: `Deploy from a branch`,
-   větev `main`, složka `/ (root)`, ulož.
-3. Za pár minut běží na `https://<uživatel>.github.io/<repozitář>/`.
+| Co | Kde |
+|---|---|
+| Klubový kód, uzávěrky, hlášky, role | ve Správě přímo v appce |
+| Krátké názvy týmů v tabulce | `scripts/tabulka.py`, slovník `KRATKE` |
+| Odkaz na soutěž po skončení sezóny | `scripts/tabulka.py`, proměnná `URL` |
+| Pravidla přístupu k datům | Supabase → SQL Editor |
 
-Repozitář musí být veřejný — Pages na free účtu z privátního nefungují.
-Nevadí to, v kódu není žádné tajemství.
-
-## Přidat na plochu (iPhone)
-
-Safari → Sdílet → Přidat na plochu. Appka se pak otevírá bez adresního
-řádku, jako běžná aplikace.
-
-## Další kroky
-
-- [x] Klubové logo v hlavičce, na přihlašovací obrazovce i v ikonách
-- [x] Supabase projekt + schéma (`florbal-schema.sql`)
-- [x] Napojení na Supabase (přihlášení, události, účast, chat)
-- [x] Tabulka soutěže z Českého florbalu
-- [ ] Statistiky hráčů (až budou v soutěži data)
-- [ ] Pozvat hráče
-- [ ] Vlastní doména
-- [ ] SMTP přes Resend, aby chodily pozvánky a obnova hesla
+## Robot na tabulku
+Běží sám ráno a večer. Ručně: **Actions → Aktualizace tabulky → Run workflow**.
