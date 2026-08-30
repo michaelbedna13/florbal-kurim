@@ -361,7 +361,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 
 /* ---------- detail ---------- */
-.plachta{position:fixed;inset:0;background:rgba(3,5,9,.8);z-index:60;display:none;align-items:flex-end;justify-content:center}
+.plachta{position:fixed;inset:0;background:rgba(4,6,11,.97);z-index:60;display:none;align-items:flex-end;justify-content:center}
 .plachta.otevreno{display:flex}
 .plachta-obsah{
   background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
@@ -402,15 +402,19 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .detail-telo .chat-blok{scroll-margin-bottom:24px}
 
 .sestava{
-  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-  margin:16px 2px 0;font-size:13px;color:var(--bila-38);
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  margin:14px 0 0;padding:11px 14px;
+  border:1px solid var(--linka);border-radius:14px;
+  font-size:13px;color:var(--bila-38);
 }
 .sestava b{
-  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;color:var(--bila);
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;
+  color:var(--bila);margin-right:2px;
 }
-.sestava .oddelovac{color:var(--bila-18)}
+.sestava .tecka{color:var(--bila-18)}
 .sestava .golmani.chybi{color:#E58AA0}
 .sestava .golmani.chybi b{color:var(--nejdu)}
+.sestava.ma-chybu{border-color:rgba(216,96,122,.28);background:rgba(216,96,122,.06)}
 
 .ucastnik.host .jmeno{color:var(--bila-60)}
 .ucastnik .znacka-host{
@@ -1813,11 +1817,11 @@ async function otevriDetail(id, jenPrekresli){
   const golmanuDost = jdeGolmanu >= golmanuPotreba;
 
   const sestava = u.typ==='akce' ? '' : `
-    <div class="sestava">
-      <span><b>${jdeHracu}</b> do pole</span>
-      <span class="oddelovac">·</span>
-      <span class="golmani ${golmanuDost?'':'chybi'}">
-        <b>${jdeGolmanu}</b> ${jdeGolmanu===1?'golman':(jdeGolmanu>=2&&jdeGolmanu<5)?'golmani':'golmanů'}${golmanuDost?'':` — chybí ${golmanuPotreba-jdeGolmanu}`}
+    <div class="sestava ${golmanuDost?'':'ma-chybu'}">
+      <span class="kus"><b>${jdeHracu}</b> do pole</span>
+      <span class="tecka">·</span>
+      <span class="kus golmani ${golmanuDost?'':'chybi'}">
+        <b>${jdeGolmanu}</b> ${jdeGolmanu===1?'golman':(jdeGolmanu>=2&&jdeGolmanu<5)?'golmani':'golmanů'}${golmanuDost?'':` · chybí ${golmanuPotreba-jdeGolmanu}`}
       </span>
     </div>`;
 
@@ -1895,7 +1899,7 @@ async function otevriDetail(id, jenPrekresli){
             </button>`).join('')}
         </div>`:''}
       ${probehla||u.zruseno?'':sestava}
-      ${skupina('Jde',sk.jdu.length?sk.jdu:[],'var(--jdu)')
+      ${skupina('Jde', sk.jdu, 'var(--jdu)')
         ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
       ${blokHostu}
       ${skupina('Možná',sk.mozna,'var(--mozna)')}
