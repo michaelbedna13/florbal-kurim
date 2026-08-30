@@ -372,7 +372,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 @keyframes vyjed{from{transform:translateY(100%)}to{transform:none}}
 @media(prefers-reduced-motion:reduce){.plachta-obsah,.obrazovka.aktivni{animation:none}}
-.uchyt{width:40px;height:4px;background:var(--bila-18);border-radius:99px;margin:11px auto 0}
+.uchyt{width:46px;height:4px;background:var(--pruh-typu, var(--bila-18));border-radius:99px;margin:11px auto 0;opacity:.9}
 .taham .plachta-obsah{transition:none}
 .zavrit-detail{
   position:absolute;top:14px;right:14px;z-index:5;
@@ -387,11 +387,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
   background:radial-gradient(120% 90% at 12% 0%, var(--zare-typu, transparent), transparent 62%);
 }
 .detail-hlava > *{position:relative}
-/* tenký proužek nahoře v barvě typu */
-.plachta-obsah::before{
-  content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
-  background:var(--pruh-typu, transparent);
-}
+/* úchyt nese barvu typu — místo samostatné čáry nahoře */
 .detail-nazev{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;margin:8px 0 12px;letter-spacing:-.01em}
 .detail-radek{display:flex;gap:9px;font-size:13.5px;color:var(--bila-38);margin:0 0 5px}
 .detail-radek b{color:var(--bila);font-weight:600}
