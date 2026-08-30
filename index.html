@@ -359,15 +359,10 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 
 /* ---------- detail ---------- */
-.plachta{position:fixed;inset:0;background:var(--cerna);z-index:60;display:none;align-items:flex-end;justify-content:center}
-/* iOS při klávesnici posune i pevně ukotvenou plachtu a pod ní by
-   vykoukl seznam. Plachta proto pokračuje kus nad i pod obrazovku. */
-.plachta::before,.plachta::after{
-  content:"";position:absolute;left:0;right:0;height:100vh;
-  background:var(--cerna);pointer-events:none;
+.plachta{
+  position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(3,5,9,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
 }
-.plachta::before{bottom:100%}
-.plachta::after{top:100%}
 .plachta.otevreno{display:flex}
 .plachta-obsah{
   background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
@@ -480,6 +475,15 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .zprava.moje .autor{display:none}
 .zprava.moje .bublina{background:var(--namorni);border-radius:18px 4px 18px 18px}
 .zprava.moje .avatar{background:var(--nebeska);color:#06121F;border-color:var(--nebeska)}
+.napsat-zpravu{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;margin-top:14px;padding:13px;border-radius:99px;
+  background:rgba(255,255,255,.06);border:1px solid var(--linka);
+  color:var(--bila-60);font-size:14px;font-weight:600;
+}
+.napsat-zpravu svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.napsat-zpravu:active{color:var(--bila);border-color:var(--nebeska)}
+
 .napis{display:flex;gap:9px;margin-top:16px}
 .napis input{
   flex:1;min-width:0;padding:13px 17px;border-radius:99px;font-family:inherit;font-size:14px;
@@ -1064,6 +1068,20 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
     <div class="modal-akce">
       <button class="zrusit" onclick="zavriModal()">Zpět</button>
       <button class="potvrdit" onclick="potvrdDuvod()">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<!-- okno na napsání zprávy do chatu -->
+<div class="modal" id="modal-zprava" onclick="if(event.target===this)zavriZpravu()">
+  <div class="modal-karta">
+    <h3 class="modal-nadpis">Napsat týmu</h3>
+    <p class="modal-text" id="zprava-akce"></p>
+    <textarea id="zprava-text" placeholder="Vezmu s sebou míčky…"></textarea>
+    <p class="chyba" id="zprava-chyba">Napiš aspoň něco.</p>
+    <div class="modal-akce">
+      <button class="zrusit" onclick="zavriZpravu()">Zpět</button>
+      <button class="potvrdit" onclick="posliZpravu()">Odeslat</button>
     </div>
   </div>
 </div>
@@ -1926,12 +1944,10 @@ async function otevriDetail(id, jenPrekresli){
               <span class="avatar">${iniciály(jmeno)}</span>
               <span><span class="autor">${jmeno}</span><span class="bublina">${escapuj(z.text)}</span></span>
             </div>`;}).join('')||'<p class="prazdno" style="padding:6px 0 10px">Zatím nikdo nic nenapsal.</p>'}
-          <div class="napis">
-            <input type="text" id="nova-zprava" placeholder="Napsat týmu…"
-                   oninput="chatKoncept=this.value" onfocus="zaostriChat(this)"
-                   onkeydown="if(event.key==='Enter')posliZpravu()">
-            <button onclick="posliZpravu()" aria-label="Odeslat">↑</button>
-          </div>
+          <button class="napsat-zpravu" onclick="otevriZpravu()">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Napsat zprávu
+          </button>
         </div>
       </div>
     </div>`;
@@ -1944,8 +1960,6 @@ async function otevriDetail(id, jenPrekresli){
   document.body.classList.add('detail-otevren');
   document.body.style.overflow='hidden';
   if(!window._tahaniPripojeno){ pripojTahani(); window._tahaniPripojeno=true; }
-  const vstupPole=document.getElementById('nova-zprava');
-  if(vstupPole && chatKoncept) vstupPole.value=chatKoncept;
   if(!jenPrekresli) document.getElementById('plachta-obsah').scrollTop=0;
 }
 
@@ -2012,20 +2026,32 @@ async function smazHosta(idHosta){
   toast('Host odebrán.');
 }
 
-function zaostriChat(pole){
-  // až se klávesnice vysune, doscrollujeme chat do viditelné části
-  setTimeout(()=>{
-    pole.closest('.chat-blok')?.scrollIntoView({block:'end', behavior:'smooth'});
-  }, 350);
+function otevriZpravu(){
+  const u=stav.udalosti.find(x=>x.id===otevrenaUdalost);
+  document.getElementById('zprava-akce').textContent =
+    u ? `${nazevUdalosti(u)} · ${DNY_KR[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}` : '';
+  document.getElementById('zprava-text').value = chatKoncept || '';
+  document.getElementById('zprava-chyba').classList.remove('videt');
+  document.getElementById('modal-zprava').classList.add('otevreno');
+  setTimeout(()=>document.getElementById('zprava-text').focus(), 80);
+}
+
+function zavriZpravu(){
+  chatKoncept = document.getElementById('zprava-text').value;
+  document.getElementById('modal-zprava').classList.remove('otevreno');
 }
 
 async function posliZpravu(){
-  const v=document.getElementById('nova-zprava');
-  const text=v.value.trim(); if(!text) return;
-  v.value=''; chatKoncept='';
+  const pole=document.getElementById('zprava-text');
+  const text=pole.value.trim();
+  if(!text){ document.getElementById('zprava-chyba').classList.add('videt'); return; }
+
   const {error} = await db.from('zpravy')
     .insert({udalost_id: otevrenaUdalost, autor_id: stav.ja.id, text});
-  if(error){ toast('Nepovedlo se odeslat: '+error.message); v.value=text; return; }
+  if(error){ toast('Nepovedlo se odeslat: '+error.message); return; }
+
+  chatKoncept=''; pole.value='';
+  document.getElementById('modal-zprava').classList.remove('otevreno');
   await nactiZpravy(otevrenaUdalost);
   otevriDetail(otevrenaUdalost, true);
 }
@@ -2358,7 +2384,8 @@ document.getElementById('typ-prepinac').addEventListener('click', e=>{
 });
 document.addEventListener('keydown', e=>{
   if(e.key!=='Escape') return;
-  if(document.getElementById('menu-plachta').classList.contains('otevreno')) zavriMenu();
+  if(document.getElementById('modal-zprava').classList.contains('otevreno')) zavriZpravu();
+  else if(document.getElementById('menu-plachta').classList.contains('otevreno')) zavriMenu();
   else if(document.getElementById('modal').classList.contains('otevreno')) zavriModal();
   else if(otevrenaUdalost) zavriDetail();
 });
