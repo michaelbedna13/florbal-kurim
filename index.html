@@ -351,10 +351,6 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   min-width:16px;height:16px;border-radius:99px;display:grid;place-items:center;padding:0 4px;
   box-shadow:0 0 0 2px rgba(18,26,40,.8);
 }
-/* Při otevřeném detailu schováme obsah pod ním. Bez toho by se
-   při vysunutí klávesnice odkryl — iOS totiž posune i pevně
-   ukotvenou plachtu a pod ní vykoukne seznam. */
-body.detail-otevren .app{visibility:hidden}
 body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .navbar{transition:opacity .18s}
 
@@ -364,6 +360,14 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 
 /* ---------- detail ---------- */
 .plachta{position:fixed;inset:0;background:var(--cerna);z-index:60;display:none;align-items:flex-end;justify-content:center}
+/* iOS při klávesnici posune i pevně ukotvenou plachtu a pod ní by
+   vykoukl seznam. Plachta proto pokračuje kus nad i pod obrazovku. */
+.plachta::before,.plachta::after{
+  content:"";position:absolute;left:0;right:0;height:100vh;
+  background:var(--cerna);pointer-events:none;
+}
+.plachta::before{bottom:100%}
+.plachta::after{top:100%}
 .plachta.otevreno{display:flex}
 .plachta-obsah{
   background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
@@ -1925,7 +1929,6 @@ async function otevriDetail(id, jenPrekresli){
           <div class="napis">
             <input type="text" id="nova-zprava" placeholder="Napsat týmu…"
                    oninput="chatKoncept=this.value" onfocus="zaostriChat(this)"
-                   onblur="[0,150,400].forEach(t=>setTimeout(upravPlachtu,t))"
                    onkeydown="if(event.key==='Enter')posliZpravu()">
             <button onclick="posliZpravu()" aria-label="Odeslat">↑</button>
           </div>
@@ -1940,7 +1943,6 @@ async function otevriDetail(id, jenPrekresli){
   document.getElementById('plachta').classList.add('otevreno');
   document.body.classList.add('detail-otevren');
   document.body.style.overflow='hidden';
-  upravPlachtu();
   if(!window._tahaniPripojeno){ pripojTahani(); window._tahaniPripojeno=true; }
   const vstupPole=document.getElementById('nova-zprava');
   if(vstupPole && chatKoncept) vstupPole.value=chatKoncept;
@@ -1985,7 +1987,6 @@ function zavriDetail(){
   o.style.transform=''; o.style.transition='';
   document.getElementById('plachta').classList.remove('otevreno');
   document.body.classList.remove('detail-otevren');
-  upravPlachtu();
   document.body.style.overflow=''; otevrenaUdalost=null; chatKoncept='';
 }
 
@@ -2011,36 +2012,8 @@ async function smazHosta(idHosta){
   toast('Host odebrán.');
 }
 
-/* ---------- klávesnice a plachta ----------
-   iOS při vysunutí klávesnice posune celou stránku i s pevně
-   ukotvenou plachtou, takže pod ní vykoukne seznam. Safari ale
-   hlásí skutečnou viditelnou plochu — posadíme plachtu přesně na ni. */
-function upravPlachtu(){
-  const vv = window.visualViewport;
-  const plachta = document.getElementById('plachta');
-  if(!vv || !plachta) return;
-
-  if(!plachta.classList.contains('otevreno')){
-    plachta.style.top = plachta.style.height = plachta.style.bottom = '';
-    return;
-  }
-  plachta.style.top    = vv.offsetTop + 'px';
-  plachta.style.height = vv.height + 'px';
-  plachta.style.bottom = 'auto';
-}
-
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', upravPlachtu);
-  window.visualViewport.addEventListener('scroll', upravPlachtu);
-}
-// stránka se při klávesnici posouvá i sama o sobě
-window.addEventListener('scroll', upravPlachtu, true);
-
 function zaostriChat(pole){
-  // Klávesnice se vysouvá zhruba čtvrt vteřiny a Safari po celou tu dobu
-  // hlásí ještě starou plochu. Jedno oznámení se proto minout může —
-  // přepočítáme plachtu několikrát, než se animace dokončí.
-  [0, 60, 150, 300, 500, 800].forEach(t => setTimeout(upravPlachtu, t));
+  // až se klávesnice vysune, doscrollujeme chat do viditelné části
   setTimeout(()=>{
     pole.closest('.chat-blok')?.scrollIntoView({block:'end', behavior:'smooth'});
   }, 350);
