@@ -351,8 +351,10 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   min-width:16px;height:16px;border-radius:99px;display:grid;place-items:center;padding:0 4px;
   box-shadow:0 0 0 2px rgba(18,26,40,.8);
 }
-/* při otevřeném detailu lištu schováme — je stejně zakrytá
-   a její rozostření by se přepočítávalo během animace */
+/* Při otevřeném detailu schováme obsah pod ním. Bez toho by se
+   při vysunutí klávesnice odkryl — iOS totiž posune i pevně
+   ukotvenou plachtu a pod ní vykoukne seznam. */
+body.detail-otevren .app{visibility:hidden}
 body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .navbar{transition:opacity .18s}
 
@@ -1898,6 +1900,14 @@ async function otevriDetail(id, jenPrekresli){
               <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
             </button>`).join('')}
         </div>`:''}
+      ${probehla||u.zruseno?'':sestava}
+      ${skupina('Jde', sk.jdu, 'var(--jdu)')
+        ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
+      ${blokHostu}
+      ${skupina('Možná',sk.mozna,'var(--mozna)')}
+      ${skupina('Nejde',sk.nejdu,'var(--nejdu)')}
+      ${skupina('Bez odpovědi',sk.mlci,'var(--bila-18)')}
+
       <div class="chat-blok">
         <div class="chat-vnitrek">
           <div class="chat-hlava">
@@ -1921,15 +1931,6 @@ async function otevriDetail(id, jenPrekresli){
           </div>
         </div>
       </div>
-
-      ${probehla||u.zruseno?'':sestava}
-      ${skupina('Jde', sk.jdu, 'var(--jdu)')
-        ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
-      ${blokHostu}
-      ${skupina('Možná',sk.mozna,'var(--mozna)')}
-      ${skupina('Nejde',sk.nejdu,'var(--nejdu)')}
-      ${skupina('Bez odpovědi',sk.mlci,'var(--bila-18)')}
-
     </div>`;
 
   const obsah=document.getElementById('plachta-obsah');
