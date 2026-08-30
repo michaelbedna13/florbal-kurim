@@ -23,6 +23,31 @@ URL = ("https://repre.ceskyflorbal.cz/competition/detail/overview/6JM6"
 NAS_TYM_ID = "44265"          # Florbal Kuřim
 VYSTUP = "tabulka.json"
 
+# Krátké názvy do appky — v tabulce se nevejdou plné.
+# Klíč je ID týmu z adresy /team/detail/overview/<ID>.
+# Chceš-li něco přejmenovat, uprav jen tady.
+KRATKE = {
+    "44336": "Aligators",
+    "44944": "Pohořelice",
+    "44265": "Kuřim",
+    "45560": "Hornets",
+    "43962": "Židenice",
+    "45694": "Bojanovice",
+    "46290": "Shooters Beta",
+    "45741": "Gullivers",
+    "46135": "Letovice",
+    "45818": "Troopers",
+    "46604": "VUT Brno",
+}
+
+
+def kratky_nazev(tym_id, plny):
+    """Známý krátký název, jinak zkrátí plný na první dvě slova."""
+    if tym_id in KRATKE:
+        return KRATKE[tym_id]
+    slova = plny.split()
+    return " ".join(slova[:2]) if len(slova) > 2 else plny
+
 HLAVICKA = {
     "User-Agent": "FlorbalKurim-klubova-appka/1.0 (interni pouziti)"
 }
@@ -95,6 +120,7 @@ def zpracuj(html):
         tym = {
             "poradi": cislo(bunky[0].get_text()),
             "nazev": nazev,
+            "kratky": kratky_nazev(tym_id, nazev),
             "zkratka": zkratka,
             "logo": logo,
             "nas": tym_id == NAS_TYM_ID,
@@ -130,7 +156,7 @@ def main():
     print(f"Uloženo {len(tymy)} týmů do {VYSTUP}")
     for t in tymy:
         znak = "→" if t["nas"] else " "
-        print(f' {znak} {t["poradi"]:>2}. {t["nazev"][:34]:<34} {t["body"]:>3} b')
+        print(f' {znak} {t["poradi"]:>2}. {t["kratky"]:<16} {t["body"]:>3} b   ({t["nazev"]})')
 
 
 if __name__ == "__main__":
