@@ -361,7 +361,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 
 /* ---------- detail ---------- */
-.plachta{position:fixed;inset:0;background:rgba(4,6,11,.97);z-index:60;display:none;align-items:flex-end;justify-content:center}
+.plachta{position:fixed;inset:0;background:var(--cerna);z-index:60;display:none;align-items:flex-end;justify-content:center}
 .plachta.otevreno{display:flex}
 .plachta-obsah{
   background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
@@ -1937,6 +1937,7 @@ async function otevriDetail(id, jenPrekresli){
   document.getElementById('plachta').classList.add('otevreno');
   document.body.classList.add('detail-otevren');
   document.body.style.overflow='hidden';
+  upravPlachtu();
   if(!window._tahaniPripojeno){ pripojTahani(); window._tahaniPripojeno=true; }
   const vstupPole=document.getElementById('nova-zprava');
   if(vstupPole && chatKoncept) vstupPole.value=chatKoncept;
@@ -1981,6 +1982,7 @@ function zavriDetail(){
   o.style.transform=''; o.style.transition='';
   document.getElementById('plachta').classList.remove('otevreno');
   document.body.classList.remove('detail-otevren');
+  upravPlachtu();
   document.body.style.overflow=''; otevrenaUdalost=null; chatKoncept='';
 }
 
@@ -2006,9 +2008,33 @@ async function smazHosta(idHosta){
   toast('Host odebrán.');
 }
 
+/* ---------- klávesnice a plachta ----------
+   iOS při vysunutí klávesnice posune celou stránku i s pevně
+   ukotvenou plachtou, takže pod ní vykoukne seznam. Safari ale
+   hlásí skutečnou viditelnou plochu — posadíme plachtu přesně na ni. */
+function upravPlachtu(){
+  const vv = window.visualViewport;
+  const plachta = document.getElementById('plachta');
+  if(!vv || !plachta) return;
+
+  if(!plachta.classList.contains('otevreno')){
+    plachta.style.top = plachta.style.height = plachta.style.bottom = '';
+    return;
+  }
+  plachta.style.top    = vv.offsetTop + 'px';
+  plachta.style.height = vv.height + 'px';
+  plachta.style.bottom = 'auto';
+}
+
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', upravPlachtu);
+  window.visualViewport.addEventListener('scroll', upravPlachtu);
+}
+
 function zaostriChat(pole){
-  // klávesnice zmenší plochu — počkáme, až se objeví, a doscrollujeme
+  // až se klávesnice objeví, doscrollujeme pole do viditelné části
   setTimeout(()=>{
+    upravPlachtu();
     pole.closest('.chat-blok')?.scrollIntoView({block:'end', behavior:'smooth'});
   }, 300);
 }
