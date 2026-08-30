@@ -1923,6 +1923,7 @@ async function otevriDetail(id, jenPrekresli){
           <div class="napis">
             <input type="text" id="nova-zprava" placeholder="Napsat týmu…"
                    oninput="chatKoncept=this.value" onfocus="zaostriChat(this)"
+                   onblur="[0,150,400].forEach(t=>setTimeout(upravPlachtu,t))"
                    onkeydown="if(event.key==='Enter')posliZpravu()">
             <button onclick="posliZpravu()" aria-label="Odeslat">↑</button>
           </div>
@@ -2030,13 +2031,17 @@ if(window.visualViewport){
   window.visualViewport.addEventListener('resize', upravPlachtu);
   window.visualViewport.addEventListener('scroll', upravPlachtu);
 }
+// stránka se při klávesnici posouvá i sama o sobě
+window.addEventListener('scroll', upravPlachtu, true);
 
 function zaostriChat(pole){
-  // až se klávesnice objeví, doscrollujeme pole do viditelné části
+  // Klávesnice se vysouvá zhruba čtvrt vteřiny a Safari po celou tu dobu
+  // hlásí ještě starou plochu. Jedno oznámení se proto minout může —
+  // přepočítáme plachtu několikrát, než se animace dokončí.
+  [0, 60, 150, 300, 500, 800].forEach(t => setTimeout(upravPlachtu, t));
   setTimeout(()=>{
-    upravPlachtu();
     pole.closest('.chat-blok')?.scrollIntoView({block:'end', behavior:'smooth'});
-  }, 300);
+  }, 350);
 }
 
 async function posliZpravu(){
