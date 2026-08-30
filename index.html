@@ -1898,14 +1898,6 @@ async function otevriDetail(id, jenPrekresli){
               <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
             </button>`).join('')}
         </div>`:''}
-      ${probehla||u.zruseno?'':sestava}
-      ${skupina('Jde', sk.jdu, 'var(--jdu)')
-        ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
-      ${blokHostu}
-      ${skupina('Možná',sk.mozna,'var(--mozna)')}
-      ${skupina('Nejde',sk.nejdu,'var(--nejdu)')}
-      ${skupina('Bez odpovědi',sk.mlci,'var(--bila-18)')}
-
       <div class="chat-blok">
         <div class="chat-vnitrek">
           <div class="chat-hlava">
@@ -1929,6 +1921,15 @@ async function otevriDetail(id, jenPrekresli){
           </div>
         </div>
       </div>
+
+      ${probehla||u.zruseno?'':sestava}
+      ${skupina('Jde', sk.jdu, 'var(--jdu)')
+        ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
+      ${blokHostu}
+      ${skupina('Možná',sk.mozna,'var(--mozna)')}
+      ${skupina('Nejde',sk.nejdu,'var(--nejdu)')}
+      ${skupina('Bez odpovědi',sk.mlci,'var(--bila-18)')}
+
     </div>`;
 
   const obsah=document.getElementById('plachta-obsah');
