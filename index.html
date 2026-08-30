@@ -573,7 +573,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 .soutez td.tym span{display:flex;align-items:center;gap:7px;min-width:0}
 .soutez td.tym em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.soutez .znak{width:20px;height:20px;flex:none;object-fit:contain;border-radius:4px;background:rgba(255,255,255,.06)}
+.soutez .znak{width:21px;height:21px;flex:none;object-fit:contain}
 .soutez th.body,.soutez td.body{padding-left:4px}
 .soutez td.body{color:var(--bila);font-weight:700}
 .soutez tbody tr.nas td{background:rgba(124,182,224,.10)}
@@ -1510,7 +1510,7 @@ function vykresliDlazdice(kam){
     <div class="d"><span class="cislo">${cf.obdrzene ?? 0}</span><span class="popis">Obdržených branek</span></div>
     <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>`
     : `
-    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'}</span></div>
+    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'} v soutěži</span></div>
     <div class="d"><span class="cislo">${cf.asistence ?? 0}</span><span class="popis">${(cf.asistence ?? 0)===1?'Asistence':'Asistencí'}</span></div>`;
 
   el.innerHTML=`
@@ -2361,6 +2361,15 @@ function prekresli(){
 
 /* předvyplnit dnešek ve formuláři */
 document.getElementById('f-datum').value = naDatum(new Date());
+
+/* ---------- service worker ----------
+   Umožní přidat appku na plochu i na Androidu a v prohlížeči
+   na počítači, a při výpadku signálu ukáže poslední stav. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 
 nastartuj();
 
