@@ -902,16 +902,16 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice2"></div>
 
-    <div class="nadpis-sekce">Tým podle účasti</div>
-    <div class="karta" style="padding:18px 20px">
-      <table class="tabulka" id="tabulka-tymu"></table>
-    </div>
-
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
 
     <div class="nadpis-sekce">Kanadské bodování</div>
     <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
+
+    <div class="nadpis-sekce">Tým podle účasti</div>
+    <div class="karta" style="padding:18px 20px">
+      <table class="tabulka" id="tabulka-tymu"></table>
+    </div>
   </section>
 
   <!-- ============ SPRÁVA ============ -->
@@ -1075,10 +1075,9 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 <!-- okno na napsání zprávy do chatu -->
 <div class="modal" id="modal-zprava" onclick="if(event.target===this)zavriZpravu()">
   <div class="modal-karta">
-    <h3 class="modal-nadpis">Napsat týmu</h3>
-    <p class="modal-text" id="zprava-akce"></p>
-    <textarea id="zprava-text" placeholder="Jsem kokot..."></textarea>
-    <p class="chyba" id="zprava-chyba">Tak seš čurák?.</p>
+    <h3 class="modal-nadpis" style="margin-bottom:14px">Napsat týmu</h3>
+    <textarea id="zprava-text" placeholder="Jsem kokot…"></textarea>
+    <p class="chyba" id="zprava-chyba">Tak seš čurák?</p>
     <div class="modal-akce">
       <button class="zrusit" onclick="zavriZpravu()">Zpět</button>
       <button class="potvrdit" onclick="posliZpravu()">Odeslat</button>
@@ -2027,9 +2026,6 @@ async function smazHosta(idHosta){
 }
 
 function otevriZpravu(){
-  const u=stav.udalosti.find(x=>x.id===otevrenaUdalost);
-  document.getElementById('zprava-akce').textContent =
-    u ? `${nazevUdalosti(u)} · ${DNY_KR[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}` : '';
   document.getElementById('zprava-text').value = chatKoncept || '';
   document.getElementById('zprava-chyba').classList.remove('videt');
   document.getElementById('modal-zprava').classList.add('otevreno');
