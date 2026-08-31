@@ -28,7 +28,7 @@ HRACI_SLOUPCE = {
 }
 BRANKARI_SLOUPCE = {
     "Z": "zapasy", "ZCH": "odchytane", "MIN": "minuty", "BO": "obdrzene",
-    "SO": "cista_konta", "V": "vyhry",
+    "ø BO": "prumer_obdrzenych", "SO": "cista_konta", "V": "vyhry",
 }
 
 
@@ -121,7 +121,8 @@ def main():
     for h in hraci[:5]:
         print(f'  {h["jmeno"]:<22} {h.get("branky",0)}+{h.get("asistence",0)} = {h.get("body",0)} b')
     for b in brankari:
-        print(f'  {b["jmeno"]:<22} {b.get("obdrzene",0)} obdržených, {b.get("cista_konta",0)} čistých kont')
+        print(f'  {b["jmeno"]:<22} {b.get("vyhry",0)} výher, '
+              f'{b.get("cista_konta",0)} čistých kont, {b.get("obdrzene",0)} obdržených')
 
 
 if __name__ == "__main__":
