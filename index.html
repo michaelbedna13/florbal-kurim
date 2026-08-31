@@ -1529,8 +1529,8 @@ function vykresliDlazdice(kam){
 
   // statistiky ze soutěže; než se odehraje první turnaj, jsou to nuly
   const spodni = jeGolman ? `
-    <div class="d"><span class="cislo">${cf.obdrzene ?? 0}</span><span class="popis">Obdržených branek</span></div>
-    <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>`
+    <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>
+    <div class="d"><span class="cislo">${cf.vyhry ?? 0}</span><span class="popis">${(cf.vyhry ?? 0)===1?'Výhra':'Výher'}</span></div>`
     : `
     <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'}</span></div>
     <div class="d"><span class="cislo">${cf.asistence ?? 0}</span><span class="popis">${(cf.asistence ?? 0)===1?'Asistence':'Asistencí'}</span></div>`;
@@ -1617,14 +1617,15 @@ function vykresliKanadske(){
   const tabulkaBrankaru = !d.brankari?.length ? '' : `
     <div class="kb-nadpis">Brankáři</div>
     <table class="kb">
-      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-body"></colgroup>
-      <thead><tr><th></th><th class="hrac">Brankář</th><th>ZCH</th><th>BO</th><th class="body">SO</th></tr></thead>
+      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-cislo"><col class="c-body"></colgroup>
+      <thead><tr><th></th><th class="hrac">Brankář</th><th>ZCH</th><th>BO</th><th>ø BO</th><th class="body">SO</th></tr></thead>
       <tbody>${d.brankari.map((b,i)=>`
         <tr class="${b.klic===mujKlic?'ja':''}">
           <td class="poradi">${i+1}.</td>
           <td class="hrac">${b.jmeno}</td>
           <td>${b.odchytane ?? 0}</td>
           <td>${b.obdrzene ?? 0}</td>
+          <td>${(b.prumer_obdrzenych ?? 0).toString().replace('.', ',')}</td>
           <td class="body">${b.cista_konta ?? 0}</td>
         </tr>`).join('')}</tbody>
     </table>`;
