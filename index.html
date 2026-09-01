@@ -1833,6 +1833,11 @@ async function otevriDetail(id, jenPrekresli){
 
   // kolik golmanů je potřeba — na zápas stačí jeden, na trénink dva.
   // Dá se přenést do Správy, zatím se berou výchozí hodnoty.
+  // v každé skupině řadíme podle toho, kdo se ozval dřív
+  ['jdu','mozna','nejdu'].forEach(k=>{
+    sk[k].sort((a,b)=> new Date(a.zmeneno) - new Date(b.zmeneno));
+  });
+
   const golmanuPotreba = u.typ==='zapas'
     ? (parseInt(stav.nastaveni['golmanu_zapas']   ?? '1', 10) || 1)
     : (parseInt(stav.nastaveni['golmanu_trenink'] ?? '2', 10) || 2);
@@ -1850,9 +1855,7 @@ async function otevriDetail(id, jenPrekresli){
   const kdy=(od)=>{
     if(!od.zmeneno) return '';
     const d=new Date(od.zmeneno);
-    if(od.pozde) return `${DNY_KR[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. ${cas(d)}`;
-    const dni=Math.round((new Date(u.zacatek)-d)/864e5);
-    return dni<=0 ? 'dnes' : dni===1 ? 'den předem' : `${dni} dní předem`;
+    return `${DNY_KR[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. ${cas(d)}`;
   };
   const uz=uzaverkaPro(u, stav.ja.role);
   const poUzaverce = new Date() > uz;
