@@ -645,10 +645,19 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 /* ---------- sestava na zápas ---------- */
 
 .hriste{
-  --ikona:58px;position:relative;margin-top:14px;
+  --ikona:58px;position:relative;margin-top:10px;
   display:flex;flex-direction:column;gap:30px;padding:48px 10px 34px;border-radius:16px;
   background:radial-gradient(ellipse at 50% 45%,rgba(124,182,224,.06),transparent 62%);
 }
+.lajny{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:14px}
+.lajny-popis{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);margin-right:2px}
+.lajny button{
+  min-width:30px;height:28px;padding:0 8px;border-radius:9px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-38);
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;
+}
+.lajny button.aktivni{background:var(--nebeska);border-color:var(--nebeska);color:#06121F}
+.lajny button.pridat{color:var(--bila-18);font-weight:500}
 .hriste-plan{
   position:absolute;inset:8px 6px;width:calc(100% - 12px);height:calc(100% - 16px);
   opacity:.18;pointer-events:none;
@@ -3192,19 +3201,33 @@ function kandidatiSestavy(u){
     .sort((a,b) => a.jmeno.localeCompare(b.jmeno,'cs'));
 }
 
-function sestavaProUdalost(id){
+/* Brankář má lajnu 0 a je společný, hráči v poli lajnu 1 a výš. */
+function sestavaProUdalost(id, lajna){
   const podle = {};
   Object.keys(POSTY).forEach(k => podle[k] = []);
   (stav.sestava[id] || [])
     .slice()
     .sort((a,b) => a.poradi - b.poradi)
-    .forEach(r => { if(podle[r.post]) podle[r.post].push(r); });
+    .forEach(r => {
+      const patri = r.post === 'brankar' ? true : r.lajna === lajna;
+      if(patri && podle[r.post]) podle[r.post].push(r);
+    });
   return podle;
 }
 
+/* Kolik lajn ukázat: co je v datech, plus ta právě rozdělaná. */
+function pocetLajn(id){
+  const v = (stav.sestava[id] || []).filter(r => r.post !== 'brankar').map(r => r.lajna);
+  return Math.min(4, Math.max(1, aktivniLajna, ...(v.length ? v : [1])));
+}
+
+let aktivniLajna = 1;
+
 function hristeHTML(u){
   const trener = jeTrener();
-  const podle = sestavaProUdalost(u.id);
+  const lajn = pocetLajn(u.id);
+  if(aktivniLajna > lajn) aktivniLajna = lajn;
+  const podle = sestavaProUdalost(u.id, aktivniLajna);
   const jmenoHrace = (id) => (stav.profily.find(p => p.id === id) || {}).jmeno || '—';
   const cisloHrace = (id) => (stav.profily.find(p => p.id === id) || {}).cislo;
 
@@ -3232,7 +3255,7 @@ function hristeHTML(u){
                 ${odpoved !== 'jdu' ? `<span class="tecka" style="background:${TECKA[odpoved]}"></span>` : ''}
                 <span class="jm">${escapuj(kratkeJmeno(jmenoHrace(r.hrac_id)))}</span>`;
               return trener
-                ? `<button class="post-hrac" onclick="otevriAkceHrace('${r.hrac_id}', ${u.id})">${telo}</button>`
+                ? `<button class="post-hrac" onclick="otevriAkceHrace('${r.hrac_id}', ${u.id}, ${r.lajna})">${telo}</button>`
                 : `<span class="post-hrac">${telo}</span>`;
             }).join('')}
           </div>
@@ -3240,7 +3263,21 @@ function hristeHTML(u){
       }).join('')}
     </div>`).join('');
 
-  return `<div class="hriste">${PLAN_HRISTE}${rady}</div>`;
+  const prepinac = (lajn > 1 || trener) ? `
+    <div class="lajny">
+      <span class="lajny-popis">Lajna</span>
+      ${Array.from({length:lajn}, (_,i) => i+1).map(n =>
+        `<button class="${n===aktivniLajna?'aktivni':''}" onclick="prepniLajnu(${n})">${n}</button>`).join('')}
+      ${(trener && lajn < 4)
+        ? `<button class="pridat" onclick="prepniLajnu(${lajn+1})" aria-label="Přidat lajnu">+</button>` : ''}
+    </div>` : '';
+
+  return `${prepinac}<div class="hriste">${PLAN_HRISTE}${rady}</div>`;
+}
+
+function prepniLajnu(n){
+  aktivniLajna = Math.max(1, Math.min(4, n));
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
 /* ---------- výběr hráče na post ---------- */
@@ -3255,7 +3292,7 @@ function otevriVyberHrace(post, udalostId){
   if(!u) return;
   vyberPost = post;
 
-  const podle = sestavaProUdalost(u.id);
+  const podle = sestavaProUdalost(u.id, aktivniLajna);
   const kde = {};
   Object.entries(podle).forEach(([k, lidi]) => lidi.forEach(r => kde[r.hrac_id] = POSTY[k]));
 
@@ -3267,6 +3304,7 @@ function otevriVyberHrace(post, udalostId){
 
   document.getElementById('vyberObsah').innerHTML = `
     <h3>Koho na post ${POSTY[post].toLowerCase()}?</h3>
+    ${post !== 'brankar' ? `<p class="prazdno" style="padding:0 0 12px;text-align:left">${aktivniLajna}. lajna</p>` : ''}
     ${lidi.length ? lidi.map(p => {
       const odpoved = stav.prihlasky[u.id]?.[p.id]?.stav;
       return `<button class="vyber-radek" onclick="postavHrace('${p.id}')">
@@ -3291,56 +3329,60 @@ async function postavHrace(hracId){
   const post = vyberPost;
   zavriVyberHrace();
 
-  const poradi = sestavaProUdalost(u.id)[post].length;
+  const lajna = post === 'brankar' ? 0 : aktivniLajna;
+  const poradi = sestavaProUdalost(u.id, aktivniLajna)[post].length;
+  /* Klíč je lajna + hráč, takže přesun v rámci lajny řádek přepíše. */
   const {error} = await db.from('sestava').upsert(
-    {udalost_id:u.id, hrac_id:hracId, post, poradi},
-    {onConflict:'udalost_id,hrac_id'});
+    {udalost_id:u.id, hrac_id:hracId, post, poradi, lajna},
+    {onConflict:'udalost_id,lajna,hrac_id'});
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
   if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
-function otevriAkceHrace(hracId, udalostId){
+function otevriAkceHrace(hracId, udalostId, lajna){
   vyberUdalost = udalostId ?? null;
   const u = sestavaUdalost();
   if(!u) return;
   const p = stav.profily.find(x => x.id === hracId) || {};
-  const kde = (stav.sestava[u.id] || []).find(r => r.hrac_id === hracId);
+  const kde = (stav.sestava[u.id] || []).find(r => r.hrac_id === hracId && r.lajna === lajna);
 
   document.getElementById('vyberObsah').innerHTML = `
     <h3>${escapuj(p.jmeno || '')}${p.cislo != null ? ' · #'+p.cislo : ''}</h3>
     <p class="prazdno" style="padding:0 0 12px;text-align:left">
-      Teď stojí na postu ${kde ? POSTY[kde.post].toLowerCase() : '—'}.</p>
-    ${Object.entries(POSTY).filter(([k]) => !kde || k !== kde.post).map(([k,n]) =>
-      `<button class="vyber-radek" onclick="presunHrace('${hracId}','${k}')">
+      ${kde && kde.post === 'brankar'
+        ? 'Brankář, společný pro všechny lajny.'
+        : `${lajna}. lajna · post ${kde ? POSTY[kde.post].toLowerCase() : '—'}`}</p>
+    ${Object.entries(POSTY).filter(([k]) => k !== 'brankar' && (!kde || k !== kde.post)).map(([k,n]) =>
+      `<button class="vyber-radek" onclick="presunHrace('${hracId}','${k}', ${lajna})">
          <span class="jm">Přesunout na post ${n.toLowerCase()}</span>
        </button>`).join('')}
     <button class="vyber-radek" style="border-color:rgba(216,96,122,.3);color:var(--nejdu)"
-            onclick="odeberZeSestavy('${hracId}')">
+            onclick="odeberZeSestavy('${hracId}', ${lajna})">
       <span class="jm">Odebrat ze sestavy</span>
     </button>`;
   document.getElementById('vyberHrace').classList.add('otevreno');
 }
 
-async function presunHrace(hracId, post){
+async function presunHrace(hracId, post, lajna){
   const u = sestavaUdalost();
   if(!u) return;
   zavriVyberHrace();
-  const poradi = sestavaProUdalost(u.id)[post].length;
+  const poradi = sestavaProUdalost(u.id, lajna)[post].length;
   const {error} = await db.from('sestava').upsert(
-    {udalost_id:u.id, hrac_id:hracId, post, poradi},
-    {onConflict:'udalost_id,hrac_id'});
+    {udalost_id:u.id, hrac_id:hracId, post, poradi, lajna},
+    {onConflict:'udalost_id,lajna,hrac_id'});
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
   if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
-async function odeberZeSestavy(hracId){
+async function odeberZeSestavy(hracId, lajna){
   zavriVyberHrace();
   const u = sestavaUdalost();
   if(!u) return;
   const {error} = await db.from('sestava').delete()
-    .eq('udalost_id', u.id).eq('hrac_id', hracId);
+    .eq('udalost_id', u.id).eq('hrac_id', hracId).eq('lajna', lajna);
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
   if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
