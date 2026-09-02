@@ -649,11 +649,15 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .sestava-hlava span{font-size:11.5px;color:var(--bila-18)}
 
 .hriste{
-  --ikona:58px;
-  display:flex;flex-direction:column;gap:20px;padding:20px 8px 16px;border-radius:16px;
+  --ikona:58px;position:relative;
+  display:flex;flex-direction:column;gap:20px;padding:34px 10px 26px;border-radius:16px;
   background:radial-gradient(ellipse at 50% 45%,rgba(124,182,224,.06),transparent 62%);
 }
-.hriste-rada{display:grid;gap:8px}
+.hriste-plan{
+  position:absolute;inset:8px 6px;width:calc(100% - 12px);height:calc(100% - 16px);
+  opacity:.18;pointer-events:none;
+}
+.hriste-rada{display:grid;gap:8px;position:relative;z-index:1}
 .hriste-rada.dva{grid-template-columns:1fr 1fr}
 .hriste-rada.stred{max-width:52%;margin:0 auto;width:100%}
 
@@ -3140,6 +3144,24 @@ const RADY = [
 ];
 const TECKA = {jdu:'var(--jdu)', mozna:'var(--mozna)', nejdu:'var(--nejdu)'};
 
+/* Schematický plán hřiště pod sestavou. Není v poměru 40 x 20 jako doopravdy —
+   na výšku telefonu by se skutečné proporce nevešly, tak je zkrácený.
+   Naše branka je dole, u brankáře. */
+const PLAN_HRISTE = `
+<svg class="hriste-plan" viewBox="0 0 200 208" preserveAspectRatio="none" aria-hidden="true">
+  <g fill="none" stroke="var(--nebeska)" stroke-width="1" vector-effect="non-scaling-stroke">
+    <rect x="2" y="2" width="196" height="204" rx="34"/>
+    <line x1="2" y1="104" x2="198" y2="104"/>
+    <circle cx="100" cy="104" r="3" fill="var(--nebeska)" stroke="none"/>
+    <rect x="70" y="10" width="60" height="20" rx="3"/>
+    <rect x="85" y="10" width="30" height="9" rx="2"/>
+    <rect x="90" y="4" width="20" height="6" rx="1.5"/>
+    <rect x="70" y="178" width="60" height="20" rx="3"/>
+    <rect x="85" y="189" width="30" height="9" rx="2"/>
+    <rect x="90" y="198" width="20" height="6" rx="1.5"/>
+  </g>
+</svg>`;
+
 /* Na hřišti je málo místa: „Jan Bednář" -> „Jan B.".
    Tři Bednáře od sebe stejně rozliší číslo dresu. */
 function kratkeJmeno(cele){
@@ -3238,7 +3260,7 @@ function vykresliSestavu(){
         <b>Sestava</b>
         <span>${escapuj(nazevUdalosti(u))}</span>
       </div>
-      <div class="hriste">${hriste}</div>
+      <div class="hriste">${PLAN_HRISTE}${hriste}</div>
     </div>`;
 }
 
