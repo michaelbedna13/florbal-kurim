@@ -649,40 +649,30 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .sestava-hlava span{font-size:11.5px;color:var(--bila-18)}
 
 .hriste{
-  display:flex;flex-direction:column;gap:9px;padding:12px 10px;border-radius:16px;
-  background:
-    radial-gradient(circle at 50% 42%,rgba(124,182,224,.07),transparent 58%),
-    var(--panel-2);
-  border:1px solid var(--linka);
+  display:flex;flex-direction:column;gap:16px;padding:16px 8px 14px;border-radius:16px;
+  background:radial-gradient(ellipse at 50% 45%,rgba(124,182,224,.06),transparent 62%);
 }
-.hriste-rada{display:grid;gap:9px}
+.hriste-rada{display:grid;gap:8px}
 .hriste-rada.dva{grid-template-columns:1fr 1fr}
-.hriste-rada.stred{max-width:60%;margin:0 auto;width:100%}
+.hriste-rada.stred{max-width:52%;margin:0 auto;width:100%}
 
-.post{
-  border:1px dashed rgba(237,243,248,.14);border-radius:13px;padding:8px 9px 7px;
-  background:rgba(237,243,248,.02);min-height:64px;min-width:0;
-  display:flex;flex-direction:column;gap:6px;
+.post{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.post-ikona{
+  border:none;background:none;padding:0;line-height:0;
+  color:rgba(237,243,248,.16);transition:color .18s;
 }
-.post.obsazeny{border-style:solid;border-color:var(--linka);background:rgba(124,182,224,.05)}
-.post-nazev{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18)}
-.post-lidi{display:flex;flex-direction:column;gap:5px;min-width:0}
+.post.obsazeny .post-ikona{color:var(--nebeska)}
+.post-ikona:active{color:var(--bila)}
+.post-lidi{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:100%}
 .post-hrac{
-  display:flex;align-items:center;gap:5px;font-size:12.5px;line-height:1.25;width:100%;
-  background:var(--panel);border:1px solid var(--linka);border-radius:9px;padding:5px 6px;
-  color:var(--bila);text-align:left;
+  display:flex;align-items:baseline;justify-content:center;gap:4px;
+  border:none;background:none;padding:1px 2px;max-width:100%;
+  font-size:11.5px;line-height:1.35;color:var(--bila-60);
 }
-button.post-hrac:active{border-color:var(--nebeska)}
-.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11.5px;color:var(--nebeska);flex:none}
-.post-hrac .jm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.post-hrac .tecka{width:6px;height:6px;border-radius:50%;flex:none}
-.post-plus{
-  align-self:flex-start;margin-top:auto;width:24px;height:24px;border-radius:8px;
-  border:1px solid var(--linka);background:var(--panel);color:var(--bila-38);
-  font-size:14px;line-height:1;padding:0;
-}
-.post-plus:active{border-color:var(--nebeska);color:var(--nebeska)}
-
+.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:var(--nebeska);flex:none}
+.post-hrac .jm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.post-hrac .tecka{width:5px;height:5px;border-radius:50%;flex:none;align-self:center}
+button.post-hrac:active{color:var(--bila)}
 .sestava-zbyva{margin-top:11px;font-size:11.5px;color:var(--bila-38);line-height:1.55}
 .sestava-zbyva b{font-weight:600;color:var(--bila-18)}
 
@@ -1286,6 +1276,10 @@ button.post-hrac:active{border-color:var(--nebeska)}
     <stop offset="0" stop-color="#DCEEFB" stop-opacity=".34"/>
     <stop offset="1" stop-color="#DCEEFB" stop-opacity="0"/>
   </radialGradient>
+  <symbol id="ikona-hrac" viewBox="0 0 26 30">
+    <path fill-rule="evenodd" d="M13 1.4a7 7 0 100 14 7 7 0 000-14zM6.6 5.5h12.8v2.2H6.6z"/>
+    <path d="M13 16.4c-4.7 0-8.6 3.3-9.6 7.8l-.8 3.7c-.2 1 .5 1.9 1.5 1.9h17.8c1 0 1.7-.9 1.5-1.9l-.8-3.7c-1-4.5-4.9-7.8-9.6-7.8z"/>
+  </symbol>
   <clipPath id="hl-telo"><rect x="14" y="14" width="572" height="772" rx="40"/></clipPath>
 </defs></svg>
 
@@ -3138,11 +3132,11 @@ const RADY = [
 ];
 const TECKA = {jdu:'var(--jdu)', mozna:'var(--mozna)', nejdu:'var(--nejdu)'};
 
-/* Na hřišti je málo místa: „Jan Bednář" -> „J. Bednář".
+/* Na hřišti je málo místa: „Jan Bednář" -> „Jan B.".
    Tři Bednáře od sebe stejně rozliší číslo dresu. */
 function kratkeJmeno(cele){
   const c = (cele||'').trim().split(/\s+/);
-  return c.length < 2 ? (cele||'') : c[0].charAt(0) + '. ' + c[c.length-1];
+  return c.length < 2 ? (cele||'') : c[0] + ' ' + c[c.length-1].charAt(0) + '.';
 }
 
 /* Nejbližší akce, ale jen když je to zápas. */
@@ -3185,23 +3179,25 @@ function vykresliSestavu(){
     <div class="hriste-rada ${rada.tr}">
       ${rada.posty.map(k => {
         const lidi = podle[k];
+        const ikona = `<svg width="26" height="30" aria-hidden="true"><use href="#ikona-hrac" fill="currentColor"/></svg>`;
         return `
         <div class="post ${lidi.length ? 'obsazeny' : ''}">
-          <div class="post-nazev">${POSTY[k]}</div>
+          ${trener
+            ? `<button class="post-ikona" onclick="otevriVyberHrace('${k}')"
+                       aria-label="Přidat na post ${POSTY[k]}">${ikona}</button>`
+            : `<span class="post-ikona">${ikona}</span>`}
           <div class="post-lidi">
             ${lidi.map(r => {
               const odpoved = stav.prihlasky[u.id]?.[r.hrac_id]?.stav || 'nejdu';
               const c = cisloHrace(r.hrac_id);
-              const telo = `${c != null ? `<b>#${c}</b>` : ''}
-                <span class="tecka" style="background:${TECKA[odpoved]}"></span>
+              const telo = `${c != null ? `<b>${c}</b>` : ''}
+                ${odpoved !== 'jdu' ? `<span class="tecka" style="background:${TECKA[odpoved]}"></span>` : ''}
                 <span class="jm">${escapuj(kratkeJmeno(jmenoHrace(r.hrac_id)))}</span>`;
               return trener
                 ? `<button class="post-hrac" onclick="otevriAkceHrace('${r.hrac_id}')">${telo}</button>`
                 : `<span class="post-hrac">${telo}</span>`;
             }).join('')}
           </div>
-          ${trener ? `<button class="post-plus" onclick="otevriVyberHrace('${k}')"
-                              aria-label="Přidat na post ${POSTY[k]}">+</button>` : ''}
         </div>`;
       }).join('')}
     </div>`).join('');
