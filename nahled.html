@@ -1,0 +1,3064 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0A1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Florbal Kuřim</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* barvy z dresů */
+  --nebeska:#7CB6E0;       /* světlá modrá z domácího dresu */
+  --nebeska-tm:#4E92C4;
+  --namorni:#16375C;
+  --namorni-tm:#0D2340;
+  --cerna:#06080C;
+  --panel:#111722;
+  --panel-2:#0C1119;
+  --bila:#EDF3F8;
+  --bila-60:rgba(237,243,248,.68);
+  --bila-38:rgba(237,243,248,.50);
+  --bila-18:rgba(237,243,248,.32);
+  --linka:rgba(237,243,248,.09);
+
+  /* stavy */
+  --jdu:#43B78C;
+  --mozna:#DE9440;
+  --nejdu:#D8607A;
+
+  /* typy */
+  --trenink:#7CB6E0;       /* nebeská */
+  --akce:#F2F7FB;          /* bílá jako venkovní dres */
+  --zapas:#7CB6E0;         /* zápas má navíc gradient, viz .grad-zapas */
+
+  --nav-h:70px;
+  --r:24px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--cerna);
+  background-image:linear-gradient(180deg,#0A1220 0,#06080C 320px);
+  background-repeat:no-repeat;background-attachment:fixed;
+  color:var(--bila);
+  font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,a,input,select,textarea{touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+:focus-visible{outline:2px solid var(--nebeska);outline-offset:3px;border-radius:8px}
+
+.pozadi{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.pozadi .z{position:absolute;border-radius:50%;filter:blur(110px)}
+.pozadi .z1{width:520px;height:520px;background:rgba(22,55,92,.55);top:-240px;left:-140px}
+.pozadi .z2{width:320px;height:320px;background:rgba(124,182,224,.09);top:44%;right:-170px}
+
+.app{
+  max-width:440px;margin:0 auto;min-height:100vh;position:relative;z-index:1;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 48px);
+}
+@media(min-width:600px){body{padding:28px 0}.app{min-height:calc(100vh - 56px)}}
+
+/* ---------- hlavička ---------- */
+.hlavicka{display:flex;align-items:center;gap:12px;padding:calc(20px + env(safe-area-inset-top)) 20px 18px}
+.logo{width:40px;height:40px;flex:none;display:block;object-fit:contain}
+.domu{display:flex;align-items:center;gap:12px;padding:4px;margin:-4px;border-radius:14px;
+      -webkit-tap-highlight-color:transparent}
+.domu:active{opacity:.7}
+.znacka{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:18px;letter-spacing:.01em}
+.avatar-hl{
+  margin-left:auto;width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--panel);border:1px solid var(--linka);
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px;color:var(--bila-60);
+  -webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s;
+}
+.avatar-hl:active{background:var(--panel-2);border-color:var(--nebeska)}
+
+.obrazovka{display:none;padding:0 16px}
+.obrazovka.aktivni{display:block;animation:vstup .28s cubic-bezier(.2,.8,.3,1)}
+@keyframes vstup{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.nadpis-sekce{
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;
+  margin:26px 4px 12px;display:flex;align-items:center;gap:10px;
+}
+.nadpis-sekce .kolik{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--bila-38)}
+.obrazovka > .nadpis-sekce:first-child{margin-top:4px}
+
+.karta{background:var(--panel);border-radius:var(--r);border:1px solid var(--linka)}
+
+/* ---------- čeká na odpověď ---------- */
+.vyzva{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:13px 16px;border-radius:16px;margin-bottom:14px;
+  background:var(--panel);border:1px solid var(--linka);
+  font-size:13.5px;color:var(--bila-60);
+}
+.vyzva b{color:var(--nebeska);font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px}
+.vyzva .text{flex:1;min-width:0}
+.vyzva .hlavni{display:block;line-height:1.3}
+.vyzva .rozsah{display:block;font-size:11px;color:var(--bila-18);margin-top:2px}
+.vyzva .sip{margin-left:auto;color:var(--bila-38);font-size:16px;flex:none}
+
+/* ---------- nejbližší akce ---------- */
+.nejblizsi{
+  border-radius:var(--r);padding:22px;position:relative;overflow:hidden;
+  background:linear-gradient(145deg,var(--nebeska-tm) 0%,var(--namorni) 62%,var(--namorni-tm) 100%);
+  box-shadow:0 14px 26px -18px rgba(78,146,196,.55);
+}
+/* šikmé pruhy z dresu */
+.nejblizsi .pruhy{position:absolute;inset:0;opacity:.5;pointer-events:none}
+.nejblizsi .pruhy svg{width:100%;height:100%}
+.nb-obsah{position:relative}
+.nb-vrsek{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.stitek{
+  display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-bottom:9px;
+}
+.stitek i{width:6px;height:6px;border-radius:50%;background:currentColor;font-style:normal}
+.kdy{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:27px;letter-spacing:-.01em;margin:0 0 5px;line-height:1.1}
+.nazev-akce{font-size:15px;font-weight:600;margin:0 0 4px;color:rgba(255,255,255,.94)}
+.kde{color:rgba(255,255,255,.62);font-size:13px;margin:0}
+.odpocet{
+  flex:none;text-align:center;min-width:62px;padding:10px 8px;border-radius:16px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);
+}
+.odpocet .cislo{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;line-height:1;display:block}
+.odpocet .jednotka{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);display:block;margin-top:3px}
+
+.pocty{display:flex;gap:16px;font-size:12px;color:rgba(255,255,255,.66);margin-bottom:16px}
+.pocty span{display:flex;align-items:center;gap:6px}
+.pocty i{width:6px;height:6px;border-radius:50%;font-style:normal}
+
+.volba{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.volba button{
+  border-radius:14px;padding:15px 4px 13px;min-height:52px;text-align:center;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);
+  transition:transform .14s,background .2s;
+}
+.volba button:active{transform:scale(.96)}
+.volba .znak{display:block;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;line-height:1;margin-bottom:5px;color:rgba(255,255,255,.75)}
+.volba .popis{font-size:12px;font-weight:600;color:rgba(255,255,255,.75)}
+.volba button.zvoleno .znak,.volba button.zvoleno .popis{color:#06121F}
+.volba button[data-stav="jdu"].zvoleno{background:var(--jdu);border-color:var(--jdu)}
+.volba button[data-stav="mozna"].zvoleno{background:var(--mozna);border-color:var(--mozna)}
+.volba button[data-stav="nejdu"].zvoleno{background:var(--nejdu);border-color:var(--nejdu)}
+.volba button[data-stav="nejdu"].zvoleno .znak,.volba button[data-stav="nejdu"].zvoleno .popis{color:#2B0713}
+
+/* varianta volby na tmavém podkladu (detail) */
+.volba.tmava button{background:rgba(255,255,255,.05);border-color:var(--linka)}
+.volba.tmava .znak,.volba.tmava .popis{color:var(--bila-60)}
+.volba.tmava button.zvoleno .znak,.volba.tmava button.zvoleno .popis{color:#06121F}
+.volba.tmava button[data-stav="jdu"].zvoleno{background:var(--jdu);border-color:var(--jdu)}
+.volba.tmava button[data-stav="mozna"].zvoleno{background:var(--mozna);border-color:var(--mozna)}
+.volba.tmava button[data-stav="nejdu"].zvoleno{background:var(--nejdu);border-color:var(--nejdu)}
+.volba.tmava button[data-stav="nejdu"].zvoleno .znak,.volba.tmava button[data-stav="nejdu"].zvoleno .popis{color:#2B0713}
+
+.pozdni-varovani{
+  margin-top:14px;padding:11px 14px;border-radius:14px;font-size:12.5px;
+  background:rgba(216,96,122,.14);border:1px solid rgba(216,96,122,.28);color:#F0AEBC;
+}
+
+/* ---------- dlaždice statistik ---------- */
+.dlazdice{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.dlazdice .d{
+  background:var(--panel);border:1px solid var(--linka);border-radius:20px;padding:18px 18px 16px;
+}
+.dlazdice .d.zvyraznena{background:linear-gradient(150deg,var(--namorni),var(--panel-2));border-color:rgba(124,182,224,.22)}
+.dlazdice .cislo{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:32px;line-height:1;
+  letter-spacing:-.01em;display:block;margin-bottom:7px;
+}
+.dlazdice .zvyraznena .cislo{color:var(--nebeska)}
+.dlazdice .popis{font-size:12px;color:var(--bila-38);font-weight:500}
+.dlazdice .cislo.varovne{color:var(--nejdu)}
+
+/* zápasový přechod — používá ho štítek ZÁPAS a legenda */
+.grad-zapas{background:linear-gradient(90deg,#7CB6E0,#F2F7FB)!important}
+
+.udalost{
+  display:flex;gap:13px;padding:15px 16px;width:100%;text-align:left;align-items:center;
+  border-radius:20px;background:var(--panel);border:1px solid var(--linka);
+  transition:transform .14s,border-color .2s;
+}
+.udalost:active{transform:scale(.99)}
+.udalost:hover{border-color:rgba(237,243,248,.14)}
+.udalost.probehla{opacity:.4}
+.u-telo{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.u-radek1{display:flex;align-items:center;gap:10px}
+.u-radek1 .odznak{margin-left:auto;flex:none}
+.u-nazev{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.u-radek2{display:flex;align-items:center;gap:10px}
+.u-detail{font-size:12.5px;color:var(--bila-38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.u-ucast{
+  flex:none;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13.5px;
+  color:var(--bila-60);display:flex;align-items:center;gap:5px;
+}
+.u-ucast .lidi{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.odznak{font-size:10.5px;padding:5px 11px;border-radius:99px;font-weight:600;white-space:nowrap}
+.odznak.jdu{background:rgba(67,183,140,.18);color:#67CBA4}
+.odznak.mozna{background:rgba(222,148,64,.18);color:#EDAE68}
+.odznak.nejdu{background:rgba(216,96,122,.18);color:#E58AA0}
+.odznak.ceka{background:var(--nebeska);color:#06121F}
+.odznak.zadny{color:var(--bila-18)}
+
+/* ---------- seznam ---------- */
+.filtry{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding:2px;scrollbar-width:none}
+.filtry::-webkit-scrollbar{display:none}
+.filtry button{
+  border-radius:99px;padding:12px 18px;font-size:13px;font-weight:500;min-height:44px;
+  color:var(--bila-38);background:var(--panel);border:1px solid var(--linka);white-space:nowrap;
+}
+.filtry button.aktivni{background:var(--nebeska);color:#06121F;border-color:var(--nebeska);font-weight:600}
+/* na myši se nedá šoupat prstem — ať se to radši zalomí */
+@media (hover:hover) and (pointer:fine){
+  .filtry{flex-wrap:wrap;overflow-x:visible}
+}
+.seznam .udalost{margin-bottom:10px}
+
+/* ---------- tabulka ---------- */
+.tabulka{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.tabulka th{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
+  font-weight:600;text-align:right;padding:0 0 12px;
+}
+.tabulka th:first-child{text-align:left;width:36%}
+.tabulka th:not(:first-child),.tabulka td:not(:first-child){padding-left:7px}
+.tabulka td{
+  padding:12px 0;border-top:1px solid var(--linka);text-align:right;
+  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+  white-space:nowrap;
+}
+.tabulka td:first-child{
+  text-align:left;font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;
+}
+.tabulka tr.ja td{color:var(--nebeska)}
+.tabulka tr.ja td:first-child{color:var(--nebeska);font-weight:600}
+.procenta{color:var(--bila)!important;font-weight:700!important}
+.tabulka tr.ja .procenta{color:var(--nebeska)!important}
+.pozdni-cislo{color:#E58AA0!important}
+.nula{color:rgba(237,243,248,.10)!important}
+
+/* ---------- formulář ---------- */
+.pole{margin-bottom:14px}
+.pole label{display:block;font-size:11.5px;color:var(--bila-38);margin-bottom:7px;font-weight:500}
+.pole input,.pole select,.pole textarea{
+  width:100%;padding:13px 15px;border-radius:15px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila);
+  font-family:'Inter',sans-serif;font-size:14.5px;
+}
+/* iOS si datum a čas centruje a dělá jim jinou výšku */
+.pole input[type="date"],.pole input[type="time"]{
+  -webkit-appearance:none;appearance:none;
+  text-align:left;min-height:50px;display:block;
+}
+.pole input[type="date"]::-webkit-date-and-time-value,
+.pole input[type="time"]::-webkit-date-and-time-value{text-align:left}
+.pole input[type="date"]::-webkit-calendar-picker-indicator,
+.pole input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(.7)}
+.pole input::placeholder,.pole textarea::placeholder{color:var(--bila-18)}
+.pole input:focus,.pole textarea:focus,.pole select:focus{border-color:rgba(124,182,224,.45);background:rgba(124,182,224,.06)}
+.pole textarea{resize:vertical;min-height:66px}
+/* iOS si pole pro datum a čas jinak vykresluje po svém — vycentruje text
+   a zvětší výšku, což rozbíjí zarovnání zbytku formuláře */
+.pole input[type="date"],
+.pole input[type="time"]{
+  -webkit-appearance:none;appearance:none;
+  text-align:left;display:block;min-height:48px;line-height:1.25;
+  font-family:'Inter',sans-serif;font-size:14.5px;
+}
+.pole input[type="date"]::-webkit-date-and-time-value,
+.pole input[type="time"]::-webkit-date-and-time-value{text-align:left}
+.pole input[type="date"]::-webkit-calendar-picker-indicator,
+.pole input[type="time"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);opacity:.45;
+}
+.pole select{
+  appearance:none;-webkit-appearance:none;padding-right:40px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EDF3F8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='.6'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;background-size:16px;
+}
+.pole select option{background:var(--panel);color:var(--bila)}
+.dvojice{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.typ-prepinac{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.typ-prepinac button{
+  border-radius:15px;padding:13px 4px;font-size:13px;font-weight:500;
+  color:var(--bila-38);background:var(--panel-2);border:1px solid var(--linka);
+}
+.typ-prepinac button.aktivni{background:var(--nebeska);color:#06121F;border-color:var(--nebeska);font-weight:600}
+.tlacitko-hlavni{
+  width:100%;border-radius:16px;padding:16px;font-family:'Chakra Petch',sans-serif;
+  font-weight:700;font-size:15px;color:#06121F;background:var(--nebeska);
+  box-shadow:0 16px 30px -18px rgba(124,182,224,.8);
+}
+.tlacitko-hlavni:active{transform:scale(.99)}
+.tlacitko-vedlejsi{
+  width:100%;border-radius:16px;padding:15px;font-weight:500;font-size:14px;
+  color:var(--bila-60);background:var(--panel-2);border:1px solid var(--linka);margin-top:10px;
+}
+
+/* ---------- navigace ---------- */
+.navbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  max-width:440px;margin:0 auto;pointer-events:none;
+  padding:0 16px calc(14px + env(safe-area-inset-bottom));
+  display:flex;justify-content:center;
+}
+.navbar-sklo{
+  pointer-events:auto;display:flex;align-items:center;gap:6px;
+  padding:8px;border-radius:99px;
+  background:rgba(18,26,40,.62);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 16px 40px -12px rgba(0,0,0,.75),
+             inset 0 1px 0 rgba(255,255,255,.14);
+}
+.navbar button{
+  display:flex;align-items:center;justify-content:center;
+  width:74px;height:50px;border-radius:99px;
+  color:var(--bila-38);position:relative;
+  transition:color .2s, background .25s;
+}
+.navbar button.aktivni{
+  color:var(--bila);
+  background:rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+}
+.navbar .ikona{
+  width:23px;height:23px;flex:none;
+  stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.navbar .ikona.plna{fill:currentColor;stroke:none;display:none}
+.navbar button.aktivni .ikona.obrys{display:none}
+.navbar button.aktivni .ikona.plna{display:block}
+.navbar .bubl{
+  position:absolute;top:4px;right:6px;
+  background:var(--nebeska);color:#06121F;
+  font-family:'Chakra Petch',sans-serif;font-size:9.5px;font-weight:700;
+  min-width:16px;height:16px;border-radius:99px;display:grid;place-items:center;padding:0 4px;
+  box-shadow:0 0 0 2px rgba(18,26,40,.8);
+}
+body.detail-otevren .navbar{opacity:0;pointer-events:none}
+.navbar{transition:opacity .18s}
+
+@media (prefers-reduced-motion:reduce){
+  .navbar button,.navbar{transition:none}
+}
+
+/* ---------- detail ---------- */
+.plachta{
+  position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;
+  background:rgba(3,5,9,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+}
+.plachta.otevreno{display:flex}
+.plachta-obsah{
+  background:linear-gradient(180deg,#101A2B 0,#0A101A 240px,var(--cerna) 460px);
+  width:100%;max-width:440px;max-height:92vh;overflow-x:hidden;position:relative;
+  scrollbar-width:none;overscroll-behavior:contain;
+  padding-bottom:env(safe-area-inset-bottom);
+  border-radius:28px 28px 0 0;overflow-y:auto;border-top:1px solid var(--linka);
+  animation:vyjed .3s cubic-bezier(.2,.85,.3,1);
+}
+@keyframes vyjed{from{transform:translateY(100%)}to{transform:none}}
+@media(prefers-reduced-motion:reduce){.plachta-obsah,.obrazovka.aktivni{animation:none}}
+.plachta-obsah::-webkit-scrollbar{display:none}
+.uchyt{width:46px;height:4px;background:var(--pruh-typu, var(--bila-18));border-radius:99px;margin:11px auto 0;opacity:.9}
+.taham .plachta-obsah{transition:none}
+.zavrit-detail{
+  position:absolute;top:14px;right:14px;z-index:5;
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--panel);border:1px solid var(--linka);color:var(--bila-60);font-size:17px;
+}
+.zavrit-detail:active{background:var(--panel-2);color:var(--bila)}
+.uchyt-plocha{padding:6px 0 2px;cursor:grab;touch-action:none}
+.detail-hlava{padding:18px 20px 20px;position:relative}
+.detail-hlava::before{
+  content:"";position:absolute;inset:-40px 0 0;pointer-events:none;
+  background:radial-gradient(120% 90% at 12% 0%, var(--zare-typu, transparent), transparent 62%);
+}
+.detail-hlava > *{position:relative}
+/* úchyt nese barvu typu — místo samostatné čáry nahoře */
+.detail-nazev{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;margin:8px 0 12px;letter-spacing:-.01em}
+.detail-radek{display:flex;gap:9px;font-size:13.5px;color:var(--bila-38);margin:0 0 5px}
+.detail-radek b{color:var(--bila);font-weight:600}
+.detail-poznamka{
+  margin-top:14px;padding:13px 15px;border-radius:16px;font-size:13px;color:var(--bila-60);
+  background:rgba(255,255,255,.05);border:1px solid var(--hrana, rgba(255,255,255,.09));
+}
+.detail-telo{padding:0 16px 30px}
+/* místo pod chatem, aby ho klávesnice nepřekryla */
+.detail-telo .chat-blok{scroll-margin-bottom:24px}
+
+.sestava{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  margin:14px 0 0;padding:11px 14px;
+  border:1px solid var(--linka);border-radius:14px;
+  font-size:13px;color:var(--bila-38);
+}
+.sestava b{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15px;
+  color:var(--bila);margin-right:2px;
+}
+.sestava .tecka{color:var(--bila-18)}
+.sestava .golmani.chybi{color:#E58AA0}
+.sestava .golmani.chybi b{color:var(--nejdu)}
+.sestava.ma-chybu{border-color:rgba(216,96,122,.28);background:rgba(216,96,122,.06)}
+
+.ucastnik.host .jmeno{color:var(--bila-60)}
+.ucastnik .znacka-host{
+  font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  color:var(--mozna);background:rgba(222,148,64,.16);
+  padding:2px 7px;border-radius:5px;margin-left:7px;
+}
+.smazat-hosta{
+  margin-left:auto;flex:none;width:30px;height:30px;border-radius:8px;
+  color:var(--bila-18);font-size:13px;border:1px solid var(--linka);background:var(--panel-2);
+}
+.smazat-hosta:active{color:var(--nejdu)}
+.pridat-hosta{
+  width:100%;margin-top:9px;padding:12px;border-radius:14px;
+  border:1px dashed var(--hrana, rgba(255,255,255,.16));background:transparent;
+  color:var(--bila-38);font-size:13.5px;font-weight:500;
+}
+.pridat-hosta:active{color:var(--bila);border-color:var(--nebeska)}
+
+.ucastnici{padding:6px 16px}
+.ucastnik{display:flex;align-items:center;gap:12px;padding:11px 2px;border-top:1px solid var(--linka)}
+.ucastnik:first-child{border-top:none}
+.pruh-stav{width:3px;height:24px;border-radius:99px;flex:none}
+.ucastnik .jmeno{font-weight:500;font-size:14px}
+.ucastnik .duvod{font-size:12.5px;color:var(--bila-38);font-style:italic}
+.ucastnik .cas{margin-left:auto;font-size:11px;color:var(--bila-18);flex:none;text-align:right;white-space:nowrap;padding-left:8px}
+.ucastnik .cas.pozde{color:#E58AA0}
+
+/* ---------- chat ---------- */
+.chat-blok{
+  margin-top:26px;padding:2px;border-radius:24px;
+  background:linear-gradient(140deg,rgba(124,182,224,.55),rgba(242,247,251,.18) 55%,transparent);
+}
+.chat-vnitrek{background:var(--panel-2);border-radius:22px;padding:18px 14px 16px;overflow:hidden}
+.chat-hlava{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.chat-hlava .nadpis{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:17px}
+.chat-hlava .pocet-zprav{
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--bila-38);
+}
+.chat-hlava .ikona-chat{width:20px;height:20px;stroke:var(--nebeska);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.zprava{display:flex;gap:10px;margin-bottom:14px;align-items:flex-end}
+.zprava > span:last-child{min-width:0;max-width:calc(100% - 44px);display:flex;flex-direction:column;align-items:flex-start}
+.zprava.moje > span:last-child{align-items:flex-end}
+.avatar{
+  width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:11px;color:var(--bila-60);
+  background:var(--panel);border:1px solid var(--linka);
+}
+.zprava .autor{font-size:11px;font-weight:500;color:var(--bila-18);margin-bottom:4px}
+.zprava .bublina{
+  background:var(--panel);border-radius:4px 18px 18px 18px;padding:11px 15px;font-size:14px;
+  overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap;max-width:100%;
+}
+.zprava.moje{flex-direction:row-reverse}
+.zprava.moje .autor{display:none}
+.zprava.moje .bublina{background:var(--namorni);border-radius:18px 4px 18px 18px}
+.zprava.moje .avatar{background:var(--nebeska);color:#06121F;border-color:var(--nebeska)}
+.napsat-zpravu{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;margin-top:14px;padding:13px;border-radius:99px;
+  background:rgba(255,255,255,.06);border:1px solid var(--linka);
+  color:var(--bila-60);font-size:14px;font-weight:600;
+}
+.napsat-zpravu svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.napsat-zpravu:active{color:var(--bila);border-color:var(--nebeska)}
+
+.napis{display:flex;gap:9px;margin-top:16px}
+.napis input{
+  flex:1;min-width:0;padding:13px 17px;border-radius:99px;font-family:inherit;font-size:14px;
+  border:1px solid var(--linka);background:var(--panel);color:var(--bila);
+}
+.napis input::placeholder{color:var(--bila-18)}
+.napis button{
+  width:46px;height:46px;border-radius:50%;flex:none;font-size:17px;color:#06121F;
+  background:linear-gradient(135deg,#7CB6E0,#F2F7FB);
+}
+
+/* ---------- modál ---------- */
+.modal{position:fixed;inset:0;background:rgba(3,5,9,.84);z-index:80;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.otevreno{display:flex}
+.modal-karta{background:var(--panel);border:1px solid var(--linka);border-radius:26px;padding:24px;max-width:344px;width:100%}
+.modal-nadpis{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:20px;margin:0 0 8px}
+.modal-text{font-size:13.5px;color:var(--bila-38);margin:0 0 16px}
+.modal-karta textarea{
+  width:100%;padding:13px;border-radius:15px;min-height:76px;resize:vertical;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila);
+  font-family:inherit;font-size:14px;
+}
+.modal-karta textarea::placeholder{color:var(--bila-18)}
+.modal-akce{display:flex;gap:10px;margin-top:16px}
+.modal-akce button{flex:1;padding:14px;border-radius:15px;font-weight:600;font-size:14px}
+.modal-akce .zrusit{background:var(--panel-2);color:var(--bila-38);border:1px solid var(--linka)}
+.modal-akce .potvrdit{background:var(--nebeska);color:#06121F}
+.chyba{color:#E58AA0;font-size:12.5px;margin-top:9px;display:none}
+.chyba.videt{display:block}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(16px);
+  bottom:calc(var(--nav-h) + 24px);z-index:90;max-width:84%;text-align:center;
+  padding:14px 22px;border-radius:99px;font-size:13.5px;font-weight:500;
+  background:var(--panel);border:1px solid var(--linka);color:var(--bila);
+  box-shadow:0 18px 40px -14px #000;opacity:0;pointer-events:none;transition:all .28s;
+}
+.toast.videt{opacity:1;transform:translateX(-50%)}
+
+.prazdno{text-align:center;padding:34px 20px;color:var(--bila-18);font-size:13.5px}
+
+/* ---------- kanadské bodování ---------- */
+.kb{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.kb th{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
+  font-weight:600;text-align:right;padding:0 0 11px;border-bottom:1px solid var(--linka);
+}
+.kb th.hrac{text-align:left}
+.kb td{
+  padding:10px 0;text-align:right;white-space:nowrap;
+  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+}
+.kb td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
+.kb td.hrac{
+  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
+}
+.kb td.body{color:var(--bila);font-weight:700;padding-left:6px}
+.kb tbody tr.ja td{background:rgba(124,182,224,.10)}
+.kb tbody tr.ja td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.10)}
+.kb tbody tr.ja td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.10)}
+.kb tbody tr.ja td.hrac,.kb tbody tr.ja td.body{color:var(--nebeska)}
+.kb col.c-poradi{width:26px}
+.kb col.c-cislo{width:32px}
+.kb col.c-body{width:34px}
+.kb-nadpis{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;
+  color:var(--bila-60);margin:20px 0 10px;
+}
+@media (max-width:400px){
+  .kb{font-size:12px}
+  .kb td,.kb td.hrac{font-size:12.5px}
+}
+
+
+
+/* ---------- tabulka soutěže ---------- */
+.soutez{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.soutez th{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bila-18);
+  font-weight:600;text-align:right;padding:0 0 11px;border-bottom:1px solid var(--linka);
+}
+.soutez th.tym{text-align:left}
+.soutez td{
+  padding:10px 0;text-align:right;white-space:nowrap;
+  font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila-60);
+}
+/* bez dělicích čar i prokládání — loga a mezery řádky oddělují dost */
+.soutez td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
+/* číselné sloupce dostanou jen tolik, kolik potřebují — zbytek patří názvu */
+.soutez col.c-poradi{width:26px}
+.soutez col.c-zapasy{width:30px}
+.soutez col.c-skore{width:46px}
+.soutez col.c-body{width:30px}
+.soutez td.tym{
+  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
+}
+.soutez td.tym span{display:flex;align-items:center;gap:7px;min-width:0}
+.soutez td.tym em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.soutez .znak{width:21px;height:21px;flex:none;object-fit:contain}
+.soutez th.body,.soutez td.body{padding-left:4px}
+.soutez td.body{color:var(--bila);font-weight:700}
+.soutez tbody tr.nas td{background:rgba(124,182,224,.10)}
+/* zvýraznění protáhnout přes okraje karty (ta má po stranách 14px) */
+.soutez tbody tr.nas td:first-child{box-shadow:-14px 0 0 rgba(124,182,224,.10)}
+.soutez tbody tr.nas td:last-child{box-shadow:14px 0 0 rgba(124,182,224,.10)}
+.soutez tr.nas td.tym{color:var(--nebeska);font-weight:600}
+.soutez tr.nas td.body{color:var(--nebeska)}
+.soutez-pata{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:13px;padding-top:12px;border-top:1px solid var(--linka);
+  font-size:11px;color:var(--bila-18);
+}
+.soutez-pata a{color:var(--bila-38);text-decoration:none}
+@media (max-width:400px){
+  .soutez{font-size:12px}
+  .soutez td.tym{font-size:12.5px}
+  .soutez td{font-size:12.5px;padding:8px 0}
+}
+
+/* úzké displeje — ať se hlavičky tabulky neslepí */
+@media (max-width:400px){
+  .tabulka{font-size:12px}
+  .tabulka th{font-size:8.5px;letter-spacing:0}
+  .tabulka td{font-size:12.5px}
+  .tabulka th:not(:first-child),.tabulka td:not(:first-child){padding-left:5px}
+  .tabulka th:first-child{width:34%}
+  .tabulka td:first-child{font-size:12.5px}
+}
+
+/* ---------- animace ---------- */
+@keyframes naskoc{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulz{0%{transform:scale(1)}45%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes zjev{from{opacity:0}to{opacity:1}}
+
+.seznam .udalost{animation:naskoc .32s cubic-bezier(.2,.8,.3,1) backwards}
+.seznam .udalost:nth-child(1){animation-delay:.02s}
+.seznam .udalost:nth-child(2){animation-delay:.06s}
+.seznam .udalost:nth-child(3){animation-delay:.10s}
+.seznam .udalost:nth-child(4){animation-delay:.14s}
+.seznam .udalost:nth-child(5){animation-delay:.18s}
+.seznam .udalost:nth-child(n+6){animation-delay:.22s}
+
+.dlazdice .d{animation:naskoc .3s cubic-bezier(.2,.8,.3,1) backwards}
+.dlazdice .d:nth-child(2){animation-delay:.05s}
+.dlazdice .d:nth-child(3){animation-delay:.10s}
+.dlazdice .d:nth-child(4){animation-delay:.15s}
+
+.nejblizsi{animation:naskoc .34s cubic-bezier(.2,.8,.3,1) backwards}
+.volba button.zvoleno{animation:pulz .3s ease}
+.zprava{animation:naskoc .26s ease backwards}
+.menu{transform-origin:top right}
+@keyframes menuIn{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+.udalost,.filtry button,.typ-prepinac button{-webkit-tap-highlight-color:transparent}
+
+@media (prefers-reduced-motion:reduce){
+  .seznam .udalost,.dlazdice .d,.nejblizsi,.zprava,.volba button.zvoleno{animation:none}
+}
+
+/* ---------- hlasování o hráči zápasu ---------- */
+.hl-vyzva{
+  display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  margin-top:12px;padding:15px 16px;border-radius:20px;
+  background:var(--panel);border:1px solid var(--linka);
+  transition:transform .14s,border-color .2s;
+}
+.hl-vyzva:active{transform:scale(.99);border-color:var(--nebeska)}
+.hl-vyzva .hl-znak{
+  width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:rgba(124,182,224,.14);border:1px solid rgba(124,182,224,.32);
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:17px;color:var(--nebeska);
+}
+.hl-vyzva .hl-text{flex:1;min-width:0}
+.hl-vyzva .hl-nadpis{display:block;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14.5px}
+.hl-vyzva .hl-popis{display:block;font-size:12px;color:var(--bila-38);margin-top:2px}
+.hl-vyzva .hl-sip{color:var(--bila-18);font-size:16px;flex:none}
+
+.hl-vitezove{margin-top:12px;padding:14px 16px 12px;border-radius:20px;background:var(--panel);border:1px solid var(--linka)}
+.hl-vitezove .hl-stitek{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--bila-18)}
+.hl-radek-vitez{display:flex;align-items:baseline;gap:9px;margin-top:8px}
+.hl-radek-vitez .hl-ci{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;color:var(--nebeska);flex:none}
+.hl-radek-vitez .hl-jm{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-radek-vitez .hl-pocet{margin-left:auto;font-size:12px;color:var(--bila-38);flex:none}
+.hl-radek-vitez .hl-kdo{font-size:11.5px;color:var(--bila-18)}
+
+/* celoobrazovková vrstva s hlasováním */
+.hlasovani{
+  position:fixed;inset:0;z-index:82;display:none;flex-direction:column;
+  max-width:440px;margin:0 auto;padding-top:env(safe-area-inset-top);
+  background:
+    radial-gradient(ellipse at 50% 46%,rgba(45,105,155,.22),transparent 46%),
+    linear-gradient(180deg,#101A2B 0,#0A101A 300px,var(--cerna) 620px);
+}
+.hlasovani.otevreno{display:flex}
+.hl-hlava{display:flex;align-items:center;gap:12px;padding:14px 16px 8px}
+.hl-hlava h2{margin:0;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:19px;flex:1}
+.hl-zavrit{
+  width:34px;height:34px;border-radius:50%;flex:none;background:rgba(255,255,255,.07);
+  border:1px solid var(--linka);display:grid;place-items:center;font-size:17px;color:var(--bila-60);
+}
+.hl-podtitul{padding:0 16px;color:var(--bila-38);font-size:13px;margin:-4px 0 10px}
+.hl-zapasy{display:grid;gap:8px;padding:0 16px 4px}
+.hl-zapasy.dva{grid-template-columns:1fr 1fr}
+.hl-zapasy button{
+  border-radius:15px;padding:10px 8px;background:var(--panel-2);border:1px solid var(--linka);
+  text-align:center;color:var(--bila-38);transition:background .2s,color .2s,border-color .2s;
+}
+.hl-zapasy .hl-kdo2{display:block;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;line-height:1.15;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-zapasy .hl-stav{display:block;font-size:11px;font-weight:500;margin-top:3px;opacity:.85}
+.hl-zapasy button.aktivni{background:var(--nebeska);border-color:var(--nebeska);color:#06121F}
+.hl-zapasy button.hotovo .hl-stav{color:var(--jdu)}
+.hl-zapasy button.aktivni.hotovo .hl-stav{color:#06121F;opacity:.7}
+
+.hl-scena{
+  position:relative;flex:1;min-height:0;overflow:hidden;
+  perspective:1150px;perspective-origin:50% 47%;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.hl-kruh{position:absolute;left:50%;top:47%;width:0;height:0;transform-style:preserve-3d}
+.hl-karta{
+  position:absolute;left:0;top:0;
+  width:var(--hl-kw);height:calc(var(--hl-kw) * 4 / 3);
+  margin-left:calc(var(--hl-kw) / -2);margin-top:calc(var(--hl-kw) * -2 / 3);
+  transform-style:preserve-3d;backface-visibility:hidden;will-change:transform,opacity;
+}
+.hl-karta svg{width:100%;height:100%;display:block;border-radius:7%;
+  box-shadow:0 26px 44px -26px rgba(0,0,0,.95);pointer-events:none}
+
+.hl-spodek{flex:none;padding:2px 16px calc(14px + env(safe-area-inset-bottom));text-align:center}
+.hl-otazka{min-height:34px;display:flex;align-items:center;justify-content:center;
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;color:var(--bila-60);margin-bottom:8px}
+.hl-hotovo{
+  flex:1;min-height:0;display:none;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:0 32px;gap:14px;
+}
+.hlasovani.odeslano .hl-scena,.hlasovani.odeslano .hl-spodek{display:none}
+.hlasovani.odeslano .hl-hotovo{display:flex}
+.hl-fajfka{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(67,183,140,.14);border:1px solid rgba(67,183,140,.4);
+  color:var(--jdu);font-size:30px;font-family:'Chakra Petch',sans-serif}
+.hl-hotovo h3{margin:0;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:20px}
+.hl-hotovo p{margin:0;color:var(--bila-38);font-size:14px;max-width:27ch;line-height:1.5}
+.hl-zmena{margin-top:2px;color:var(--nebeska);font-size:13px;font-weight:600;
+  border-bottom:1px solid rgba(124,182,224,.35);padding-bottom:1px}
+
+/* číslo dresu ve Správě */
+.hrac-cislo{
+  flex:none;width:32px;padding:7px 1px;border-radius:9px;text-align:center;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-60);
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12.5px;
+}
+.hrac-cislo::placeholder{color:var(--bila-18);font-weight:500}
+.hrac-cislo:focus{outline:none;border-color:var(--nebeska);color:var(--bila)}
+
+.hl-sprava-radek{display:flex;align-items:center;gap:11px;padding:11px 2px;border-top:1px solid var(--linka)}
+.hl-sprava-radek:first-child{border-top:none}
+.hl-sprava-text{flex:1;min-width:0}
+.hl-sprava-text b{display:block;font-size:14px;font-weight:600}
+.hl-sprava-text span{display:block;font-size:11.5px;color:var(--bila-38);margin-top:2px}
+.hl-uzavrit{
+  flex:none;padding:8px 12px;border-radius:11px;font-size:12px;font-weight:600;
+  border:1px solid rgba(124,182,224,.3);background:rgba(124,182,224,.12);color:var(--nebeska);
+}
+.hl-uzavrit[disabled]{opacity:.4;border-color:var(--linka);background:var(--panel-2);color:var(--bila-18)}
+@media(prefers-reduced-motion:reduce){.hl-karta{transition:none}}
+
+/* ---------- přihlašovací obrazovka ---------- */
+.brana{
+  position:fixed;inset:0;z-index:100;background:var(--cerna);
+  display:flex;align-items:center;justify-content:center;
+  padding:calc(26px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom));
+  overflow-y:auto;
+}
+.brana.pryc{display:none}
+.brana-vnitrek{width:100%;max-width:380px;position:relative;z-index:1}
+.brana-logo{
+  width:104px;height:104px;margin:0 auto 22px;display:block;object-fit:contain;
+  filter:drop-shadow(0 18px 34px rgba(124,182,224,.45));
+}
+.brana-nazev{
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:26px;
+  text-align:center;margin:0 0 6px;letter-spacing:.01em;
+}
+.brana-podnadpis{text-align:center;color:var(--bila-38);font-size:13.5px;margin:0 0 28px}
+
+.prepinac-vstupu{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:22px;
+  background:var(--panel-2);border:1px solid var(--linka);border-radius:16px;
+}
+.prepinac-vstupu button{
+  padding:11px;border-radius:12px;font-size:13.5px;font-weight:600;color:var(--bila-38);min-height:44px;
+}
+.prepinac-vstupu button.aktivni{background:var(--panel);color:var(--bila);box-shadow:0 6px 16px -8px #000}
+
+.brana .pole{margin-bottom:13px}
+.zapomenute{
+  display:block;width:100%;text-align:right;font-size:12.5px;color:var(--bila-38);
+  margin:-4px 0 16px;padding:6px 2px;
+}
+.zapomenute:hover{color:var(--nebeska)}
+
+.brana-pata{
+  text-align:center;font-size:12px;color:var(--bila-18);margin-top:26px;line-height:1.6;
+}
+.brana-pata b{color:var(--bila-38);font-weight:500}
+
+
+/* ---------- štítek typu ---------- */
+.typ-chip{
+  display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-bottom:5px;
+}
+.typ-chip.trenink{background:rgba(124,182,224,.16);color:var(--trenink)}
+.typ-chip.akce{background:rgba(242,247,251,.14);color:var(--akce)}
+.typ-chip.zapas{background:linear-gradient(90deg,#7CB6E0,#F2F7FB);color:#06121F}
+
+/* zápas dostane navíc rámeček, ať nesplyne */
+.udalost.je-zapas{border-color:rgba(124,182,224,.28)}
+/* karta se barví podle tvé odpovědi */
+.udalost.ceka-odpoved{
+  background:linear-gradient(100deg,rgba(124,182,224,.11),rgba(124,182,224,.04));
+  border-color:rgba(124,182,224,.32);
+}
+.udalost.stav-jdu{
+  background:linear-gradient(100deg,rgba(67,183,140,.10),rgba(67,183,140,.03));
+  border-color:rgba(67,183,140,.26);
+}
+.udalost.stav-mozna{
+  background:linear-gradient(100deg,rgba(222,148,64,.10),rgba(222,148,64,.03));
+  border-color:rgba(222,148,64,.26);
+}
+.udalost.stav-nejdu{
+  background:linear-gradient(100deg,rgba(216,96,122,.09),rgba(216,96,122,.03));
+  border-color:rgba(216,96,122,.24);
+}
+/* proběhlé a zrušené zůstávají neutrální */
+.udalost.probehla,.udalost.zrusena{background:var(--panel);border-color:var(--linka)}
+
+/* ---------- zrušená akce ---------- */
+.udalost.zrusena{opacity:.5}
+.udalost.zrusena .u-nazev{text-decoration:line-through;text-decoration-color:var(--bila-18)}
+.odznak.zruseno{background:rgba(216,96,122,.18);color:#E58AA0}
+
+/* ---------- upozornění na zápas v týdnu ---------- */
+.zapas-tydne{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  margin-top:14px;padding:11px 14px;border-radius:14px;font-size:12.5px;
+  background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);color:#fff;
+}
+.zapas-tydne b{font-weight:600}
+.zapas-tydne .sip{margin-left:auto;opacity:.7}
+.zapas-tydne.samostatny{
+  margin-top:10px;background:var(--panel);border:1px solid var(--linka);color:var(--bila-60);
+}
+.zapas-tydne.samostatny b{color:var(--nebeska)}
+.zapas-tydne.samostatny .sip{color:var(--bila-18)}
+
+/* ---------- menu pod avatarem ---------- */
+.avatar-hl{cursor:pointer}
+.menu-plachta{position:fixed;inset:0;z-index:70;display:none;background:rgba(3,5,9,.45)}
+.menu-plachta.otevreno{display:block}
+.menu{
+  position:absolute;top:calc(60px + env(safe-area-inset-top));right:16px;width:224px;
+  background:var(--panel);border:1px solid var(--linka);border-radius:20px;
+  padding:8px;box-shadow:0 24px 50px -16px #000;
+  animation:menuIn .18s ease;
+}
+@keyframes menuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.menu{animation:none}}
+.menu button{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:12px 13px;border-radius:14px;font-size:14px;color:var(--bila-60);
+}
+.menu button:hover{background:var(--panel-2);color:var(--bila)}
+.menu button .mi{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.menu .oddelovac{height:1px;background:var(--linka);margin:6px 10px}
+.menu .stitek-trener{
+  margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--nebeska);background:rgba(124,182,224,.14);padding:3px 7px;border-radius:5px;
+}
+
+/* ---------- akce trenéra v detailu ---------- */
+.akce-trenera{display:flex;gap:9px;margin-bottom:18px}
+.akce-trenera button{
+  flex:1;padding:12px 6px;border-radius:14px;font-size:12.5px;font-weight:500;white-space:nowrap;
+  background:var(--panel);border:1px solid var(--linka);color:var(--bila-60);
+}
+.akce-trenera button:hover{color:var(--bila)}
+.akce-trenera button.nebezpecna{color:#E58AA0}
+
+/* ---------- profil ---------- */
+.hrac-radek{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 2px;border-top:1px solid var(--linka)}
+.hrac-radek:first-child{border-top:none}
+.hrac-radek.vyrazeny{opacity:.45}
+.hrac-jmeno{flex:1 1 auto;min-width:112px;font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrac-ovladani{display:flex;align-items:center;gap:7px;margin-left:auto}
+.vyber-role{
+  flex:none;padding:7px 21px 7px 8px;border-radius:10px;font-size:12.5px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-60);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EDF3F8' stroke-width='2' stroke-linecap='round' opacity='.5'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:13px;
+}
+.vyber-role option{background:var(--panel);color:var(--bila)}
+.vyradit,.parovani{
+  flex:none;width:29px;height:29px;border-radius:9px;font-size:13px;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-38);
+}
+.parovani.sedi{color:var(--jdu);border-color:rgba(67,183,140,.30)}
+.parovani.nesedi{color:var(--bila-18)}
+.vyradit:active{color:var(--nejdu)}
+
+.udaj{display:flex;align-items:center;padding:14px 0;border-top:1px solid var(--linka);font-size:14px}
+.udaj:first-child{border-top:none}
+.udaj .popisek-u{color:var(--bila-38);font-size:12.5px}
+.udaj .hodnota{margin-left:auto;font-weight:500}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+
+<!-- ============ PŘIHLÁŠENÍ ============ -->
+<div class="brana pryc" id="brana">
+  <div class="pozadi"><span class="z z1"></span><span class="z z2"></span></div>
+  <div class="brana-vnitrek">
+    <img class="brana-logo" src="logo-256.png" alt="Florbal Kuřim">
+    <h1 class="brana-nazev">Florbal Kuřim</h1>
+    <p class="brana-podnadpis">Tréninky, zápasy a akce</p>
+
+
+    <div class="prepinac-vstupu" id="prepinac-vstupu">
+      <button class="aktivni" data-rezim="prihlaseni">Přihlásit se</button>
+      <button data-rezim="registrace">Registrace</button>
+    </div>
+
+    <div id="blok-prihlaseni">
+      <div class="pole"><label>E-mail</label>
+        <input type="email" id="b-email" placeholder="ty@email.cz" autocomplete="email"></div>
+      <div class="pole"><label>Heslo</label>
+        <input type="password" id="b-heslo" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter')prihlasit()"></div>
+      <button class="zapomenute" onclick="obnovaHesla()">Zapomenuté heslo?</button>
+      <p class="chyba" id="b-chyba"></p>
+      <button class="tlacitko-hlavni" id="tlacitko-vstup" onclick="prihlasit()">Přihlásit se</button>
+    </div>
+
+    <div id="blok-registrace" style="display:none">
+      <div class="pole"><label>Jméno a příjmení</label>
+        <input type="text" id="r-jmeno" placeholder="Křestní Příjmení"></div>
+      <div class="pole"><label>E-mail</label>
+        <input type="email" id="r-email" placeholder="ty@email.cz" autocomplete="email"></div>
+      <div class="pole"><label>Heslo</label>
+        <input type="password" id="r-heslo" placeholder="alespoň 8 znaků" autocomplete="new-password"></div>
+      <div class="pole"><label>Klubový kód</label>
+        <input type="text" id="r-kod" placeholder="dostal jsi ho ve skupině"
+               onkeydown="if(event.key==='Enter')registrovat()"></div>
+      <p class="chyba" id="r-chyba"></p>
+      <button class="tlacitko-hlavni" id="tlacitko-registrace" onclick="registrovat()">Vytvořit účet</button>
+    </div>
+
+    <div id="blok-nove-heslo" style="display:none">
+      <div class="pole"><label>Jak se jmenuješ?</label>
+        <input type="text" id="n-jmeno" placeholder="Křestní Příjmení"></div>
+      <div class="pole"><label>Nové heslo</label>
+        <input type="password" id="n-heslo" placeholder="alespoň 8 znaků" autocomplete="new-password"></div>
+      <p class="chyba" id="n-chyba"></p>
+      <button class="tlacitko-hlavni" onclick="nastavHeslo()">Uložit a pokračovat</button>
+    </div>
+
+    <p class="brana-pata">
+      K registraci potřebuješ <b>klubový kód</b>.<br>
+      Dostaneš ho od trenéra ve skupině.
+    </p>
+  </div>
+</div>
+
+<div class="pozadi"><span class="z z1"></span><span class="z z2"></span></div>
+
+<main class="app">
+  <header class="hlavicka">
+    <button class="domu" onclick="prepni('dnes')" aria-label="Na hlavní stránku">
+      <img class="logo" src="logo-256.png" alt="Florbal Kuřim">
+      <span class="znacka">Florbal Kuřim</span>
+    </button>
+    <button class="avatar-hl" id="avatar-hl" onclick="prepniMenu(event)" aria-label="Účet a správa">··</button>
+  </header>
+
+  <!-- ============ DNES ============ -->
+  <section class="obrazovka aktivni" id="o-dnes">
+    <button class="vyzva" id="vyzva" onclick="prepni('udalosti')">
+      <b id="vyzva-pocet">3</b>
+      <span class="text">
+        <span class="hlavni" id="vyzva-text">akce čekají na tvoji odpověď</span>
+        <span class="rozsah">nejbližších 14 dnů</span>
+      </span>
+      <span class="sip">→</span>
+    </button>
+
+    <div id="nejblizsi"></div>
+    <div id="hlasovani-vyzva"></div>
+
+    <div class="nadpis-sekce">Tvoje sezóna</div>
+    <div class="dlazdice" id="dlazdice"></div>
+
+    <div class="nadpis-sekce">Tabulka soutěže</div>
+    <div class="karta karta-soutez" style="padding:16px 14px"></div>
+  </section>
+
+  <!-- ============ UDÁLOSTI ============ -->
+  <section class="obrazovka" id="o-udalosti">
+    <div class="filtry" id="filtry">
+      <button class="aktivni" data-filtr="vse">Vše</button>
+      <button data-filtr="trenink">Tréninky</button>
+      <button data-filtr="zapas">Zápasy</button>
+      <button data-filtr="akce">Akce</button>
+      <button data-filtr="probehle">Proběhlé</button>
+    </div>
+    <div class="seznam" id="seznam"></div>
+  </section>
+
+  <!-- ============ STATISTIKY ============ -->
+  <section class="obrazovka" id="o-statistiky">
+    <div class="nadpis-sekce">Tvoje sezóna</div>
+    <div class="dlazdice" id="dlazdice2"></div>
+
+    <div class="nadpis-sekce">Tabulka soutěže</div>
+    <div class="karta karta-soutez" style="padding:16px 14px"></div>
+
+    <div class="nadpis-sekce">Kanadské bodování</div>
+    <div class="karta" id="kanadskeBodovani" style="padding:16px 14px"></div>
+
+    <div class="nadpis-sekce">Tým podle účasti</div>
+    <div class="karta" style="padding:18px 20px">
+      <table class="tabulka" id="tabulka-tymu"></table>
+    </div>
+  </section>
+
+  <!-- ============ SPRÁVA ============ -->
+  <section class="obrazovka" id="o-admin">
+    <div class="nadpis-sekce">Nová událost</div>
+    <div class="karta" style="padding:20px">
+      <div class="typ-prepinac" id="typ-prepinac">
+        <button class="aktivni" data-typ="trenink">Trénink</button>
+        <button data-typ="zapas">Zápas</button>
+        <button data-typ="akce">Akce</button>
+      </div>
+      <div class="pole" id="pole-nazev" style="display:none">
+        <label>Název akce</label><input type="text" id="f-nazev-akce" placeholder="Zakončení sezóny"></div>
+      <div class="dvojice" id="pole-souper" style="display:none">
+        <div class="pole"><label>1. zápas</label><input type="text" id="f-souper1" placeholder="Shooters &amp; Troopers"></div>
+        <div class="pole"><label>2. zápas</label><input type="text" id="f-souper2" placeholder="FBC Hlučín"></div>
+      </div>
+      <div class="pole" id="pole-nazev-trenink">
+        <label>Název tréninku <span style="color:var(--bila-18)">nepovinné</span></label>
+        <input type="text" id="f-nazev-trenink" placeholder="Pondělí">
+      </div>
+      <div class="dvojice">
+        <div class="pole"><label>Datum</label><input type="date" id="f-datum"></div>
+        <div class="pole"><label>Začátek</label><input type="time" id="f-cas" value="19:00"></div>
+      </div>
+      <div class="pole"><label>Místo</label><input type="text" id="f-misto" value="Sportovní hala Kuřim"></div>
+      <div class="dvojice" id="pole-sraz" style="display:none">
+        <div class="pole"><label>Sraz</label><input type="time" id="f-sraz" value="18:00"></div>
+        <div class="pole"><label>Kde hrajete</label><select id="f-doma"><option value="ano">Doma</option><option value="ne">Venku</option></select></div>
+      </div>
+      <div class="pole"><label>Poznámka</label><textarea id="f-poznamka" placeholder="Vezměte tmavé i světlé dresy."></textarea></div>
+      <div class="pole"><label>Opakovat týdně do <span style="color:var(--bila-18)">nepovinné</span></label><input type="date" id="f-opakovat"></div>
+      <button class="tlacitko-hlavni" onclick="zalozUdalost()">Založit událost</button>
+      <button class="tlacitko-vedlejsi" onclick="prepni('udalosti')">Zobrazit všechny události</button>
+    </div>
+
+    <div class="nadpis-sekce">Uzávěrky <span class="kolik">dokdy se dá odpovědět</span></div>
+    <div class="karta" style="padding:20px">
+      <p style="font-size:12.5px;color:var(--bila-38);margin:0 0 16px;line-height:1.55">
+        Hodina předchozího dne, po které se odpověď počítá jako pozdní.
+        Trénink ve středu při hodnotě 20 znamená uzávěrku v úterý ve 20:00.
+      </p>
+      <div class="dvojice">
+        <div class="pole"><label>Hráči</label>
+          <select id="u-hrac"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+        <div class="pole"><label>Golmani</label>
+          <select id="u-golman"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+      </div>
+      <div class="pole"><label>Trenéři</label><select id="u-trener"><option value="0">0:00</option><option value="1">1:00</option><option value="2">2:00</option><option value="3">3:00</option><option value="4">4:00</option><option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option><option value="8">8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option><option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option><option value="16">16:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option><option value="22">22:00</option><option value="23">23:00</option></select></div>
+      <button class="tlacitko-hlavni" onclick="ulozUzaverky()">Uložit uzávěrky</button>
+    </div>
+
+    <div class="nadpis-sekce">Klubový kód <span class="kolik">pro registraci nových hráčů</span></div>
+    <div class="karta" style="padding:20px">
+      <p style="font-size:12.5px;color:var(--bila-38);margin:0 0 14px;line-height:1.55">
+        Kdo zná kód, může si založit účet. Když ho někdo rozšíří dál, změň ho — starým kódem
+        se pak nikdo nezaregistruje, ale už založené účty zůstanou.
+      </p>
+      <div class="pole"><label>Kód</label><input type="text" id="k-kod" placeholder="KURIM13"></div>
+      <button class="tlacitko-hlavni" onclick="ulozKod()">Uložit kód</button>
+      <button class="tlacitko-vedlejsi" onclick="zkopirujPozvanku()">Zkopírovat text do skupiny</button>
+    </div>
+
+    <div class="nadpis-sekce">Hlášky <span class="kolik">co appka napíše po odpovědi</span></div>
+    <div class="karta" style="padding:20px">
+      <p style="font-size:12.5px;color:var(--bila-38);margin:0 0 16px;line-height:1.55">
+        Piš jednu hlášku na řádek — appka pak vybírá náhodně. Prázdné pole znamená, že se nezobrazí nic.
+      </p>
+      <div class="pole"><label>Jdu — včas</label><textarea id="h-jdu" placeholder="Zatím prázdné"></textarea></div>
+      <div class="pole"><label>Jdu — v den akce</label><textarea id="h-jdu_pozde" placeholder="Zatím prázdné"></textarea></div>
+      <div class="pole"><label>Možná — včas</label><textarea id="h-mozna" placeholder="Zatím prázdné"></textarea></div>
+      <div class="pole"><label>Možná — v den akce</label><textarea id="h-mozna_pozde" placeholder="Zatím prázdné"></textarea></div>
+      <div class="pole"><label>Nejdu — včas</label><textarea id="h-nejdu" placeholder="Zatím prázdné"></textarea></div>
+      <div class="pole"><label>Nejdu — v den akce</label><textarea id="h-nejdu_pozde" placeholder="Zatím prázdné"></textarea></div>
+      <button class="tlacitko-hlavni" onclick="ulozHlasky()">Uložit hlášky</button>
+    </div>
+
+    <div class="nadpis-sekce">Kdo neodpověděl</div>
+    <div class="karta" style="padding:6px 20px 14px" id="neodpovedeli"></div>
+
+    <div class="nadpis-sekce">Hlasování o hráči zápasu <span class="kolik">uzavření</span></div>
+    <div class="karta" style="padding:6px 20px 14px" id="spravaHlasovani"></div>
+
+    <div class="nadpis-sekce">Hráči <span class="kolik">role, číslo dresu a přístup</span></div>
+    <div class="karta" style="padding:6px 20px 16px" id="spravaHracu"></div>
+  </section>
+
+  <!-- ============ MŮJ ÚČET ============ -->
+  <section class="obrazovka" id="o-profil">
+    <div class="nadpis-sekce">Moje údaje</div>
+    <div class="karta" style="padding:4px 20px 8px">
+      <div class="udaj"><span class="popisek-u">Jméno</span><span class="hodnota" id="p-jmeno">—</span></div>
+      <div class="udaj"><span class="popisek-u">E-mail</span><span class="hodnota" id="p-email">—</span></div>
+      <div class="udaj"><span class="popisek-u">Role</span><span class="hodnota" id="p-role">—</span></div>
+    </div>
+
+    <div class="nadpis-sekce">Tvoje sezóna</div>
+    <div class="dlazdice" id="dlazdice3"></div>
+
+    <div style="margin-top:26px">
+      <button class="tlacitko-vedlejsi" onclick="zmenJmeno()" style="margin-top:0">Změnit jméno</button>
+      <button class="tlacitko-vedlejsi" onclick="zmenHeslo()">Změnit heslo</button>
+      <button class="tlacitko-vedlejsi" onclick="odhlasit()">Odhlásit se</button>
+    </div>
+  </section>
+
+  <nav class="navbar">
+    <div class="navbar-sklo">
+      <button class="aktivni" data-cil="dnes" onclick="prepni('dnes')">
+        <svg class="ikona obrys" viewBox="0 0 24 24"><path d="M3.5 10.6 12 4l8.5 6.6V20a1 1 0 0 1-1 1h-4.7v-5.2a1 1 0 0 0-1-1h-3.6a1 1 0 0 0-1 1V21H4.5a1 1 0 0 1-1-1z"/></svg>
+        <svg class="ikona plna" viewBox="0 0 24 24"><path d="M11.4 3.4a1 1 0 0 1 1.2 0l8.1 6.3c.2.2.3.4.3.7V20a1.5 1.5 0 0 1-1.5 1.5h-4.3v-5.3a1.5 1.5 0 0 0-1.5-1.5h-3.4a1.5 1.5 0 0 0-1.5 1.5v5.3H4.5A1.5 1.5 0 0 1 3 20v-9.6c0-.3.1-.5.3-.7z"/></svg>
+      </button>
+
+      <button data-cil="udalosti" onclick="prepni('udalosti')">
+        <svg class="ikona obrys" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        <svg class="ikona plna" viewBox="0 0 24 24"><path d="M8 2a1 1 0 0 1 1 1v1h6V3a1 1 0 1 1 2 0v1h1A3 3 0 0 1 21 7v1.5H3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1z"/><path d="M3 10.5h18V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/></svg>
+        <span class="bubl" id="bubl">3</span>
+      </button>
+
+      <button data-cil="statistiky" onclick="prepni('statistiky')">
+        <svg class="ikona obrys" viewBox="0 0 24 24"><rect x="3" y="11" width="4.6" height="8.5" rx="1.5"/><rect x="9.7" y="4.5" width="4.6" height="15" rx="1.5"/><rect x="16.4" y="14" width="4.6" height="5.5" rx="1.5"/></svg>
+        <svg class="ikona plna" viewBox="0 0 24 24"><rect x="3" y="11" width="4.6" height="8.5" rx="1.5"/><rect x="9.7" y="4.5" width="4.6" height="15" rx="1.5"/><rect x="16.4" y="14" width="4.6" height="5.5" rx="1.5"/></svg>
+      </button>
+    </div>
+  </nav>
+</main>
+
+<!-- menu pod avatarem -->
+<div class="menu-plachta" id="menu-plachta" onclick="if(event.target===this)zavriMenu()">
+  <div class="menu">
+    <button class="jen-trener" onclick="zMenu('admin')">
+      <svg class="mi" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      Správa <span class="stitek-trener">trenér</span>
+    </button>
+    <div class="oddelovac"></div>
+    <button onclick="zMenu('profil')">
+      <svg class="mi" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Moje údaje
+    </button>
+    <button onclick="zavriMenu();odhlasit()">
+      <svg class="mi" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Odhlásit se
+    </button>
+  </div>
+</div>
+
+<div class="plachta" id="plachta" onclick="if(event.target===this)zavriDetail()">
+  <div class="plachta-obsah" id="plachta-obsah"></div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)zavriModal()">
+  <div class="modal-karta">
+    <h3 class="modal-nadpis" id="modal-nadpis">Proč nemůžeš?</h3>
+    <p class="modal-text" id="modal-text">Měníš odpověď v den akce.</p>
+    <textarea id="modal-duvod" placeholder="Zdržel jsem se v práci…"></textarea>
+    <p class="chyba" id="modal-chyba">Napiš aspoň pět znaků.</p>
+    <div class="modal-akce">
+      <button class="zrusit" onclick="zavriModal()">Zpět</button>
+      <button class="potvrdit" onclick="potvrdDuvod()">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<!-- okno na napsání zprávy do chatu -->
+<div class="modal" id="modal-zprava" onclick="if(event.target===this)zavriZpravu()">
+  <div class="modal-karta">
+    <h3 class="modal-nadpis" style="margin-bottom:14px">Napsat týmu</h3>
+    <textarea id="zprava-text" placeholder="Jsem kokot…"></textarea>
+    <p class="chyba" id="zprava-chyba">Tak seš čurák?</p>
+    <div class="modal-akce">
+      <button class="zrusit" onclick="zavriZpravu()">Zpět</button>
+      <button class="potvrdit" onclick="posliZpravu()">Odeslat</button>
+    </div>
+  </div>
+</div>
+
+<!-- hlasování o hráči zápasu -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="hl-podklad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#7CB6E0"/>
+    <stop offset=".46" stop-color="#3B7CB4"/>
+    <stop offset="1" stop-color="#12324F"/>
+  </linearGradient>
+  <linearGradient id="hl-lista" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#12365C" stop-opacity=".9"/>
+    <stop offset="1" stop-color="#07182B" stop-opacity=".985"/>
+  </linearGradient>
+  <linearGradient id="hl-clona" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#06141F" stop-opacity="0"/>
+    <stop offset=".62" stop-color="#06141F" stop-opacity=".42"/>
+    <stop offset="1" stop-color="#06141F" stop-opacity=".88"/>
+  </linearGradient>
+  <radialGradient id="hl-zare" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#DCEEFB" stop-opacity=".34"/>
+    <stop offset="1" stop-color="#DCEEFB" stop-opacity="0"/>
+  </radialGradient>
+  <clipPath id="hl-telo"><rect x="14" y="14" width="572" height="772" rx="40"/></clipPath>
+</defs></svg>
+
+<div class="hlasovani" id="hlasovani">
+  <div class="hl-hlava">
+    <h2>Hráč zápasu</h2>
+    <button class="hl-zavrit" onclick="zavriHlasovani()" aria-label="Zavřít">✕</button>
+  </div>
+  <div class="hl-podtitul" id="hl-podtitul"></div>
+  <div class="hl-zapasy" id="hl-zapasy"></div>
+
+  <div class="hl-scena" id="hl-scena"><div class="hl-kruh" id="hl-kruh"></div></div>
+
+  <div class="hl-spodek">
+    <div class="hl-otazka">Kdo byl podle tebe hráčem zápasu?</div>
+    <button class="tlacitko-hlavni" id="hl-poslat" onclick="hlPosli()">Dát hlas</button>
+  </div>
+
+  <div class="hl-hotovo">
+    <div class="hl-fajfka">✓</div>
+    <h3>Hlas uložen</h3>
+    <p id="hl-hotovo-text">Výsledek se ukáže, až odhlasují všichni ze zápasu.</p>
+    <button class="hl-zmena" onclick="hlZmenit()">Změnit hlas</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="nacitani" style="position:fixed;inset:0;z-index:95;background:var(--cerna);display:flex;align-items:center;justify-content:center">
+  <span style="color:var(--bila-38);font-size:13.5px">Načítám…</span>
+</div>
+
+<script>
+/* ============================================================
+   FLORBAL KUŘIM — aplikační logika nad Supabase
+   ============================================================ */
+
+const SUPABASE_URL  = 'https://dvfdurlgvafamumrkodr.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2ZmR1cmxndmFmYW11bXJrb2RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NjI3NTksImV4cCI6MjEwMzQzODc1OX0.XTnxzgt8wyMrvxqjTfc8eNfkbUMn6M3-8hJUFP15vog';
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* kolik dní dopředu appka připomíná neodpovězené akce */
+const VYZVA_DNI = 14;
+
+const ZAVAZNOST = {jdu:2, mozna:1, nejdu:0};
+const TYPY = {
+  trenink:{nazev:'Trénink', barva:'var(--trenink)',
+           zare:'rgba(124,182,224,.20)', pruh:'var(--trenink)'},
+  zapas:  {nazev:'Zápas',   barva:'var(--zapas)',
+           zare:'rgba(190,220,245,.22)', pruh:'linear-gradient(90deg,#7CB6E0,#F2F7FB)'},
+  akce:   {nazev:'Akce',    barva:'var(--akce)',
+           zare:'rgba(242,247,251,.13)', pruh:'var(--akce)'}
+};
+const DNY = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
+const DNY_KR = ['Ne','Po','Út','St','Čt','Pá','So'];
+const MESICE = ['ledna','února','března','dubna','května','června',
+                'července','srpna','září','října','listopadu','prosince'];
+const MESICE_1 = ['Leden','Únor','Březen','Duben','Květen','Červen',
+                  'Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+
+/* ---------- stav v paměti ---------- */
+const stav = {
+  ja: null,           // řádek z profily + e-mail
+  nastaveni: {},      // uzávěrky, registrační kód
+  profily: [],        // aktivní hráči
+  udalosti: [],
+  prihlasky: {},      // id události -> { id hráče: {stav,pozde,duvod,zmeneno} }
+  hoste: {},          // id události -> [hosté]
+  zpravy: {},         // id události -> [zprávy]
+  hlasky: {},
+  hlasovaniHotovo: false,   // je v databázi tabulka hlasovani?
+  mujHlas: {},        // "id události:číslo zápasu" -> komu jsem dal hlas
+  mvp: {},            // id hráče -> kolikrát byl hráčem zápasu
+  vysledky: {},       // id události -> řádky z vysledky_hlasovani
+  hlasStav: {}        // id události -> řádky ze stav_hlasovani
+};
+
+const jeTrener = () => stav.ja?.role === 'trener';
+const ROLE = {hrac:'Hráč', golman:'Golman', trener:'Trenér'};
+
+/* uzávěrka = předchozí den ve zvolenou hodinu, podle role */
+function uzaverkaPro(u, role){
+  const h = parseInt(stav.nastaveni['uzaverka_'+(role||'hrac')] ?? '20', 10);
+  const d = new Date(u.zacatek);
+  d.setDate(d.getDate()-1);
+  d.setHours(isNaN(h)?20:h, 0, 0, 0);
+  return d;
+}
+const jmenoHrace = (id) => stav.profily.find(p=>p.id===id)?.jmeno || 'Neznámý';
+const iniciály = (jmeno) => (jmeno||'').split(' ').filter(Boolean).map(s=>s[0]).join('').slice(0,2).toUpperCase();
+const cas = (d) => d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+
+const mojeOdpoved = (id) => stav.prihlasky[id]?.[stav.ja.id] || null;
+const jePozde = (u) => new Date() > uzaverkaPro(u, stav.ja?.role);
+const budouci = () => stav.udalosti.filter(u=>u.zacatek>=new Date() && !u.zruseno)
+                                   .sort((a,b)=>a.zacatek-b.zacatek);
+const vseBudouci = () => stav.udalosti.filter(u=>u.zacatek>=new Date())
+                                      .sort((a,b)=>a.zacatek-b.zacatek);
+const minule = () => stav.udalosti.filter(u=>u.zacatek<new Date());
+const cekajici = () => {
+  const h=new Date(); h.setDate(h.getDate()+VYZVA_DNI);
+  return budouci().filter(u=>!mojeOdpoved(u.id) && u.zacatek<=h);
+};
+const nazevUdalosti = (u) => {
+  if(u.typ==='akce') return u.nazev || 'Akce';
+  if(u.typ==='trenink') return u.nazev || 'Trénink';
+  if(u.souper1 && u.souper2) return `vs. ${u.souper1} & ${u.souper2}`;
+  return 'vs. ' + (u.souper1 || u.souper2 || '');
+};
+
+/* ============================================================
+   PŘIHLÁŠENÍ
+   ============================================================ */
+
+function chyba(elId, text){
+  const e=document.getElementById(elId);
+  e.textContent=text; e.classList.toggle('videt', !!text);
+}
+
+async function prihlasit(){
+  const email = document.getElementById('b-email').value.trim();
+  const heslo = document.getElementById('b-heslo').value;
+  chyba('b-chyba','');
+  if(!email || !heslo){ chyba('b-chyba','Vyplň e-mail i heslo.'); return; }
+
+  const tlacitko=document.getElementById('tlacitko-vstup');
+  tlacitko.textContent='Přihlašuji…'; tlacitko.disabled=true;
+
+  const {error} = await db.auth.signInWithPassword({email, password:heslo});
+
+  tlacitko.textContent='Přihlásit se'; tlacitko.disabled=false;
+  if(error){
+    chyba('b-chyba', error.message.includes('Invalid login')
+      ? 'Nesedí e-mail nebo heslo.' : error.message);
+    return;
+  }
+  await nastartuj();
+}
+
+async function registrovat(){
+  const jmeno = document.getElementById('r-jmeno').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const heslo = document.getElementById('r-heslo').value;
+  const kod   = document.getElementById('r-kod').value.trim();
+  chyba('r-chyba','');
+
+  if(!jmeno){ chyba('r-chyba','Napiš jméno a příjmení.'); return; }
+  if(!email){ chyba('r-chyba','Vyplň e-mail.'); return; }
+  if(heslo.length<8){ chyba('r-chyba','Heslo musí mít aspoň 8 znaků.'); return; }
+  if(!kod){ chyba('r-chyba','Bez klubového kódu to nejde.'); return; }
+
+  const tl=document.getElementById('tlacitko-registrace');
+  tl.textContent='Zakládám…'; tl.disabled=true;
+
+  const {error} = await db.auth.signUp({
+    email, password: heslo,
+    options:{ data:{ jmeno, kod } }
+  });
+
+  tl.textContent='Vytvořit účet'; tl.disabled=false;
+
+  if(error){
+    chyba('r-chyba', error.message.includes('already registered')
+      ? 'Tenhle e-mail už je zaregistrovaný — přihlas se.' : error.message);
+    return;
+  }
+
+  // profil vzniká jen se správným kódem — ověříme to
+  const {data:{session}} = await db.auth.getSession();
+  if(!session){
+    chyba('r-chyba','Účet vznikl, ale přihlášení neproběhlo. Zkus se přihlásit.');
+    return;
+  }
+  const {data: profil} = await db.from('profily').select('id').eq('id',session.user.id).maybeSingle();
+  if(!profil){
+    await db.auth.signOut();
+    chyba('r-chyba','Klubový kód nesedí. Zeptej se trenéra na správný.');
+    return;
+  }
+  await nastartuj();
+}
+
+async function obnovaHesla(zProfilu){
+  const email = zProfilu ? stav.ja.email : document.getElementById('b-email').value.trim();
+  if(!email){ chyba('b-chyba','Nejdřív vyplň e-mail, pošlu na něj odkaz.'); return; }
+  const {error} = await db.auth.resetPasswordForEmail(email, {redirectTo: window.location.href.split('#')[0]});
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  toast('Poslal jsem ti odkaz na e-mail.');
+}
+
+async function nastavHeslo(){
+  const jmeno = document.getElementById('n-jmeno').value.trim();
+  const heslo = document.getElementById('n-heslo').value;
+  chyba('n-chyba','');
+  if(heslo.length < 8){ chyba('n-chyba','Heslo musí mít aspoň 8 znaků.'); return; }
+
+  const {error} = await db.auth.updateUser({password: heslo});
+  if(error){ chyba('n-chyba', error.message); return; }
+
+  if(jmeno){
+    const {data:{user}} = await db.auth.getUser();
+    await db.from('profily').update({jmeno}).eq('id', user.id);
+  }
+  history.replaceState(null,'',window.location.pathname);
+  await nastartuj();
+}
+
+async function odhlasit(){
+  await db.auth.signOut();
+  stav.ja=null;
+  document.getElementById('brana').classList.remove('pryc');
+  document.getElementById('blok-prihlaseni').style.display='block';
+  document.getElementById('blok-registrace').style.display='none';
+  document.getElementById('blok-nove-heslo').style.display='none';
+  document.querySelectorAll('#prepinac-vstupu button').forEach((x,i)=>x.classList.toggle('aktivni',i===0));
+  document.getElementById('prepinac-vstupu').style.display='grid';
+  document.getElementById('b-heslo').value='';
+  window.scrollTo({top:0});
+}
+
+/* ============================================================
+   NAČTENÍ DAT
+   ============================================================ */
+
+async function nactiVse(){
+  const [profily, udalosti, prihlasky, hlasky, nastaveni, hoste, hlasovani, mvp] = await Promise.all([
+    db.from('profily').select('*').order('jmeno'),
+    db.from('udalosti').select('*').order('zacatek'),
+    db.from('prihlasky').select('*'),
+    db.from('hlasky').select('*'),
+    db.from('nastaveni').select('*'),
+    db.from('hoste').select('*').order('vytvoreno'),
+    db.from('hlasovani').select('*'),
+    db.rpc('mvp_pocty')
+  ]);
+
+  /* Hlasování je novinka — když ještě neproběhlo SQL, appka jede dál bez něj
+     a nic z hlasování se nenabízí. */
+  stav.hlasovaniHotovo = !hlasovani.error;
+  stav.mujHlas = {};
+  (hlasovani.data||[]).forEach(x=>{ stav.mujHlas[x.udalost_id+':'+x.zapas] = x.hrac_id; });
+  stav.mvp = {};
+  (mvp.data||[]).forEach(m=>{ if(m.mvp > 0) stav.mvp[m.hrac_id] = m.mvp; });
+
+  stav.hoste = {};
+  (hoste.data||[]).forEach(h=>{
+    (stav.hoste[h.udalost_id] = stav.hoste[h.udalost_id] || []).push(h);
+  });
+
+  stav.nastaveni = {};
+  (nastaveni.data||[]).forEach(n=>{ stav.nastaveni[n.klic]=n.hodnota; });
+
+  for(const r of [profily, udalosti, prihlasky, hlasky]){
+    if(r.error){ toast('Chyba načítání: '+r.error.message); throw r.error; }
+  }
+
+  stav.profily = profily.data.filter(p=>p.aktivni);
+  stav.vsechnyProfily = profily.data;
+
+  stav.udalosti = udalosti.data.map(u=>({
+    ...u,
+    zacatek: new Date(u.zacatek),
+    konec: u.konec ? new Date(u.konec) : null,
+    sraz: u.sraz ? new Date(u.sraz) : null
+  }));
+
+  stav.prihlasky = {};
+  prihlasky.data.forEach(p=>{
+    (stav.prihlasky[p.udalost_id] = stav.prihlasky[p.udalost_id] || {})[p.hrac_id] = p;
+  });
+
+  stav.hlasky = {};
+  hlasky.data.forEach(h=>{ stav.hlasky[h.klic]=h.text; });
+}
+
+/* ---------- statistiky z Českého florbalu ---------- */
+let cfStatistiky = null;
+
+function bezDiakritiky(t){
+  return (t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function klicJmena(jmeno){
+  return bezDiakritiky(jmeno).toLowerCase().match(/[\p{L}\p{N}]+/gu)?.sort().join(' ') || '';
+}
+
+async function nactiStatistiky(){
+  if(cfStatistiky) return cfStatistiky;
+  try{
+    const o = await fetch('hraci.json?v='+Date.now());
+    if(!o.ok) throw new Error();
+    cfStatistiky = await o.json();
+  }catch(e){
+    cfStatistiky = {hraci:[], brankari:[]};
+  }
+  cfStatistiky.mapa = {};
+  [...(cfStatistiky.hraci||[]), ...(cfStatistiky.brankari||[])]
+    .forEach(z=>{ cfStatistiky.mapa[z.klic || klicJmena(z.jmeno)] = z; });
+  return cfStatistiky;
+}
+
+/* statistika konkrétního profilu, nebo null */
+function cfProProfil(profil){
+  if(!cfStatistiky) return null;
+  const klic = klicJmena(profil.cf_jmeno || profil.jmeno);
+  return cfStatistiky.mapa[klic] || null;
+}
+
+async function nactiZpravy(idUdalosti){
+  const {data, error} = await db.from('zpravy')
+    .select('*').eq('udalost_id', idUdalosti).order('vytvoreno');
+  if(error){ toast('Chat se nenačetl: '+error.message); return; }
+  stav.zpravy[idUdalosti] = data;
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+
+async function nastartuj(){
+  const {data:{session}} = await db.auth.getSession();
+  if(!session){
+    document.getElementById('nacitani').style.display='none';
+    document.getElementById('brana').classList.remove('pryc');
+    return;
+  }
+
+  // pozvánka nebo obnova hesla — nejdřív si člověk nastaví heslo
+  const hash = window.location.hash;
+  if(hash.includes('type=invite') || hash.includes('type=recovery')){
+    document.getElementById('nacitani').style.display='none';
+    document.getElementById('brana').classList.remove('pryc');
+    document.getElementById('blok-prihlaseni').style.display='none';
+    document.getElementById('blok-registrace').style.display='none';
+    document.getElementById('prepinac-vstupu').style.display='none';
+    document.getElementById('blok-nove-heslo').style.display='block';
+    return;
+  }
+
+  const {data: profil, error} = await db.from('profily')
+    .select('*').eq('id', session.user.id).single();
+
+  if(error || !profil){
+    toast('Účet není v klubu. Zaregistruj se s klubovým kódem.');
+    await db.auth.signOut();
+    document.getElementById('nacitani').style.display='none';
+    document.getElementById('brana').classList.remove('pryc');
+    return;
+  }
+
+  stav.ja = {...profil, email: session.user.email};
+
+  await nactiVse();
+  await nactiStatistiky();
+  pripojRealtime();
+
+  document.getElementById('brana').classList.add('pryc');
+  document.getElementById('nacitani').style.display='none';
+  document.getElementById('avatar-hl').textContent = iniciály(stav.ja.jmeno);
+  document.querySelectorAll('.jen-trener').forEach(e=>{
+    e.style.display = jeTrener() ? 'flex' : 'none';
+  });
+
+  prekresli();
+}
+
+/* ---------- realtime ---------- */
+let kanal=null;
+function pripojRealtime(){
+  if(kanal) return;
+  kanal = db.channel('klub')
+    .on('postgres_changes', {event:'*', schema:'public', table:'prihlasky'}, async ()=>{
+      const {data} = await db.from('prihlasky').select('*');
+      stav.prihlasky={};
+      (data||[]).forEach(p=>{
+        (stav.prihlasky[p.udalost_id]=stav.prihlasky[p.udalost_id]||{})[p.hrac_id]=p;
+      });
+      prekresli();
+      if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'hoste'}, async ()=>{
+      await nactiVse(); prekresli();
+      if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'zpravy'}, async (zmena)=>{
+      const id = zmena.new?.udalost_id || zmena.old?.udalost_id;
+      if(id && otevrenaUdalost===id){
+        await nactiZpravy(id);
+        otevriDetail(id, true);
+      }
+    })
+    .subscribe();
+}
+
+/* ============================================================
+   VYKRESLENÍ
+   ============================================================ */
+
+function upozorneniNaZapas(nejblizsi){
+  if(nejblizsi.typ==='zapas') return '';
+  const h=new Date(); h.setDate(h.getDate()+7);
+  const z=budouci().find(u=>u.typ==='zapas' && u.zacatek<=h);
+  if(!z) return '';
+  return `
+    <button class="zapas-tydne samostatny" onclick="event.stopPropagation();otevriDetail(${z.id})">
+      <span>Tento týden zápas — <b>${DNY_KR[z.zacatek.getDay()]} ${cas(z.zacatek)} ${nazevUdalosti(z)}</b></span>
+      <span class="sip">→</span>
+    </button>`;
+}
+
+function vykresliNejblizsi(){
+  const u = budouci()[0], el = document.getElementById('nejblizsi');
+  if(!u){ el.innerHTML='<div class="karta"><p class="prazdno">Zatím nic naplánovaného.</p></div>'; return; }
+
+  const t=TYPY[u.typ], o=mojeOdpoved(u.id);
+  const hodin=Math.max(0,(u.zacatek-new Date())/36e5);
+  const zaDni=Math.round((new Date(u.zacatek).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/864e5);
+  const cislo=zaDni===0?Math.max(1,Math.round(hodin)):zaDni;
+  const jednotka=zaDni===0?(Math.round(hodin)===1?'hodina':'hodin'):(zaDni===1?'den':zaDni<5?'dny':'dní');
+  const p={jdu:0,mozna:0,nejdu:0};
+  Object.values(stav.prihlasky[u.id]||{}).forEach(x=>p[x.stav]++);
+
+  el.innerHTML=`
+    <div class="nejblizsi" onclick="otevriDetail(${u.id})">
+      <div class="pruhy">
+        <svg viewBox="0 0 400 260" preserveAspectRatio="none">
+          <g stroke="#fff" fill="none" stroke-linecap="round">
+            <path d="M250 300 L430 60"  stroke-width="10" opacity=".07"/>
+            <path d="M285 300 L465 60"  stroke-width="4"  opacity=".10"/>
+            <path d="M300 300 L480 60"  stroke-width="2"  opacity=".16"/>
+            <path d="M330 300 L510 60"  stroke-width="7"  opacity=".05"/>
+          </g>
+        </svg>
+      </div>
+      <div class="nb-obsah">
+        <div class="nb-vrsek">
+          <div style="flex:1;min-width:0">
+            <span class="stitek"><i></i>${t.nazev}</span>
+            <h2 class="kdy">${zaDni===0?'Dnes':zaDni===1?'Zítra':DNY[u.zacatek.getDay()].charAt(0).toUpperCase()+DNY[u.zacatek.getDay()].slice(1)} ${cas(u.zacatek)}</h2>
+            ${u.typ==='trenink'?'':`<p class="nazev-akce">${nazevUdalosti(u)}</p>`}
+            <p class="kde">${u.misto||''}${u.sraz?` · sraz ${cas(u.sraz)}`:''}</p>
+          </div>
+          <div class="odpocet"><span class="cislo">${cislo}</span><span class="jednotka">${jednotka}</span></div>
+        </div>
+        <div class="pocty">
+          <span><i style="background:var(--jdu)"></i>${p.jdu} jde</span>
+          <span><i style="background:var(--mozna)"></i>${p.mozna} možná</span>
+          <span><i style="background:var(--nejdu)"></i>${p.nejdu} nejde</span>
+        </div>
+        <div class="volba">
+          ${['jdu','mozna','nejdu'].map(s=>`
+            <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}"
+                    onclick="event.stopPropagation();odpoved(${u.id},'${s}')">
+              <span class="znak">${s==='jdu'?'✓':s==='mozna'?'?':'✕'}</span>
+              <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${upozorneniNaZapas(u)}`;
+}
+
+/* ---------- statistiky ---------- */
+function statistikaHrace(idHrace){
+  const m=minule().filter(u=>!u.zruseno);
+  let s={jdu:0,mozna:0,nejdu:0,mlcel:0,pozdniOdhlaseni:0,celkem:m.length};
+  m.forEach(u=>{
+    const o=stav.prihlasky[u.id]?.[idHrace];
+    if(!o){ s.mlcel++; return; }
+    s[o.stav]++;
+    if(o.pozde && o.stav!=='jdu') s.pozdniOdhlaseni++;
+  });
+  s.procenta = s.celkem ? Math.round(100*s.jdu/s.celkem) : 0;
+  return s;
+}
+function poradiVTymu(idHrace){
+  const z = stav.profily.map(p=>({id:p.id, p:statistikaHrace(p.id).procenta}))
+                        .sort((a,b)=>b.p-a.p);
+  return z.findIndex(x=>x.id===idHrace)+1;
+}
+function vykresliDlazdice(kam){
+  const el=document.getElementById(kam); if(!el) return;
+  const s=statistikaHrace(stav.ja.id), poradi=poradiVTymu(stav.ja.id);
+  const cf=cfProProfil(stav.ja) || {};
+  const jeGolman = stav.ja.role==='golman';
+
+  // statistiky ze soutěže; než se odehraje první turnaj, jsou to nuly
+  const spodni = jeGolman ? `
+    <div class="d"><span class="cislo">${cf.cista_konta ?? 0}</span><span class="popis">${(cf.cista_konta ?? 0)===1?'Čisté konto':'Čistá konta'}</span></div>
+    <div class="d"><span class="cislo">${cf.vyhry ?? 0}</span><span class="popis">${(cf.vyhry ?? 0)===1?'Výhra':'Výher'}</span></div>`
+    : `
+    <div class="d"><span class="cislo">${cf.branky ?? 0}</span><span class="popis">${(cf.branky ?? 0)===1?'Gól':'Gólů'}</span></div>
+    <div class="d"><span class="cislo">${cf.asistence ?? 0}</span><span class="popis">${(cf.asistence ?? 0)===1?'Asistence':'Asistencí'}</span></div>`;
+
+  el.innerHTML=`
+    <div class="d zvyraznena"><span class="cislo">${s.procenta} %</span><span class="popis">Účast v sezóně</span></div>
+    <div class="d"><span class="cislo">${poradi}.<span style="color:var(--bila-18);font-size:20px"> z ${stav.profily.length}</span></span><span class="popis">V týmu podle docházky</span></div>
+    ${spodni}`;
+}
+
+/* ---------- karta a seznam ---------- */
+function kartaUdalosti(u, sDatem=true){
+  const o=mojeOdpoved(u.id), probehla=u.zacatek<new Date();
+  let jde=0; Object.values(stav.prihlasky[u.id]||{}).forEach(x=>{if(x.stav==='jdu')jde++});
+  jde += (stav.hoste[u.id]||[]).length;
+  const stavOdznak = u.zruseno
+    ? '<span class="odznak zruseno">zrušeno</span>'
+    : o ? `<span class="odznak ${o.stav}">${o.stav==='jdu'?'jdu':o.stav==='mozna'?'možná':'nejdu'}</span>`
+        : probehla ? '<span class="odznak zadny">—</span>' : '<span class="odznak ceka">odpověz</span>';
+  const zivá = !probehla && !u.zruseno;
+  const barva = !zivá ? '' : (o ? 'stav-'+o.stav : 'ceka-odpoved');
+  return `
+    <button class="udalost ${probehla?'probehla':''} ${u.zruseno?'zrusena':''} ${u.typ==='zapas'?'je-zapas':''} ${barva}"
+            onclick="otevriDetail(${u.id})">
+      <span class="u-telo">
+        <span class="u-radek1">
+          <span class="typ-chip ${u.typ}">${TYPY[u.typ].nazev}</span>
+          ${stavOdznak}
+        </span>
+        <span class="u-nazev">${nazevUdalosti(u)}</span>
+        <span class="u-radek2">
+          <span class="u-detail">${sDatem?`${DNY_KR[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]} · `:''}${cas(u.zacatek)}${u.typ==='trenink'?'':(u.misto?' · '+u.misto:'')}</span>
+          ${u.zruseno?'':`
+          <span class="u-ucast" title="${jde} z ${stav.profily.length} jde">
+            <svg class="lidi" viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3.2"/><path d="M22 20v-2a4 4 0 0 0-3-3.9"/><path d="M16.5 3.6a4 4 0 0 1 0 6.8"/></svg>
+            ${jde}
+          </span>`}
+        </span>
+      </span>
+    </button>`;
+}
+
+function vykresliSeznam(){
+  const filtr=document.querySelector('#filtry button.aktivni').dataset.filtr;
+  let sez;
+  if(filtr==='probehle'){
+    sez = minule().sort((a,b)=>b.zacatek-a.zacatek);
+  } else {
+    sez = [...vseBudouci(), ...minule().sort((a,b)=>b.zacatek-a.zacatek)];
+    if(filtr!=='vse') sez = sez.filter(u=>u.typ===filtr);
+  }
+  document.getElementById('seznam').innerHTML = sez.length
+    ? sez.map(u=>kartaUdalosti(u,true)).join('')
+    : `<div class="karta"><p class="prazdno">${filtr==='probehle'?'Zatím nic neproběhlo.':'Nic tu není.'}</p></div>`;
+}
+
+function vykresliKanadske(){
+  const el=document.getElementById('kanadskeBodovani');
+  if(!el) return;
+  const d=cfStatistiky;
+  if(!d || (!d.hraci?.length && !d.brankari?.length)){
+    el.innerHTML='<p class="prazdno">Statistiky naskočí po prvním turnaji.</p>';
+    return;
+  }
+
+  const mujKlic = klicJmena(stav.ja.cf_jmeno || stav.ja.jmeno);
+  const kdy = new Date(d.aktualizovano);
+
+  /* MVP je jediný sloupec, který si vedeme sami — párujeme přes stejný klíč
+     jako zbytek tabulky. Dokud nikdo nevyhrál, sloupec se vůbec nezobrazí. */
+  const mvpKlice = {};
+  (stav.vsechnyProfily||[]).forEach(pr=>{
+    const n = stav.mvp[pr.id];
+    if(n) mvpKlice[klicJmena(pr.cf_jmeno || pr.jmeno)] = n;
+  });
+  const jeMvp = Object.keys(mvpKlice).length > 0;
+  const sloupecMvp = jeMvp ? '<col class="c-cislo">' : '';
+  const hlavickaMvp = jeMvp ? '<th title="Hráč zápasu">MVP</th>' : '';
+  const bunkaMvp = (klic) => jeMvp ? `<td>${mvpKlice[klic] || 0}</td>` : '';
+
+  const tabulkaHracu = !d.hraci?.length ? '' : `
+    <table class="kb">
+      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-cislo">${sloupecMvp}<col class="c-body"></colgroup>
+      <thead><tr><th></th><th class="hrac">Hráč</th><th>Z</th><th>B</th><th>A</th>${hlavickaMvp}<th class="body">KB</th></tr></thead>
+      <tbody>${d.hraci.map((h,i)=>`
+        <tr class="${h.klic===mujKlic?'ja':''}">
+          <td class="poradi">${i+1}.</td>
+          <td class="hrac">${h.jmeno}</td>
+          <td>${h.zapasy ?? 0}</td>
+          <td>${h.branky ?? 0}</td>
+          <td>${h.asistence ?? 0}</td>
+          ${bunkaMvp(h.klic)}
+          <td class="body">${h.body ?? 0}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+
+  const tabulkaBrankaru = !d.brankari?.length ? '' : `
+    <div class="kb-nadpis">Brankáři</div>
+    <table class="kb">
+      <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-cislo">${sloupecMvp}<col class="c-body"></colgroup>
+      <thead><tr><th></th><th class="hrac">Brankář</th><th>ZCH</th><th>BO</th><th>ø BO</th>${hlavickaMvp}<th class="body">SO</th></tr></thead>
+      <tbody>${d.brankari.map((b,i)=>`
+        <tr class="${b.klic===mujKlic?'ja':''}">
+          <td class="poradi">${i+1}.</td>
+          <td class="hrac">${b.jmeno}</td>
+          <td>${b.odchytane ?? 0}</td>
+          <td>${b.obdrzene ?? 0}</td>
+          <td>${(b.prumer_obdrzenych ?? 0).toString().replace('.', ',')}</td>
+          ${bunkaMvp(b.klic)}
+          <td class="body">${b.cista_konta ?? 0}</td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+
+  el.innerHTML = tabulkaHracu + tabulkaBrankaru + `
+    <div class="soutez-pata">
+      <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+      <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
+    </div>`;
+}
+
+async function vykresliSoutez(){
+  const mista=[...document.querySelectorAll('.karta-soutez')];
+  if(!mista.length) return;
+  const vloz=(html)=>mista.forEach(m=>m.innerHTML=html);
+  try{
+    const odpoved = await fetch('tabulka.json?v=' + Date.now());
+    if(!odpoved.ok) throw new Error('nenačteno');
+    const d = await odpoved.json();
+    if(!d.tymy || !d.tymy.length) throw new Error('prázdné');
+
+    const kdy = new Date(d.aktualizovano);
+    vloz(`
+      <table class="soutez">
+        <colgroup>
+          <col class="c-poradi"><col><col class="c-zapasy"><col class="c-skore"><col class="c-body">
+        </colgroup>
+        <thead><tr>
+          <th></th><th class="tym">Tým</th><th>Z</th><th>Skóre</th><th class="body">B</th>
+        </tr></thead>
+        <tbody>${d.tymy.map(t=>`
+          <tr class="${t.nas?'nas':''}">
+            <td class="poradi">${t.poradi}.</td>
+            <td class="tym"><span>
+              ${t.logo?`<img class="znak" src="${t.logo}" alt="" loading="lazy"
+                          onerror="this.style.visibility='hidden'">`:''}
+              <em>${t.kratky || t.nazev}</em>
+            </span></td>
+            <td>${t.zapasy}</td>
+            <td>${t.branky_vstrelene}:${t.branky_obdrzene}</td>
+            <td class="body">${t.body}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+      <div class="soutez-pata">
+        <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+        <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
+      </div>`);
+
+  }catch(e){
+    vloz('<p class="prazdno">Tabulka se nenačetla.</p>');
+  }
+}
+
+function vykresliTabulku(){
+  const r=stav.profily.map(p=>({jmeno:p.jmeno, id:p.id, ...statistikaHrace(p.id)}))
+                      .sort((a,b)=>b.procenta-a.procenta);
+  document.getElementById('tabulka-tymu').innerHTML=`
+    <thead><tr><th>Hráč</th><th>Účast</th><th>Šel</th><th>Nešel</th><th>Mlčel</th><th>Pozdě</th></tr></thead>
+    <tbody>${r.map(x=>`
+      <tr class="${x.id===stav.ja.id?'ja':''}">
+        <td>${x.jmeno}</td><td class="procenta">${x.procenta} %</td><td>${x.jdu}</td>
+        <td class="${x.nejdu?'':'nula'}">${x.nejdu}</td>
+        <td class="${x.mlcel?'':'nula'}">${x.mlcel}</td>
+        <td class="${x.pozdniOdhlaseni?'pozdni-cislo':'nula'}">${x.pozdniOdhlaseni}</td>
+      </tr>`).join('')}</tbody>`;
+}
+
+function vykresliVyzvu(){
+  const c=cekajici().length;
+  const v=document.getElementById('vyzva'), b=document.getElementById('bubl');
+  v.style.display=c?'flex':'none'; b.style.display=c?'grid':'none';
+  document.getElementById('vyzva-pocet').textContent=c; b.textContent=c;
+  document.getElementById('vyzva-text').textContent=
+    c===1?'akce čeká na tvoji odpověď':c<5?'akce čekají na tvoji odpověď':'akcí čeká na tvoji odpověď';
+}
+
+function vykresliProfil(){
+  document.getElementById('p-jmeno').textContent = stav.ja.jmeno;
+  document.getElementById('p-email').textContent = stav.ja.email;
+  document.getElementById('p-role').textContent  = ROLE[stav.ja.role] || 'Hráč';
+}
+
+function vykresliNeodpovedele(){
+  const el=document.getElementById('neodpovedeli'); if(!el) return;
+  const u=budouci()[0];
+  if(!u){ el.innerHTML='<p class="prazdno">Nic nadcházejícího.</p>'; return; }
+  const mlci=stav.profily.filter(p=>!stav.prihlasky[u.id]?.[p.id]);
+  el.innerHTML=`
+    <p style="font-size:12.5px;color:var(--bila-38);margin:14px 0 4px">
+      ${nazevUdalosti(u)} · ${DNY[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}</p>
+    ${mlci.length?mlci.map(p=>`
+      <div class="ucastnik">
+        <span class="pruh-stav" style="background:var(--bila-18)"></span>
+        <span class="jmeno">${p.jmeno}</span><span class="cas">bez odpovědi</span>
+      </div>`).join(''):'<p class="prazdno">Odpověděli všichni.</p>'}`;
+}
+
+function vykresliSpravuHracu(){
+  const el=document.getElementById('spravaHracu'); if(!el) return;
+  const barva={trener:'var(--nebeska)', golman:'var(--mozna)', hrac:'var(--bila-18)'};
+  el.innerHTML = (stav.vsechnyProfily||[]).map(p=>`
+    <div class="hrac-radek ${p.aktivni?'':'vyrazeny'}">
+      <input class="hrac-cislo" type="text" inputmode="numeric" maxlength="2"
+             style="border-left:3px solid ${barva[p.role]||'var(--bila-18)'}"
+             value="${p.cislo ?? ''}" placeholder="#"
+             onchange="ulozCislo('${p.id}', this.value)"
+             aria-label="Číslo dresu ${escapuj(p.jmeno)}">
+      <span class="hrac-jmeno">
+        ${p.jmeno}${p.aktivni?'':' <span class="duvod">vyřazen</span>'}
+      </span>
+      <span class="hrac-ovladani">
+      <select class="vyber-role" onchange="zmenRoli('${p.id}', this.value)">
+        ${Object.entries(ROLE).map(([k,v])=>
+          `<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}
+      </select>
+      <button class="vyradit" onclick="prepniAktivitu('${p.id}', ${p.aktivni})"
+              aria-label="${p.aktivni?'Vyřadit':'Vrátit'}">${p.aktivni?'✕':'↺'}</button>
+      <button class="parovani ${cfProProfil(p)?'sedi':'nesedi'}"
+              onclick="nastavCfJmeno('${p.id}')"
+              aria-label="Párování se soutěží"
+              title="${cfProProfil(p) ? 'Spárováno: '+cfProProfil(p).jmeno : 'Nespárováno se statistikami'}">
+        ${cfProProfil(p)?'⚑':'⚐'}
+      </button>
+      </span>
+    </div>`).join('') || '<p class="prazdno">Zatím tu nikdo není.</p>';
+}
+
+async function nastavCfJmeno(id){
+  const p=(stav.vsechnyProfily||[]).find(x=>x.id===id);
+  if(!p) return;
+  const nalezene = cfProProfil(p);
+  const napoveda = nalezene
+    ? `Teď se páruje na „${nalezene.jmeno}".`
+    : 'Zatím se nepodařilo spárovat.';
+  const nove = prompt(
+    `Jak se ${p.jmeno} jmenuje na webu Českého florbalu?\n${napoveda}\n\n`
+    + 'Prázdné pole = párovat automaticky podle jména.',
+    p.cf_jmeno || '');
+  if(nove === null) return;
+
+  const {error} = await db.from('profily')
+    .update({cf_jmeno: nove.trim() || null}).eq('id', id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  await nactiVse(); prekresli();
+  toast(nove.trim() ? 'Párování nastaveno.' : 'Párování vráceno na automatické.');
+}
+
+async function zmenRoli(id, nova){
+  if(id===stav.ja.id){ toast('Vlastní roli si měnit nemůžeš.'); prekresli(); return; }
+  const {error} = await db.from('profily').update({role:nova}).eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); prekresli(); return; }
+  await nactiVse(); prekresli();
+  toast('Role změněna na ' + ROLE[nova].toLowerCase() + '.');
+}
+
+async function prepniAktivitu(id, jeAktivni){
+  if(id===stav.ja.id){ toast('Sám sebe vyřadit nemůžeš.'); return; }
+  if(jeAktivni && !confirm('Vyřadit hráče? Zmizí ze soupisky, ale historie zůstane.')) return;
+  const {error} = await db.from('profily').update({aktivni: !jeAktivni}).eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  await nactiVse(); prekresli();
+  toast(jeAktivni?'Hráč vyřazen.':'Hráč vrácen do soupisky.');
+}
+
+async function ulozUzaverky(){
+  for(const r of ['hrac','golman','trener']){
+    const h=document.getElementById('u-'+r).value;
+    const {error} = await db.from('nastaveni')
+      .update({hodnota:String(h), zmeneno:new Date().toISOString()}).eq('klic','uzaverka_'+r);
+    if(error){ toast('Nepovedlo se: '+error.message); return; }
+    stav.nastaveni['uzaverka_'+r]=String(h);
+  }
+  prekresli();
+  toast('Uzávěrky uloženy.');
+}
+function naplnUzaverky(){
+  ['hrac','golman','trener'].forEach(r=>{
+    const e=document.getElementById('u-'+r);
+    if(e) e.value = stav.nastaveni['uzaverka_'+r] ?? '20';
+  });
+}
+
+/* ============================================================
+   DETAIL UDÁLOSTI
+   ============================================================ */
+let otevrenaUdalost=null;
+let chatKoncept='';
+
+async function otevriDetail(id, jenPrekresli){
+  otevrenaUdalost=id;
+  if(!jenPrekresli && !stav.zpravy[id]) await nactiZpravy(id);
+
+  const u=stav.udalosti.find(x=>x.id===id);
+  if(!u) return;
+  const t=TYPY[u.typ], o=mojeOdpoved(id), probehla=u.zacatek<new Date();
+
+  const sk={jdu:[],mozna:[],nejdu:[],mlci:[]};
+  let jdeHracu=0, jdeGolmanu=0;
+  stav.profily.forEach(p=>{
+    const od=stav.prihlasky[id]?.[p.id];
+    if(!od){ sk.mlci.push({jmeno:p.jmeno}); return; }
+    sk[od.stav].push({jmeno:p.jmeno, ...od});
+    if(od.stav==='jdu'){
+      if(p.role==='golman') jdeGolmanu++; else jdeHracu++;
+    }
+  });
+
+  const hosteAkce = stav.hoste[id] || [];
+  jdeHracu += hosteAkce.length;
+
+  // kolik golmanů je potřeba — na zápas stačí jeden, na trénink dva.
+  // Dá se přenést do Správy, zatím se berou výchozí hodnoty.
+  // v každé skupině řadíme podle toho, kdo se ozval dřív
+  ['jdu','mozna','nejdu'].forEach(k=>{
+    sk[k].sort((a,b)=> new Date(a.zmeneno) - new Date(b.zmeneno));
+  });
+
+  const golmanuPotreba = u.typ==='zapas'
+    ? (parseInt(stav.nastaveni['golmanu_zapas']   ?? '1', 10) || 1)
+    : (parseInt(stav.nastaveni['golmanu_trenink'] ?? '2', 10) || 2);
+  const golmanuDost = jdeGolmanu >= golmanuPotreba;
+
+  const sestava = u.typ==='akce' ? '' : `
+    <div class="sestava ${golmanuDost?'':'ma-chybu'}">
+      <span class="kus"><b>${jdeHracu}</b> do pole</span>
+      <span class="tecka">·</span>
+      <span class="kus golmani ${golmanuDost?'':'chybi'}">
+        <b>${jdeGolmanu}</b> ${jdeGolmanu===1?'golman':(jdeGolmanu>=2&&jdeGolmanu<5)?'golmani':'golmanů'}${golmanuDost?'':` · chybí ${golmanuPotreba-jdeGolmanu}`}
+      </span>
+    </div>`;
+
+  const kdy=(od)=>{
+    if(!od.zmeneno) return '';
+    const d=new Date(od.zmeneno);
+    return `${DNY_KR[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. ${cas(d)}`;
+  };
+  const uz=uzaverkaPro(u, stav.ja.role);
+  const poUzaverce = new Date() > uz;
+
+  const radek=(x,barva)=>`
+    <div class="ucastnik">
+      <span class="pruh-stav" style="background:${barva}"></span>
+      <span><span class="jmeno">${x.jmeno}</span>${x.duvod?`<br><span class="duvod">„${x.duvod}"</span>`:''}</span>
+      <span class="cas ${x.pozde?'pozde':''}">${x.zmeneno?kdy(x):'bez odpovědi'}</span>
+    </div>`;
+  const radekHosta=(h)=>`
+    <div class="ucastnik host">
+      <span class="pruh-stav" style="background:var(--mozna)"></span>
+      <span>
+        <span class="jmeno">${escapuj(h.jmeno)}<span class="znacka-host">host</span></span>
+        <br><span class="duvod">přivedl ${jmenoHrace(h.pridal)}</span>
+      </span>
+      ${(h.pridal===stav.ja.id || jeTrener()) && !probehla
+        ? `<button class="smazat-hosta" onclick="smazHosta(${h.id})" aria-label="Odebrat hosta">✕</button>`
+        : ''}
+    </div>`;
+
+  const muzePridatHosta = u.typ==='trenink' && !probehla && !u.zruseno;
+  const blokHostu = (hosteAkce.length || muzePridatHosta) ? `
+    ${hosteAkce.length ? `<div class="karta ucastnici" style="margin-top:8px">
+      ${hosteAkce.map(radekHosta).join('')}</div>` : ''}
+    ${muzePridatHosta ? `<button class="pridat-hosta" onclick="pridejHosta(${id})">+ Přidat hosta</button>` : ''}
+  ` : '';
+
+  const skupina=(n,pole,barva)=>pole.length?`
+    <div class="nadpis-sekce">${n} <span class="kolik">${pole.length}</span></div>
+    <div class="karta ucastnici">${pole.map(x=>radek(x,barva)).join('')}</div>`:'';
+
+  const zpr = stav.zpravy[id]||[];
+
+  document.getElementById('plachta-obsah').innerHTML=`
+    <button class="zavrit-detail" onclick="zavriDetail()" aria-label="Zavřít">✕</button>
+    <div class="uchyt-plocha" id="uchyt-plocha"><div class="uchyt"></div></div>
+    <div class="detail-hlava">
+      <span class="stitek" style="color:${t.barva}"><i></i>${t.nazev}</span>
+      <h2 class="detail-nazev">${nazevUdalosti(u)}${u.zruseno?' <span class="odznak zruseno" style="vertical-align:middle">zrušeno</span>':''}</h2>
+      <p class="detail-radek"><b>${DNY[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}</b> · ${cas(u.zacatek)}</p>
+      <p class="detail-radek">${u.misto||''}${u.doma!==null&&u.doma!==undefined?(u.doma?' · doma':' · venku'):''}${u.sraz?` · sraz ${cas(u.sraz)}`:''}</p>
+      ${(u.vysledek1||u.vysledek2)?`<p class="detail-radek"><b>Výsledky:</b> ${[u.vysledek1,u.vysledek2].filter(Boolean).join(' · ')}</p>`:''}
+      ${!probehla&&!u.zruseno?`<p class="detail-radek" style="margin-top:9px">
+        <span style="color:${poUzaverce?'#E58AA0':'var(--bila-38)'}">
+          ${poUzaverce?'Uzávěrka byla':'Odpovědět do'} ${DNY_KR[uz.getDay()]} ${uz.getDate()}. ${MESICE[uz.getMonth()]} ${cas(uz)}
+        </span></p>`:''}
+      ${u.poznamka?`<p class="detail-poznamka">${u.poznamka}</p>`:''}
+    </div>
+    <div class="detail-telo">
+      ${jeTrener()?`
+        <div class="akce-trenera">
+          <button onclick="upravUdalost(${id})">Upravit</button>
+          <button class="${u.zruseno?'':'nebezpecna'}" onclick="prepniZruseni(${id})">
+            ${u.zruseno?'Obnovit':'Zrušit'}
+          </button>
+          <button class="nebezpecna" onclick="smazUdalost(${id})">Smazat</button>
+        </div>`:''}
+      ${!probehla&&!u.zruseno?`
+        <div class="volba tmava">
+          ${['jdu','mozna','nejdu'].map(s=>`
+            <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}" onclick="odpoved(${id},'${s}')">
+              <span class="znak">${s==='jdu'?'✓':s==='mozna'?'?':'✕'}</span>
+              <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
+            </button>`).join('')}
+        </div>`:''}
+      ${probehla||u.zruseno?'':sestava}
+      ${skupina('Jde', sk.jdu, 'var(--jdu)')
+        ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
+      ${blokHostu}
+      ${skupina('Možná',sk.mozna,'var(--mozna)')}
+      ${skupina('Nejde',sk.nejdu,'var(--nejdu)')}
+      ${skupina('Bez odpovědi',sk.mlci,'var(--bila-18)')}
+
+      <div class="chat-blok">
+        <div class="chat-vnitrek">
+          <div class="chat-hlava">
+            <svg class="ikona-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-4-.9L3 21l1.9-4.9A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/></svg>
+            <span class="nadpis">Chat k akci</span>
+            ${zpr.length?`<span class="pocet-zprav">${zpr.length}</span>`:''}
+          </div>
+          ${zpr.map(z=>{
+            const jmeno=jmenoHrace(z.autor_id);
+            return `
+            <div class="zprava ${z.autor_id===stav.ja.id?'moje':''}">
+              <span class="avatar">${iniciály(jmeno)}</span>
+              <span><span class="autor">${jmeno}</span><span class="bublina">${escapuj(z.text)}</span></span>
+            </div>`;}).join('')||'<p class="prazdno" style="padding:6px 0 10px">Zatím nikdo nic nenapsal.</p>'}
+          <button class="napsat-zpravu" onclick="otevriZpravu()">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Napsat zprávu
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  const obsah=document.getElementById('plachta-obsah');
+  obsah.style.setProperty('--zare-typu', t.zare);
+  obsah.style.setProperty('--pruh-typu', t.pruh);
+
+  document.getElementById('plachta').classList.add('otevreno');
+  document.body.classList.add('detail-otevren');
+  document.body.style.overflow='hidden';
+  if(!window._tahaniPripojeno){ pripojTahani(); window._tahaniPripojeno=true; }
+  if(!jenPrekresli) document.getElementById('plachta-obsah').scrollTop=0;
+}
+
+function escapuj(t){
+  const d=document.createElement('div'); d.textContent=t; return d.innerHTML;
+}
+
+/* stažení plachty prstem dolů */
+function pripojTahani(){
+  const obsah=document.getElementById('plachta-obsah');
+  let start=0, posun=0, tahame=false;
+
+  const zacni=(y)=>{ if(obsah.scrollTop>2) return; start=y; posun=0; tahame=true;
+                     obsah.style.transition='none'; };
+  const tahni=(y,e)=>{
+    if(!tahame) return;
+    posun=y-start;
+    if(posun<0){ posun=0; return; }
+    if(e.cancelable) e.preventDefault();
+    obsah.style.transform=`translateY(${posun}px)`;
+  };
+  const pust=()=>{
+    if(!tahame) return;
+    tahame=false;
+    obsah.style.transition='transform .24s cubic-bezier(.2,.85,.3,1)';
+    if(posun>110){ obsah.style.transform='translateY(100%)'; setTimeout(()=>{
+        obsah.style.transform=''; obsah.style.transition=''; zavriDetail(); },200); }
+    else { obsah.style.transform=''; }
+  };
+
+  obsah.addEventListener('touchstart', e=>zacni(e.touches[0].clientY), {passive:true});
+  obsah.addEventListener('touchmove',  e=>tahni(e.touches[0].clientY, e), {passive:false});
+  obsah.addEventListener('touchend',   pust);
+  obsah.addEventListener('touchcancel',pust);
+}
+
+function zavriDetail(){
+  const o=document.getElementById('plachta-obsah');
+  o.style.transform=''; o.style.transition='';
+  document.getElementById('plachta').classList.remove('otevreno');
+  document.body.classList.remove('detail-otevren');
+  document.body.style.overflow=''; otevrenaUdalost=null; chatKoncept='';
+}
+
+async function pridejHosta(id){
+  const jmeno = prompt('Koho přivedeš? Napiš jméno, ať ostatní vědí, kdo to je.');
+  if(jmeno === null) return;
+  const j = jmeno.trim();
+  if(j.length < 2){ toast('Napiš aspoň jméno.'); return; }
+
+  const {error} = await db.from('hoste')
+    .insert({udalost_id:id, jmeno:j, pridal:stav.ja.id});
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  await nactiVse(); prekresli(); otevriDetail(id, true);
+  toast(j + ' přidán jako host.');
+}
+
+async function smazHosta(idHosta){
+  const {error} = await db.from('hoste').delete().eq('id', idHosta);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  await nactiVse(); prekresli();
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
+  toast('Host odebrán.');
+}
+
+function otevriZpravu(){
+  document.getElementById('zprava-text').value = chatKoncept || '';
+  document.getElementById('zprava-chyba').classList.remove('videt');
+  document.getElementById('modal-zprava').classList.add('otevreno');
+  setTimeout(()=>document.getElementById('zprava-text').focus(), 80);
+}
+
+function zavriZpravu(){
+  chatKoncept = document.getElementById('zprava-text').value;
+  document.getElementById('modal-zprava').classList.remove('otevreno');
+}
+
+async function posliZpravu(){
+  const pole=document.getElementById('zprava-text');
+  const text=pole.value.trim();
+  if(!text){ document.getElementById('zprava-chyba').classList.add('videt'); return; }
+
+  const {error} = await db.from('zpravy')
+    .insert({udalost_id: otevrenaUdalost, autor_id: stav.ja.id, text});
+  if(error){ toast('Nepovedlo se odeslat: '+error.message); return; }
+
+  chatKoncept=''; pole.value='';
+  document.getElementById('modal-zprava').classList.remove('otevreno');
+  await nactiZpravy(otevrenaUdalost);
+  otevriDetail(otevrenaUdalost, true);
+}
+
+/* ============================================================
+   ODPOVĚĎ NA UDÁLOST
+   ============================================================ */
+let cekaNaDuvod=null;
+
+function odpoved(id, novyStav){
+  const u=stav.udalosti.find(x=>x.id===id);
+  const stary=mojeOdpoved(id), pozde=jePozde(u);
+  const snizuje = stary && ZAVAZNOST[novyStav] < ZAVAZNOST[stary.stav];
+
+  if(pozde && snizuje){
+    cekaNaDuvod={id, stav:novyStav};
+    document.getElementById('modal-nadpis').textContent = novyStav==='mozna'?'Na čem to visí?':'Proč nemůžeš?';
+    document.getElementById('modal-text').textContent = novyStav==='mozna'
+      ? 'Měníš odpověď po uzávěrce. Napiš, na čem to závisí, ať se s tebou dá počítat.'
+      : 'Měníš odpověď po uzávěrce. Napiš ostatním důvod, ať vědí, na čem jsou.';
+    document.getElementById('modal-duvod').value='';
+    document.getElementById('modal-chyba').classList.remove('videt');
+    document.getElementById('modal').classList.add('otevreno');
+    setTimeout(()=>document.getElementById('modal-duvod').focus(),80);
+    return;
+  }
+  ulozOdpoved(id, novyStav, null);
+}
+
+function potvrdDuvod(){
+  const d=document.getElementById('modal-duvod').value.trim();
+  if(d.length<5){ document.getElementById('modal-chyba').classList.add('videt'); return; }
+  ulozOdpoved(cekaNaDuvod.id, cekaNaDuvod.stav, d);
+  zavriModal();
+}
+function zavriModal(){
+  document.getElementById('modal').classList.remove('otevreno');
+  cekaNaDuvod=null;
+}
+
+async function ulozOdpoved(id, novyStav, duvod){
+  const radek = {udalost_id:id, hrac_id:stav.ja.id, stav:novyStav};
+  if(duvod) radek.duvod=duvod;
+
+  const {error} = await db.from('prihlasky')
+    .upsert(radek, {onConflict:'udalost_id,hrac_id'});
+
+  if(error){
+    toast(error.message.includes('důvod')
+      ? 'Změna po uzávěrce potřebuje důvod.'
+      : 'Nepovedlo se uložit: '+error.message);
+    return;
+  }
+
+  const u=stav.udalosti.find(x=>x.id===id);
+  const h=vyberHlasku(novyStav, jePozde(u));
+  if(h) toast(h);
+
+  await nactiVse();
+  prekresli();
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
+}
+
+function vyberHlasku(s, pozde){
+  const klic = pozde ? s+'_pozde' : s;
+  const radky=(stav.hlasky[klic]||'').split('\n').map(r=>r.trim()).filter(Boolean);
+  return radky.length ? radky[Math.floor(Math.random()*radky.length)] : null;
+}
+
+/* ============================================================
+   SPRÁVA — události a hlášky
+   ============================================================ */
+const hodnota = (id) => document.getElementById(id)?.value;
+
+async function zalozUdalost(){
+  const typ = document.querySelector('#typ-prepinac button.aktivni').dataset.typ;
+  const datum = hodnota('f-datum'), casPole = hodnota('f-cas');
+  if(!datum || !casPole){ toast('Vyplň datum a čas.'); return; }
+
+  const [r,m,d]=datum.split('-').map(Number);
+  const [h,mi]=casPole.split(':').map(Number);
+  const zacatek=new Date(r,m-1,d,h,mi);
+
+  const nazev = typ==='akce' ? hodnota('f-nazev-akce')
+              : typ==='trenink' ? (hodnota('f-nazev-trenink')||null) : null;
+  if(typ==='akce' && !nazev){ toast('Akce potřebuje název.'); return; }
+
+  const opakovat = hodnota('f-opakovat');
+
+  if(opakovat && typ!=='zapas'){
+    const {data, error} = await db.rpc('zaloz_opakovane', {
+      p_typ: typ, p_misto: hodnota('f-misto'), p_prvni: zacatek.toISOString(),
+      p_do: opakovat, p_minut: 90, p_nazev: nazev, p_poznamka: hodnota('f-poznamka')||null
+    });
+    if(error){ toast('Nepovedlo se: '+error.message); return; }
+    toast(`Založeno ${data} událostí.`);
+  } else {
+    const radek = {
+      typ, nazev, zacatek: zacatek.toISOString(),
+      misto: hodnota('f-misto')||null,
+      poznamka: hodnota('f-poznamka')||null,
+      vytvoril: stav.ja.id
+    };
+    if(typ==='zapas'){
+      radek.souper1 = hodnota('f-souper1')||null;
+      radek.souper2 = hodnota('f-souper2')||null;
+      radek.doma = hodnota('f-doma')==='ano';
+      const sraz=hodnota('f-sraz');
+      if(sraz){
+        const [sh,sm]=sraz.split(':').map(Number);
+        radek.sraz=new Date(r,m-1,d,sh,sm).toISOString();
+      }
+    }
+    const {error} = await db.from('udalosti').insert(radek);
+    if(error){ toast('Nepovedlo se: '+error.message); return; }
+    toast('Událost založena.');
+  }
+
+  ['f-nazev-akce','f-nazev-trenink','f-souper1','f-souper2','f-poznamka','f-opakovat']
+    .forEach(i=>{ const e=document.getElementById(i); if(e) e.value=''; });
+
+  await nactiVse(); prekresli();
+}
+
+const naDatum=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const naCas=d=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+function upravUdalost(id){
+  const u=stav.udalosti.find(x=>x.id===id);
+  document.getElementById('plachta-obsah').innerHTML=`
+    <button class="zavrit-detail" onclick="zavriDetail()" aria-label="Zavřít">✕</button>
+    <div class="uchyt-plocha"><div class="uchyt"></div></div>
+    <div class="detail-hlava">
+      <h2 class="detail-nazev" style="margin-bottom:4px">Upravit událost</h2>
+      <p class="detail-radek">${TYPY[u.typ].nazev} · ${nazevUdalosti(u)}</p>
+    </div>
+    <div class="detail-telo">
+      ${u.typ==='akce'?`<div class="pole"><label>Název</label><input type="text" id="e-nazev" value="${u.nazev||''}"></div>`:''}
+      ${u.typ==='trenink'?`<div class="pole"><label>Název tréninku <span style="color:var(--bila-18)">nepovinné</span></label><input type="text" id="e-nazev" value="${u.nazev||''}" placeholder="Pondělí"></div>`:''}
+      ${u.typ==='zapas'?`<div class="dvojice">
+        <div class="pole"><label>1. zápas</label><input type="text" id="e-souper1" value="${u.souper1||''}"></div>
+        <div class="pole"><label>2. zápas</label><input type="text" id="e-souper2" value="${u.souper2||''}"></div>
+      </div>
+      <div class="dvojice">
+        <div class="pole"><label>Výsledek 1</label><input type="text" id="e-vysledek1" value="${u.vysledek1||''}" placeholder="5:3"></div>
+        <div class="pole"><label>Výsledek 2</label><input type="text" id="e-vysledek2" value="${u.vysledek2||''}" placeholder="2:2"></div>
+      </div>`:''}
+      <div class="dvojice">
+        <div class="pole"><label>Datum</label><input type="date" id="e-datum" value="${naDatum(u.zacatek)}"></div>
+        <div class="pole"><label>Začátek</label><input type="time" id="e-cas" value="${naCas(u.zacatek)}"></div>
+      </div>
+      <div class="pole"><label>Místo</label><input type="text" id="e-misto" value="${u.misto||''}"></div>
+      ${u.typ==='zapas'?`<div class="pole"><label>Sraz</label><input type="time" id="e-sraz" value="${u.sraz?naCas(u.sraz):''}"></div>`:''}
+      <div class="pole"><label>Poznámka</label><textarea id="e-poznamka">${u.poznamka||''}</textarea></div>
+      <button class="tlacitko-hlavni" onclick="ulozUpravu(${id})">Uložit změny</button>
+      <button class="tlacitko-vedlejsi" onclick="otevriDetail(${id})">Zpět bez uložení</button>
+    </div>`;
+}
+
+async function ulozUpravu(id){
+  const u=stav.udalosti.find(x=>x.id===id);
+  const [r,m,d]=hodnota('e-datum').split('-').map(Number);
+  const [h,mi]=hodnota('e-cas').split(':').map(Number);
+  const zacatek=new Date(r,m-1,d,h,mi);
+  const zmenilSeCas = u.zacatek.getTime()!==zacatek.getTime();
+
+  const zmeny = {
+    zacatek: zacatek.toISOString(),
+    misto: hodnota('e-misto')||null,
+    poznamka: hodnota('e-poznamka')||null
+  };
+  if(hodnota('e-nazev')!==undefined) zmeny.nazev=hodnota('e-nazev')||null;
+  if(hodnota('e-souper1')!==undefined) zmeny.souper1=hodnota('e-souper1')||null;
+  if(hodnota('e-souper2')!==undefined) zmeny.souper2=hodnota('e-souper2')||null;
+  if(hodnota('e-vysledek1')!==undefined) zmeny.vysledek1=hodnota('e-vysledek1')||null;
+  if(hodnota('e-vysledek2')!==undefined) zmeny.vysledek2=hodnota('e-vysledek2')||null;
+  if(hodnota('e-sraz')){
+    const [sh,sm]=hodnota('e-sraz').split(':').map(Number);
+    zmeny.sraz=new Date(r,m-1,d,sh,sm).toISOString();
+  }
+
+  const {error} = await db.from('udalosti').update(zmeny).eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  await nactiVse(); prekresli();
+  toast(zmenilSeCas?'Čas změněn. Dej vědět týmu.':'Změny uloženy.');
+  otevriDetail(id);
+}
+
+async function smazUdalost(id){
+  const u=stav.udalosti.find(x=>x.id===id);
+  const pocet=Object.keys(stav.prihlasky[id]||{}).length;
+  const zprav=(stav.zpravy[id]||[]).length;
+
+  const varovani = `Smazat „${nazevUdalosti(u)}" natrvalo?\n\n`
+    + `Zmizí i ${pocet} ${pocet===1?'odpověď':pocet<5?'odpovědi':'odpovědí'}`
+    + (zprav?` a ${zprav} ${zprav===1?'zpráva':zprav<5?'zprávy':'zpráv'} v chatu`:'')
+    + `.\nTohle se nedá vrátit — na odpadlý trénink použij radši Zrušit.`;
+  if(!confirm(varovani)) return;
+
+  const {error} = await db.from('udalosti').delete().eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+
+  delete stav.zpravy[id];
+  zavriDetail();
+  await nactiVse(); prekresli();
+  toast('Událost smazána.');
+}
+
+async function prepniZruseni(id){
+  const u=stav.udalosti.find(x=>x.id===id);
+  const {error} = await db.from('udalosti').update({zruseno: !u.zruseno}).eq('id',id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  await nactiVse(); prekresli();
+  toast(!u.zruseno?'Akce zrušena.':'Akce obnovena.');
+  otevriDetail(id, true);
+}
+
+async function nactiKod(){
+  if(!jeTrener()) return;
+  const {data} = await db.from('nastaveni').select('hodnota').eq('klic','registracni_kod').maybeSingle();
+  const e=document.getElementById('k-kod');
+  if(e && data) e.value=data.hodnota;
+}
+
+async function ulozKod(){
+  const kod=document.getElementById('k-kod').value.trim();
+  if(kod.length<4){ toast('Kód ať má aspoň čtyři znaky.'); return; }
+  const {error} = await db.from('nastaveni')
+    .update({hodnota:kod, zmeneno:new Date().toISOString()}).eq('klic','registracni_kod');
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  toast('Kód uložen.');
+}
+
+function zkopirujPozvanku(){
+  const kod=document.getElementById('k-kod').value.trim() || '???';
+  const text = `Appka na přihlašování na tréninky a zápasy:\n${window.location.href.split('#')[0]}\n\n`
+             + `Klikni na Registrace, vyplň jméno, e-mail a heslo.\nKlubový kód: ${kod}`;
+  navigator.clipboard.writeText(text)
+    .then(()=>toast('Zkopírováno, vlož to do skupiny.'))
+    .catch(()=>toast('Nepovedlo se zkopírovat.'));
+}
+
+async function ulozHlasky(){
+  const klice=['jdu','jdu_pozde','mozna','mozna_pozde','nejdu','nejdu_pozde'];
+  for(const k of klice){
+    const text=document.getElementById('h-'+k).value;
+    const {error} = await db.from('hlasky').update({text, zmeneno:new Date().toISOString()}).eq('klic',k);
+    if(error){ toast('Nepovedlo se: '+error.message); return; }
+    stav.hlasky[k]=text;
+  }
+  toast('Hlášky uloženy.');
+}
+function naplnHlasky(){
+  Object.keys(stav.hlasky).forEach(k=>{
+    const e=document.getElementById('h-'+k);
+    if(e) e.value=stav.hlasky[k]||'';
+  });
+}
+
+async function zmenHeslo(){
+  const nove = prompt('Nové heslo (alespoň 8 znaků):');
+  if(nove === null) return;
+  if(nove.trim().length < 8){ toast('Heslo musí mít aspoň 8 znaků.'); return; }
+
+  const {error} = await db.auth.updateUser({password: nove.trim()});
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  toast('Heslo změněno. Příště se přihlas novým.');
+}
+
+async function zmenJmeno(){
+  const nove = prompt('Jak se jmenuješ?', stav.ja.jmeno);
+  if(!nove || !nove.trim()) return;
+  const {error} = await db.from('profily').update({jmeno:nove.trim()}).eq('id',stav.ja.id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  stav.ja.jmeno=nove.trim();
+  document.getElementById('avatar-hl').textContent=iniciály(stav.ja.jmeno);
+  await nactiVse(); prekresli();
+  toast('Jméno změněno.');
+}
+
+/* ============================================================
+   NAVIGACE
+   ============================================================ */
+function prepni(cil){
+  document.querySelectorAll('.obrazovka').forEach(o=>o.classList.remove('aktivni'));
+  document.getElementById('o-'+cil).classList.add('aktivni');
+  document.querySelectorAll('.navbar button').forEach(b=>b.classList.toggle('aktivni', b.dataset.cil===cil));
+  if(cil==='admin'){ naplnHlasky(); nactiKod(); naplnUzaverky(); }
+  window.scrollTo({top:0});
+}
+function prepniMenu(e){
+  e.stopPropagation();
+  document.getElementById('menu-plachta').classList.toggle('otevreno');
+}
+function zavriMenu(){ document.getElementById('menu-plachta').classList.remove('otevreno'); }
+function zMenu(cil){ zavriMenu(); prepni(cil); }
+
+document.getElementById('prepinac-vstupu').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#prepinac-vstupu button').forEach(x=>x.classList.remove('aktivni'));
+  b.classList.add('aktivni');
+  const reg = b.dataset.rezim==='registrace';
+  document.getElementById('blok-prihlaseni').style.display = reg?'none':'block';
+  document.getElementById('blok-registrace').style.display = reg?'block':'none';
+});
+
+function toast(text){
+  const t=document.getElementById('toast');
+  t.textContent=text; t.classList.add('videt');
+  clearTimeout(t._c); t._c=setTimeout(()=>t.classList.remove('videt'),3000);
+}
+
+document.getElementById('filtry').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#filtry button').forEach(x=>x.classList.remove('aktivni'));
+  b.classList.add('aktivni');
+  document.getElementById('seznam').classList.toggle('jen-probehle', b.dataset.filtr==='probehle');
+  vykresliSeznam();
+});
+document.getElementById('typ-prepinac').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#typ-prepinac button').forEach(x=>x.classList.remove('aktivni'));
+  b.classList.add('aktivni');
+  const typ=b.dataset.typ;
+  document.getElementById('pole-nazev').style.display=typ==='akce'?'block':'none';
+  document.getElementById('pole-nazev-trenink').style.display=typ==='trenink'?'block':'none';
+  document.getElementById('pole-souper').style.display=typ==='zapas'?'grid':'none';
+  document.getElementById('pole-sraz').style.display=typ==='zapas'?'grid':'none';
+});
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  if(document.getElementById('modal-zprava').classList.contains('otevreno')) zavriZpravu();
+  else if(document.getElementById('menu-plachta').classList.contains('otevreno')) zavriMenu();
+  else if(document.getElementById('modal').classList.contains('otevreno')) zavriModal();
+  else if(otevrenaUdalost) zavriDetail();
+});
+
+/* ============================================================
+   HRÁČ ZÁPASU — hlasování
+   ============================================================ */
+
+const HL_FOTKY = 'hraci/';        // hraci/13.webp, pojmenováno číslem dresu
+const HL_KROK  = 30;              // rozestup karet ve stupních
+const HL_MEZERA = 1.12;           // odstup středů sousedů v šířkách karty
+const HL_DOHLED = 3;              // kolik karet na každou stranu kreslit
+
+const skoncil     = (u) => new Date() >= (u.konec || u.zacatek);
+const jsemUcastnik = (u) => stav.prihlasky[u.id]?.[stav.ja?.id]?.stav === 'jdu';
+
+/* Jeden hrací den může mít dva zápasy. Druhý jen když je vyplněný soupeř. */
+function zapasyUdalosti(u){
+  const z = [{c:1, souper:u.souper1 || '1. zápas', uzavreno:u.hlasovani_uzavreno1}];
+  if((u.souper2||'').trim()) z.push({c:2, souper:u.souper2, uzavreno:u.hlasovani_uzavreno2});
+  return z.map(x => ({...x, otevreno: !x.uzavreno, mujHlas: stav.mujHlas[u.id+':'+x.c] || null}));
+}
+
+/* Zápasy, u kterých má smysl něco ukazovat — skončené, ne starší tří týdnů. */
+const zapasyKHlasovani = () => stav.udalosti
+  .filter(u => u.typ==='zapas' && !u.zruseno && skoncil(u) && (new Date() - u.zacatek) < 21*864e5)
+  .sort((a,b) => b.zacatek - a.zacatek);
+
+const ucastniciZapasu = (u) => stav.profily
+  .filter(p => stav.prihlasky[u.id]?.[p.id]?.stav === 'jdu')
+  .sort((a,b) => a.jmeno.localeCompare(b.jmeno,'cs'));
+
+async function nactiVysledky(id){
+  const {data, error} = await db.rpc('vysledky_hlasovani', {p_udalost:id});
+  stav.vysledky[id] = error ? [] : (data||[]);
+  return stav.vysledky[id];
+}
+async function nactiStavHlasovani(id){
+  const {data, error} = await db.rpc('stav_hlasovani', {p_udalost:id});
+  stav.hlasStav[id] = error ? [] : (data||[]);
+  return stav.hlasStav[id];
+}
+
+/* ---------- výzva a vítězové pod bannerem ---------- */
+
+function vykresliHlasovaciVyzvu(){
+  const el = document.getElementById('hlasovani-vyzva');
+  if(!el || !stav.ja) return;
+  if(!stav.hlasovaniHotovo){ el.innerHTML=''; return; }
+
+  const u = zapasyKHlasovani()[0];
+  if(!u){ el.innerHTML=''; return; }
+  const zapasy = zapasyUdalosti(u);
+
+  /* 1. čeká na můj hlas */
+  if(jsemUcastnik(u)){
+    const cekaji = zapasy.filter(z => z.otevreno && !z.mujHlas);
+    if(cekaji.length){
+      const popis = zapasy.length === 1
+        ? nazevUdalosti(u)
+        : (cekaji.length === 2 ? 'Oba zápasy čekají' : 'Zbývá ' + cekaji[0].souper);
+      el.innerHTML = `
+        <button class="hl-vyzva" onclick="otevriHlasovani(${u.id})">
+          <span class="hl-znak">★</span>
+          <span class="hl-text">
+            <span class="hl-nadpis">Vyber hráče zápasu</span>
+            <span class="hl-popis">${escapuj(popis)}</span>
+          </span>
+          <span class="hl-sip">→</span>
+        </button>`;
+      return;
+    }
+  }
+
+  /* 2. je uzavřeno — ukaž vítěze */
+  const uzavrene = zapasy.filter(z => !z.otevreno);
+  if(uzavrene.length){
+    if(!stav.vysledky[u.id]){
+      stav.vysledky[u.id] = [];                 // ať se nespustí načítání dvakrát
+      nactiVysledky(u.id).then(vykresliHlasovaciVyzvu);
+      return;
+    }
+    const bloky = uzavrene.map(z => {
+      const vitezove = stav.vysledky[u.id].filter(v => v.zapas === z.c && v.vitez);
+      if(!vitezove.length) return '';
+      return `
+        <div class="hl-stitek">Hráč zápasu${zapasy.length>1 ? ' · '+escapuj(z.souper) : ''}</div>
+        ${vitezove.map(v => `
+          <div class="hl-radek-vitez">
+            ${v.cislo!=null ? `<span class="hl-ci">#${v.cislo}</span>` : ''}
+            <span class="hl-jm">${escapuj(v.jmeno)}</span>
+            <span class="hl-pocet">${v.hlasu} ${v.hlasu===1?'hlas':v.hlasu<5?'hlasy':'hlasů'}</span>
+          </div>`).join('')}`;
+    }).filter(Boolean).join('<div style="height:12px"></div>');
+    el.innerHTML = bloky ? `<div class="hl-vitezove">${bloky}</div>` : '';
+    return;
+  }
+
+  /* 3. odhlasoval jsem, čeká se na ostatní */
+  if(jsemUcastnik(u) && zapasy.every(z => z.mujHlas)){
+    el.innerHTML = `
+      <button class="hl-vyzva" onclick="otevriHlasovani(${u.id})">
+        <span class="hl-znak" style="color:var(--jdu);background:rgba(67,183,140,.14);border-color:rgba(67,183,140,.35)">✓</span>
+        <span class="hl-text">
+          <span class="hl-nadpis">Hlas uložen</span>
+          <span class="hl-popis">Výsledek se ukáže, až odhlasují všichni</span>
+        </span>
+        <span class="hl-sip">→</span>
+      </button>`;
+    return;
+  }
+  el.innerHTML = '';
+}
+
+/* ---------- karta hráče ---------- */
+
+const hlMaFotku = {};     // číslo dresu -> true/false, zjištěno předem
+
+function hlPripravFotky(hraci){
+  return Promise.all(hraci.map(p => new Promise(hotovo => {
+    if(p.cislo == null){ hotovo(); return; }
+    if(hlMaFotku[p.cislo] !== undefined){ hotovo(); return; }
+    const o = new Image();
+    o.onload  = ()=>{ hlMaFotku[p.cislo] = true;  hotovo(); };
+    o.onerror = ()=>{ hlMaFotku[p.cislo] = false; hotovo(); };
+    o.src = HL_FOTKY + p.cislo + '.webp';
+  })));
+}
+
+function hlKartaSVG(p){
+  const maFotku = p.cislo != null && hlMaFotku[p.cislo];
+  const obsah = maFotku
+    ? `<image href="${HL_FOTKY}${p.cislo}.webp" x="14" y="14" width="572" height="772"
+              preserveAspectRatio="xMidYMid slice"/>
+       <rect x="14" y="14" width="572" height="772" fill="url(#hl-clona)"/>`
+    : `<ellipse cx="300" cy="360" rx="190" ry="190" fill="url(#hl-zare)"/>
+       <text x="300" y="360" text-anchor="middle" dominant-baseline="central"
+             font-family="'Chakra Petch',sans-serif" font-weight="700"
+             font-size="290" fill="#F4FAFF" fill-opacity=".92">?</text>`;
+  const cislo = p.cislo != null
+    ? `<tspan font-weight="700" fill="#7CB6E0">#${p.cislo}</tspan><tspan dx="20" font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`
+    : `<tspan font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`;
+  return `
+<svg viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
+  <rect x="4" y="4" width="592" height="792" rx="48" fill="#0F2B49"/>
+  <g clip-path="url(#hl-telo)">
+    <rect x="14" y="14" width="572" height="772" fill="url(#hl-podklad)"/>
+    ${obsah}
+    <rect x="14" y="636" width="572" height="150" fill="url(#hl-lista)"/>
+    <rect x="14" y="636" width="572" height="2" fill="#8FC4E8" fill-opacity=".34"/>
+    <text class="hl-jmeno" x="300" y="713" text-anchor="middle" dominant-baseline="central"
+          font-family="'Chakra Petch',sans-serif" font-size="52">${cislo}</text>
+  </g>
+  <rect x="14" y="14" width="572" height="772" rx="40" fill="none"
+        stroke="#A8D2EF" stroke-opacity=".22" stroke-width="3"/>
+</svg>`;
+}
+
+/* ---------- prstenec ---------- */
+
+const hl = {
+  udalost:null, zapas:1, hraci:[], pozice:0, cil:0, rychlost:0,
+  tazeni:false, poslX:0, poslCas:0, bezi:false, posunuto:0, polomer:500, vybrany:-1
+};
+
+const HL_CITLIVOST = 88;    // pixelů na jednu kartu
+const HL_MAX_SKOK  = 2;     // o kolik karet nejvýš dojede švih
+const HL_PRAH      = 3.5;   // karet za sekundu, pod tím se nedojíždí
+
+function hlRozmery(){
+  const scena = document.getElementById('hl-scena');
+  const r = scena.getBoundingClientRect();
+  if(!r.height) return;
+  const sirka = Math.min((r.height - 30) * 0.68, r.width * 0.55, 250);
+  scena.style.setProperty('--hl-kw', sirka + 'px');
+  hl.polomer = sirka * HL_MEZERA / Math.sin(HL_KROK * Math.PI / 180);
+  document.getElementById('hl-kruh').style.transform = `translateZ(${-hl.polomer}px)`;
+}
+
+function hlVykresli(){
+  const karty = document.getElementById('hl-kruh').children;
+  const n = hl.hraci.length;
+  if(!n) return;
+  for(let i=0; i<karty.length; i++){
+    let d = i - hl.pozice;
+    while(d >  n/2) d -= n;
+    while(d < -n/2) d += n;
+    const a = Math.abs(d), daleko = a > HL_DOHLED;
+    karty[i].style.transform  = `rotateY(${d * HL_KROK}deg) translateZ(${hl.polomer}px)`;
+    karty[i].style.visibility = daleko ? 'hidden' : 'visible';
+    karty[i].style.opacity    = daleko ? 0 : Math.min(1, (HL_DOHLED - a) / 1.2);
+    karty[i].style.filter     = `brightness(${Math.max(.34, 1 - a * .26)})`;
+    karty[i].style.zIndex     = String(1000 - Math.round(a * 10));
+  }
+  hl.vybrany = ((Math.round(hl.pozice) % n) + n) % n;
+}
+
+function hlDosedej(){
+  if(hl.tazeni){ hl.bezi = false; return; }
+  const rozdil = hl.cil - hl.pozice;
+  if(Math.abs(rozdil) < 0.0015){
+    hl.pozice = hl.cil; hlVykresli(); hl.bezi = false; return;
+  }
+  hl.pozice += rozdil * 0.19;
+  hlVykresli();
+  requestAnimationFrame(hlDosedej);
+}
+function hlRozjed(){ if(!hl.bezi){ hl.bezi = true; requestAnimationFrame(hlDosedej); } }
+
+let hlCeka = false;
+function hlNaSnimek(){
+  if(hlCeka) return;
+  hlCeka = true;
+  requestAnimationFrame(()=>{ hlCeka = false; hlVykresli(); });
+}
+
+function hlPripojOvladani(){
+  const scena = document.getElementById('hl-scena');
+  if(scena.dataset.pripojeno) return;
+  scena.dataset.pripojeno = '1';
+
+  scena.addEventListener('pointerdown', e=>{
+    hl.tazeni = true; hl.bezi = false; hl.posunuto = 0; hl.rychlost = 0;
+    hl.poslX = e.clientX; hl.poslCas = performance.now();
+    scena.setPointerCapture?.(e.pointerId);
+  });
+  scena.addEventListener('pointermove', e=>{
+    if(!hl.tazeni) return;
+    const nyni = performance.now();
+    const dx = e.clientX - hl.poslX;
+    const dt = Math.max(nyni - hl.poslCas, 10);   // strop proti špičkám
+    hl.posunuto += Math.abs(dx);
+    hl.pozice -= dx / HL_CITLIVOST;
+    hl.rychlost = hl.rychlost * 0.7 + (-dx / HL_CITLIVOST) / (dt/1000) * 0.3;
+    hl.poslX = e.clientX; hl.poslCas = nyni;
+    hlNaSnimek();
+  });
+  const pusteno = ()=>{
+    if(!hl.tazeni) return;
+    hl.tazeni = false;
+    const v = Math.abs(hl.rychlost);
+    const dojezd = v <= HL_PRAH ? 0
+      : Math.sign(hl.rychlost) * Math.min(HL_MAX_SKOK, (v - HL_PRAH) * 0.12);
+    hl.cil = Math.round(hl.pozice + dojezd);
+    hlRozjed();
+  };
+  scena.addEventListener('pointerup', pusteno);
+  scena.addEventListener('pointercancel', pusteno);
+
+  scena.addEventListener('click', e=>{
+    if(hl.posunuto > 8) return;
+    const k = e.target.closest('.hl-karta');
+    if(!k) return;
+    const n = hl.hraci.length;
+    let d = +k.dataset.i - hl.vybrany;
+    while(d >  n/2) d -= n;
+    while(d < -n/2) d += n;
+    if(!d) return;
+    hl.cil = Math.round(hl.pozice) + d;
+    hlRozjed();
+  });
+}
+
+/* ---------- otevření, přepínání, odeslání ---------- */
+
+async function otevriHlasovani(id){
+  const u = stav.udalosti.find(x=>x.id===id);
+  if(!u) return;
+  if(!jsemUcastnik(u)){ toast('Hlasovat můžou jen ti, kdo u zápasu byli.'); return; }
+
+  hl.udalost = u;
+  hl.hraci = ucastniciZapasu(u).filter(p => p.id !== stav.ja.id);
+  if(!hl.hraci.length){ toast('U zápasu nebyl nikdo další.'); return; }
+
+  const zapasy = zapasyUdalosti(u);
+  const prvni = zapasy.find(z => z.otevreno && !z.mujHlas) || zapasy[0];
+  hl.zapas = prvni.c;
+
+  document.getElementById('hl-podtitul').textContent =
+    DNY[u.zacatek.getDay()].charAt(0).toUpperCase() + DNY[u.zacatek.getDay()].slice(1) +
+    ' ' + u.zacatek.getDate() + '. ' + MESICE[u.zacatek.getMonth()] +
+    (u.misto ? ' · ' + u.misto : '');
+
+  document.getElementById('hlasovani').classList.add('otevreno');
+  document.body.style.overflow = 'hidden';
+
+  await hlPripravFotky(hl.hraci);
+
+  document.getElementById('hl-kruh').innerHTML = hl.hraci.map((p,i)=>
+    `<div class="hl-karta" data-i="${i}">${hlKartaSVG(p)}</div>`).join('');
+
+  hlPripojOvladani();
+  hlRozmery();
+  hlVejdiSeJmena();
+  hlPrepniZapas(hl.zapas);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(hlVejdiSeJmena);
+}
+
+function hlVejdiSeJmena(){
+  document.querySelectorAll('#hl-kruh text.hl-jmeno').forEach(t=>{
+    let px = 52;
+    t.setAttribute('font-size', px);
+    while(t.getComputedTextLength() > 500 && px > 26){
+      px -= 2; t.setAttribute('font-size', px);
+    }
+  });
+}
+
+function hlPrepniZapas(c){
+  const u = hl.udalost; if(!u) return;
+  hl.zapas = c;
+  const zapasy = zapasyUdalosti(u);
+  const ten = zapasy.find(z => z.c === c);
+
+  const el = document.getElementById('hl-zapasy');
+  el.className = 'hl-zapasy' + (zapasy.length > 1 ? ' dva' : '');
+  el.innerHTML = zapasy.map(z=>{
+    const stavText = !z.otevreno ? 'Uzavřeno' : z.mujHlas ? 'Odhlasováno' : 'Hlasování běží';
+    return `<button class="${z.c===c?'aktivni':''} ${(!z.otevreno||z.mujHlas)?'hotovo':''}"
+                    onclick="hlPrepniZapas(${z.c})">
+      <span class="hl-kdo2">${escapuj(z.souper)}</span>
+      <span class="hl-stav">${stavText}</span>
+    </button>`;
+  }).join('');
+
+  const vrstva = document.getElementById('hlasovani');
+  const hotovo = !ten.otevreno || !!ten.mujHlas;
+  vrstva.classList.toggle('odeslano', hotovo);
+  document.getElementById('hl-hotovo-text').textContent = !ten.otevreno
+    ? 'Hlasování je uzavřené.'
+    : 'Výsledek se ukáže, až odhlasují všichni ze zápasu.';
+  document.querySelector('.hl-zmena').style.display = ten.otevreno ? '' : 'none';
+
+  if(!hotovo){
+    // začni u toho, komu jsem hlas dal minule, jinak od začátku
+    const kde = ten.mujHlas ? hl.hraci.findIndex(p=>p.id===ten.mujHlas) : 0;
+    hl.pozice = hl.cil = Math.max(0, kde);
+    requestAnimationFrame(()=>{ hlRozmery(); hlVykresli(); });
+  }
+}
+
+function hlZmenit(){
+  const ten = zapasyUdalosti(hl.udalost).find(z=>z.c===hl.zapas);
+  if(!ten || !ten.otevreno){ toast('Hlasování je uzavřené.'); return; }
+  document.getElementById('hlasovani').classList.remove('odeslano');
+  const kde = ten.mujHlas ? hl.hraci.findIndex(p=>p.id===ten.mujHlas) : 0;
+  hl.pozice = hl.cil = Math.max(0, kde);
+  requestAnimationFrame(()=>{ hlRozmery(); hlVykresli(); });
+}
+
+async function hlPosli(){
+  const p = hl.hraci[hl.vybrany];
+  if(!p || !hl.udalost) return;
+  const tlacitko = document.getElementById('hl-poslat');
+  tlacitko.disabled = true;
+
+  const {error} = await db.from('hlasovani').upsert({
+    udalost_id: hl.udalost.id,
+    zapas: hl.zapas,
+    hlasujici_id: stav.ja.id,
+    hrac_id: p.id
+  }, {onConflict:'udalost_id,zapas,hlasujici_id'});
+
+  tlacitko.disabled = false;
+  if(error){ toast(error.message.replace(/^.*?:\s*/, '')); return; }
+
+  stav.mujHlas[hl.udalost.id+':'+hl.zapas] = p.id;
+  delete stav.vysledky[hl.udalost.id];
+  delete stav.hlasStav[hl.udalost.id];    // ať se ve Správě přepočítá počet
+  await nactiVse();
+  hl.udalost = stav.udalosti.find(x=>x.id===hl.udalost.id) || hl.udalost;
+  prekresli();
+  hlPrepniZapas(hl.zapas);
+}
+
+function zavriHlasovani(){
+  document.getElementById('hlasovani').classList.remove('otevreno');
+  document.body.style.overflow = '';
+  hl.udalost = null;
+}
+
+/* ---------- Správa: uzavření hlasování ---------- */
+
+function vykresliSpravuHlasovani(){
+  const el = document.getElementById('spravaHlasovani');
+  if(!el || !jeTrener()) return;
+  if(!stav.hlasovaniHotovo){
+    el.innerHTML = '<p class="prazdno">Hlasování zatím není v databázi připravené.</p>';
+    return;
+  }
+
+  const zapasy = zapasyKHlasovani();
+  if(!zapasy.length){ el.innerHTML = '<p class="prazdno">Žádný nedávný zápas.</p>'; return; }
+
+  el.innerHTML = zapasy.map(u=>{
+    const radky = zapasyUdalosti(u).map(z=>{
+      const stavy = (stav.hlasStav[u.id]||[]).find(s=>s.zapas===z.c);
+      const kolik = stavy ? `${stavy.hlasovalo} z ${stavy.ucastniku} odhlasovalo` : 'Načítám…';
+      let chybi = '';
+      if(stavy && stavy.chybi && stavy.chybi.length && z.otevreno){
+        const jmena = stavy.chybi.slice(0, 4).join(', ');
+        const zbytek = stavy.chybi.length - 4;
+        chybi = '<span>Chybí: ' + escapuj(jmena)
+              + (zbytek > 0 ? ' a ' + zbytek + ' ' + (zbytek < 5 ? 'další' : 'dalších') : '')
+              + '</span>';
+      }
+      return `
+        <div class="hl-sprava-radek">
+          <div class="hl-sprava-text">
+            <b>${escapuj(z.souper)}</b>
+            <span>${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]} · ${z.otevreno ? kolik : 'Uzavřeno'}</span>
+            ${chybi}
+          </div>
+          <button class="hl-uzavrit" ${z.otevreno?'':'disabled'}
+                  onclick="uzavriHlasovani(${u.id}, ${z.c})">
+            ${z.otevreno ? 'Uzavřít' : 'Hotovo'}
+          </button>
+        </div>`;
+    }).join('');
+    return radky;
+  }).join('');
+
+  zapasy.forEach(u=>{
+    if(stav.hlasStav[u.id] === undefined){
+      stav.hlasStav[u.id] = [];
+      nactiStavHlasovani(u.id).then(vykresliSpravuHlasovani);
+    }
+  });
+}
+
+async function uzavriHlasovani(id, zapas){
+  const pole = zapas === 1 ? 'hlasovani_uzavreno1' : 'hlasovani_uzavreno2';
+  const {error} = await db.from('udalosti')
+    .update({[pole]: new Date().toISOString()}).eq('id', id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  delete stav.vysledky[id];
+  delete stav.hlasStav[id];
+  await nactiVse(); prekresli();
+  toast('Hlasování uzavřeno.');
+}
+
+/* ---------- Správa: číslo dresu ---------- */
+
+async function ulozCislo(id, hodnota){
+  const t = String(hodnota).trim();
+  const cislo = t === '' ? null : parseInt(t, 10);
+  if(cislo !== null && (isNaN(cislo) || cislo < 0 || cislo > 99)){
+    toast('Číslo dresu musí být 0 až 99.'); prekresli(); return;
+  }
+  const {error} = await db.from('profily').update({cislo}).eq('id', id);
+  if(error){
+    toast(error.message.includes('profily_cislo_unikat')
+      ? 'Tohle číslo už někdo má.' : 'Nepovedlo se: '+error.message);
+    prekresli(); return;
+  }
+  await nactiVse(); prekresli();
+}
+
+function prekresli(){
+  if(!stav.ja) return;
+  vykresliVyzvu(); vykresliNejblizsi();
+  vykresliDlazdice('dlazdice'); vykresliDlazdice('dlazdice2'); vykresliDlazdice('dlazdice3');
+  vykresliSeznam(); vykresliTabulku(); vykresliSoutez(); vykresliKanadske();
+  vykresliProfil(); vykresliNeodpovedele(); vykresliSpravuHracu();
+  vykresliHlasovaciVyzvu(); vykresliSpravuHlasovani();
+}
+
+/* předvyplnit dnešek ve formuláři */
+document.getElementById('f-datum').value = naDatum(new Date());
+
+/* ---------- service worker ----------
+   Umožní přidat appku na plochu i na Androidu a v prohlížeči
+   na počítači, a při výpadku signálu ukáže poslední stav. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+nastartuj();
+
+</script>
+</body>
+</html>
