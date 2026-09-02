@@ -684,9 +684,6 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .post-hrac .jm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .post-hrac .tecka{width:5px;height:5px;border-radius:50%;flex:none;align-self:center}
 button.post-hrac:active{color:var(--bila)}
-.sestava-zbyva{margin-top:11px;font-size:11.5px;color:var(--bila-38);line-height:1.55}
-.sestava-zbyva b{font-weight:600;color:var(--bila-18)}
-
 .vyber-hrace{
   position:fixed;inset:0;z-index:70;display:none;align-items:flex-end;justify-content:center;
   background:rgba(3,5,9,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
@@ -3151,12 +3148,21 @@ function kratkeJmeno(cele){
 }
 
 const INDIAN = 'hraci/indian.webp';
-let maIndiana = false;
-(function overIndiana(){
-  const o = new Image();
-  o.onload  = ()=>{ maIndiana = true; vykresliSestavu(); };
-  o.onerror = ()=>{ maIndiana = false; };   // zůstane kreslená silueta
-  o.src = INDIAN;
+const INDIAN_G = 'hraci/indian-golman.webp';   // vlastní postavička pro brankáře
+let maIndiana = false, maGolmana = false;
+(function overPostavicky(){
+  const zkus = (adresa) => new Promise(hotovo => {
+    const o = new Image();
+    o.onload  = ()=>hotovo(true);
+    o.onerror = ()=>hotovo(false);
+    o.src = adresa;
+  });
+  /* Když soubor chybí, brankář dostane obyčejnou postavičku,
+     a když chybí i ta, zůstane kreslená silueta. */
+  Promise.all([zkus(INDIAN), zkus(INDIAN_G)]).then(([a,b])=>{
+    maIndiana = a; maGolmana = b;
+    if(a || b) vykresliSestavu();
+  });
 })();
 
 /* Nejbližší akce, ale jen když je to zápas. */
@@ -3190,7 +3196,6 @@ function vykresliSestavu(){
 
   const trener = jeTrener();
   const podle = sestavaProUdalost(u.id);
-  const postaveni = new Set((stav.sestava[u.id]||[]).map(r => r.hrac_id));
 
   const jmenoHrace = (id) => (stav.profily.find(p => p.id === id) || {}).jmeno || '—';
   const cisloHrace = (id) => (stav.profily.find(p => p.id === id) || {}).cislo;
@@ -3199,8 +3204,9 @@ function vykresliSestavu(){
     <div class="hriste-rada ${rada.tr}">
       ${rada.posty.map(k => {
         const lidi = podle[k];
-        const ikona = maIndiana
-          ? `<img src="${INDIAN}" alt="" draggable="false">`
+        const golman = (k === 'brankar' && maGolmana);
+        const ikona = (golman || maIndiana)
+          ? `<img src="${golman ? INDIAN_G : INDIAN}" alt="" draggable="false">`
           : `<svg viewBox="0 0 26 30" aria-hidden="true"><use href="#ikona-hrac" fill="currentColor"/></svg>`;
         return `
         <div class="post ${lidi.length ? 'obsazeny' : ''}">
@@ -3226,12 +3232,6 @@ function vykresliSestavu(){
       }).join('')}
     </div>`).join('');
 
-  const zbyva = kandidatiSestavy(u).filter(p => !postaveni.has(p.id));
-  const radekZbyva = zbyva.length
-    ? `<div class="sestava-zbyva"><b>Zbývá:</b> ${zbyva.map(p =>
-         (p.cislo != null ? '#'+p.cislo+' ' : '') + escapuj(p.jmeno)).join(', ')}</div>`
-    : (postaveni.size ? '<div class="sestava-zbyva"><b>Všichni přihlášení jsou postavení.</b></div>' : '');
-
   el.innerHTML = `
     <div class="sestava-karta">
       <div class="sestava-hlava">
@@ -3239,7 +3239,6 @@ function vykresliSestavu(){
         <span>${escapuj(nazevUdalosti(u))}</span>
       </div>
       <div class="hriste">${hriste}</div>
-      ${radekZbyva}
     </div>`;
 }
 
