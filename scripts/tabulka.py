@@ -31,7 +31,7 @@ KRATKE = {
     "44944": "Pohořelice",
     "44265": "Kuřim",
     "45560": "Hornets",
-    "43962": "Židenice",
+    "43962": "Galaxy Židenice",
     "45694": "Bojanovice",
     "46290": "Shooters Beta",
     "45741": "Gullivers",
