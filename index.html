@@ -649,27 +649,38 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .sestava-hlava span{font-size:11.5px;color:var(--bila-18)}
 
 .hriste{
-  display:flex;flex-direction:column;gap:16px;padding:16px 8px 14px;border-radius:16px;
+  --ikona:58px;
+  display:flex;flex-direction:column;gap:20px;padding:20px 8px 16px;border-radius:16px;
   background:radial-gradient(ellipse at 50% 45%,rgba(124,182,224,.06),transparent 62%);
 }
 .hriste-rada{display:grid;gap:8px}
 .hriste-rada.dva{grid-template-columns:1fr 1fr}
 .hriste-rada.stred{max-width:52%;margin:0 auto;width:100%}
 
-.post{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.post{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
 .post-ikona{
-  border:none;background:none;padding:0;line-height:0;
-  color:rgba(237,243,248,.16);transition:color .18s;
+  position:relative;border:none;background:none;padding:0;line-height:0;
+  width:var(--ikona);flex:none;
 }
-.post.obsazeny .post-ikona{color:var(--nebeska)}
-.post-ikona:active{color:var(--bila)}
+.post-ikona img,.post-ikona svg{
+  width:100%;height:auto;display:block;
+  filter:grayscale(1) brightness(.55);opacity:.4;transition:filter .18s,opacity .18s;
+}
+.post.obsazeny .post-ikona img,.post.obsazeny .post-ikona svg{filter:none;opacity:1}
+.post-ikona svg{color:var(--nebeska);height:calc(var(--ikona) * 1.16)}
+.post-plus{
+  position:absolute;right:-5px;bottom:-2px;width:21px;height:21px;border-radius:50%;
+  display:grid;place-items:center;border:1px solid var(--linka);
+  background:var(--panel);color:var(--nebeska);font-size:13px;line-height:1;padding:0;
+}
+.post-ikona:active .post-plus{background:var(--nebeska);color:#06121F;border-color:var(--nebeska)}
 .post-lidi{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:100%}
 .post-hrac{
   display:flex;align-items:baseline;justify-content:center;gap:4px;
   border:none;background:none;padding:1px 2px;max-width:100%;
-  font-size:11.5px;line-height:1.35;color:var(--bila-60);
+  font-size:12px;line-height:1.35;color:var(--bila-60);
 }
-.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11px;color:var(--nebeska);flex:none}
+.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11.5px;color:var(--nebeska);flex:none}
 .post-hrac .jm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .post-hrac .tecka{width:5px;height:5px;border-radius:50%;flex:none;align-self:center}
 button.post-hrac:active{color:var(--bila)}
@@ -3139,6 +3150,15 @@ function kratkeJmeno(cele){
   return c.length < 2 ? (cele||'') : c[0] + ' ' + c[c.length-1].charAt(0) + '.';
 }
 
+const INDIAN = 'hraci/indian.webp';
+let maIndiana = false;
+(function overIndiana(){
+  const o = new Image();
+  o.onload  = ()=>{ maIndiana = true; vykresliSestavu(); };
+  o.onerror = ()=>{ maIndiana = false; };   // zůstane kreslená silueta
+  o.src = INDIAN;
+})();
+
 /* Nejbližší akce, ale jen když je to zápas. */
 function zapasNaProgramu(){
   const u = budouci()[0];
@@ -3179,12 +3199,16 @@ function vykresliSestavu(){
     <div class="hriste-rada ${rada.tr}">
       ${rada.posty.map(k => {
         const lidi = podle[k];
-        const ikona = `<svg width="26" height="30" aria-hidden="true"><use href="#ikona-hrac" fill="currentColor"/></svg>`;
+        const ikona = maIndiana
+          ? `<img src="${INDIAN}" alt="" draggable="false">`
+          : `<svg viewBox="0 0 26 30" aria-hidden="true"><use href="#ikona-hrac" fill="currentColor"/></svg>`;
         return `
         <div class="post ${lidi.length ? 'obsazeny' : ''}">
           ${trener
             ? `<button class="post-ikona" onclick="otevriVyberHrace('${k}')"
-                       aria-label="Přidat na post ${POSTY[k]}">${ikona}</button>`
+                       aria-label="Přidat na post ${POSTY[k]}">${ikona}
+                 <span class="post-plus">+</span>
+               </button>`
             : `<span class="post-ikona">${ikona}</span>`}
           <div class="post-lidi">
             ${lidi.map(r => {
