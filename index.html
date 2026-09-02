@@ -650,7 +650,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 
 .hriste{
   --ikona:58px;position:relative;
-  display:flex;flex-direction:column;gap:20px;padding:34px 10px 26px;border-radius:16px;
+  display:flex;flex-direction:column;gap:30px;padding:48px 10px 34px;border-radius:16px;
   background:radial-gradient(ellipse at 50% 45%,rgba(124,182,224,.06),transparent 62%);
 }
 .hriste-plan{
@@ -684,7 +684,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
   border:none;background:none;padding:1px 2px;max-width:100%;
   font-size:12px;line-height:1.35;color:var(--bila-60);
 }
-.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:11.5px;color:var(--nebeska);flex:none}
+.post-hrac b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;color:var(--nebeska);flex:none}
 .post-hrac .jm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .post-hrac .tecka{width:5px;height:5px;border-radius:50%;flex:none;align-self:center}
 button.post-hrac:active{color:var(--bila)}
@@ -2131,7 +2131,8 @@ async function otevriDetail(id, jenPrekresli){
       <span class="kus golmani ${golmanuDost?'':'chybi'}">
         <b>${jdeGolmanu}</b> ${jdeGolmanu===1?'golman':(jdeGolmanu>=2&&jdeGolmanu<5)?'golmani':'golmanů'}${golmanuDost?'':` · chybí ${golmanuPotreba-jdeGolmanu}`}
       </span>
-    </div>`;
+    </div>
+    ${u.typ === 'zapas' && stav.sestavaHotova ? hristeHTML(u) : ''}`;
 
   const kdy=(od)=>{
     if(!od.zmeneno) return '';
@@ -3153,12 +3154,8 @@ const PLAN_HRISTE = `
     <rect x="2" y="2" width="196" height="204" rx="34"/>
     <line x1="2" y1="104" x2="198" y2="104"/>
     <circle cx="100" cy="104" r="3" fill="var(--nebeska)" stroke="none"/>
-    <rect x="70" y="10" width="60" height="20" rx="3"/>
-    <rect x="85" y="10" width="30" height="9" rx="2"/>
-    <rect x="90" y="4" width="20" height="6" rx="1.5"/>
-    <rect x="70" y="178" width="60" height="20" rx="3"/>
-    <rect x="85" y="189" width="30" height="9" rx="2"/>
-    <rect x="90" y="198" width="20" height="6" rx="1.5"/>
+    <rect x="80" y="8" width="40" height="14" rx="2.5"/>
+    <rect x="80" y="186" width="40" height="14" rx="2.5"/>
   </g>
 </svg>`;
 
@@ -3210,19 +3207,13 @@ function sestavaProUdalost(id){
   return podle;
 }
 
-function vykresliSestavu(){
-  const el = document.getElementById('sestava');
-  if(!el || !stav.ja) return;
-  const u = zapasNaProgramu();
-  if(!u || !stav.sestavaHotova){ el.innerHTML = ''; return; }
-
+function hristeHTML(u){
   const trener = jeTrener();
   const podle = sestavaProUdalost(u.id);
-
   const jmenoHrace = (id) => (stav.profily.find(p => p.id === id) || {}).jmeno || '—';
   const cisloHrace = (id) => (stav.profily.find(p => p.id === id) || {}).cislo;
 
-  const hriste = RADY.map(rada => `
+  const rady = RADY.map(rada => `
     <div class="hriste-rada ${rada.tr}">
       ${rada.posty.map(k => {
         const lidi = podle[k];
@@ -3233,7 +3224,7 @@ function vykresliSestavu(){
         return `
         <div class="post ${lidi.length ? 'obsazeny' : ''}">
           ${trener
-            ? `<button class="post-ikona" onclick="otevriVyberHrace('${k}')"
+            ? `<button class="post-ikona" onclick="otevriVyberHrace('${k}', ${u.id})"
                        aria-label="Přidat na post ${POSTY[k]}">${ikona}
                  <span class="post-plus">+</span>
                </button>`
@@ -3246,7 +3237,7 @@ function vykresliSestavu(){
                 ${odpoved !== 'jdu' ? `<span class="tecka" style="background:${TECKA[odpoved]}"></span>` : ''}
                 <span class="jm">${escapuj(kratkeJmeno(jmenoHrace(r.hrac_id)))}</span>`;
               return trener
-                ? `<button class="post-hrac" onclick="otevriAkceHrace('${r.hrac_id}')">${telo}</button>`
+                ? `<button class="post-hrac" onclick="otevriAkceHrace('${r.hrac_id}', ${u.id})">${telo}</button>`
                 : `<span class="post-hrac">${telo}</span>`;
             }).join('')}
           </div>
@@ -3254,22 +3245,33 @@ function vykresliSestavu(){
       }).join('')}
     </div>`).join('');
 
+  return `<div class="hriste">${PLAN_HRISTE}${rady}</div>`;
+}
+
+function vykresliSestavu(){
+  const el = document.getElementById('sestava');
+  if(!el || !stav.ja) return;
+  const u = zapasNaProgramu();
+  if(!u || !stav.sestavaHotova){ el.innerHTML = ''; return; }
   el.innerHTML = `
     <div class="sestava-karta">
       <div class="sestava-hlava">
         <b>Sestava</b>
         <span>${escapuj(nazevUdalosti(u))}</span>
       </div>
-      <div class="hriste">${PLAN_HRISTE}${hriste}</div>
+      ${hristeHTML(u)}
     </div>`;
 }
 
 /* ---------- výběr hráče na post ---------- */
 
-let vyberPost = null;
+let vyberPost = null, vyberUdalost = null;
+const sestavaUdalost = () =>
+  stav.udalosti.find(x => x.id === vyberUdalost) || zapasNaProgramu();
 
-function otevriVyberHrace(post){
-  const u = zapasNaProgramu();
+function otevriVyberHrace(post, udalostId){
+  vyberUdalost = udalostId ?? null;
+  const u = sestavaUdalost();
   if(!u) return;
   vyberPost = post;
 
@@ -3284,7 +3286,7 @@ function otevriVyberHrace(post){
   }
 
   document.getElementById('vyberObsah').innerHTML = `
-    <h3>Kdo na post ${POSTY[post].toLowerCase()}?</h3>
+    <h3>Koho na post ${POSTY[post].toLowerCase()}?</h3>
     ${lidi.length ? lidi.map(p => {
       const odpoved = stav.prihlasky[u.id]?.[p.id]?.stav;
       return `<button class="vyber-radek" onclick="postavHrace('${p.id}')">
@@ -3304,7 +3306,7 @@ function zavriVyberHrace(){
 }
 
 async function postavHrace(hracId){
-  const u = zapasNaProgramu();
+  const u = sestavaUdalost();
   if(!u || !vyberPost) return;
   const post = vyberPost;
   zavriVyberHrace();
@@ -3315,10 +3317,12 @@ async function postavHrace(hracId){
     {onConflict:'udalost_id,hrac_id'});
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
-function otevriAkceHrace(hracId){
-  const u = zapasNaProgramu();
+function otevriAkceHrace(hracId, udalostId){
+  vyberUdalost = udalostId ?? null;
+  const u = sestavaUdalost();
   if(!u) return;
   const p = stav.profily.find(x => x.id === hracId) || {};
   const kde = (stav.sestava[u.id] || []).find(r => r.hrac_id === hracId);
@@ -3339,7 +3343,7 @@ function otevriAkceHrace(hracId){
 }
 
 async function presunHrace(hracId, post){
-  const u = zapasNaProgramu();
+  const u = sestavaUdalost();
   if(!u) return;
   zavriVyberHrace();
   const poradi = sestavaProUdalost(u.id)[post].length;
@@ -3348,16 +3352,18 @@ async function presunHrace(hracId, post){
     {onConflict:'udalost_id,hrac_id'});
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
 async function odeberZeSestavy(hracId){
   zavriVyberHrace();
-  const u = zapasNaProgramu();
+  const u = sestavaUdalost();
   if(!u) return;
   const {error} = await db.from('sestava').delete()
     .eq('udalost_id', u.id).eq('hrac_id', hracId);
   if(error){ toast('Nepovedlo se: '+error.message); return; }
   await nactiVse(); prekresli();
+  if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
 function prekresli(){
