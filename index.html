@@ -646,6 +646,46 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
   .seznam .udalost,.dlazdice .d,.nejblizsi,.zprava,.volba button.zvoleno{animation:none}
 }
 
+/* ---------- vyhlášení hvězd zápasu ---------- */
+.hv-blok{margin-top:12px;padding:13px 14px 11px;border-radius:20px;
+  background:var(--panel);border:1px solid var(--linka);width:100%;text-align:left;color:var(--bila)}
+button.hv-blok:active{border-color:var(--nebeska)}
+.hv-nadpis{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--bila-18);
+  margin-bottom:9px;display:block}
+.hv-radek{display:flex;align-items:center;gap:10px;padding:5px 0}
+.hv-radek + .hv-radek{border-top:1px solid var(--linka);padding-top:9px;margin-top:4px}
+.hv-portret{
+  width:46px;height:46px;flex:none;border-radius:13px;overflow:hidden;position:relative;
+  background:linear-gradient(150deg,#2B5B8C 0,#12324F 100%);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.hv-portret img{width:46px;height:auto;display:block}
+.hv-radek.mala .hv-portret{width:32px;height:32px;border-radius:10px}
+.hv-radek.mala .hv-portret img{width:32px}
+.hv-znak{font-size:15px;flex:none;line-height:1;text-shadow:0 0 9px currentColor}
+.hv-radek.mala .hv-znak{font-size:12px}
+.hv-kdo{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px}
+.hv-kdo b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;color:var(--nebeska);flex:none}
+.hv-kdo span{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hv-radek.mala .hv-kdo span{font-size:13.5px;font-weight:500}
+.hv-hlasu{flex:none;font-size:11.5px;color:var(--bila-38)}
+.hv-sip{flex:none;color:var(--bila-18);font-size:15px}
+
+/* na Přehledu bez rámečku, jako sekce */
+.hv-sekce{display:block;width:100%;text-align:left;background:none;border:none;
+  padding:0;color:var(--bila)}
+.hv-souper{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--bila-18);display:block;margin:12px 0 4px}
+.hv-souper:first-child{margin-top:0}
+.hv-sekce .hv-radek{padding:6px 0}
+.hv-sekce .hv-radek + .hv-radek{border-top:none;margin-top:0;padding-top:2px}
+.hv-radek.drobna{padding:2px 0 2px 56px;gap:7px}
+.hv-radek.drobna .hv-znak{font-size:11px}
+.hv-radek.drobna .hv-kdo b{font-size:11.5px}
+.hv-radek.drobna .hv-kdo span{font-size:13px;font-weight:500;color:var(--bila-60)}
+.hv-radek.drobna .hv-hlasu{font-size:11px}
+
 /* ---------- soupiska: karty hráčů ---------- */
 :root{
   --zlata:#E8C56A;--stribrna:#C3CFDA;--bronz:#C48A5A;
@@ -2193,6 +2233,11 @@ async function otevriDetail(id, jenPrekresli){
   if(!u) return;
   const t=TYPY[u.typ], o=mojeOdpoved(id), probehla=u.zacatek<new Date();
 
+  /* Výsledky hlasování se dotahují až tady, po načtení se detail překreslí. */
+  if(u.typ === 'zapas' && zapasyUdalosti(u).some(z => !z.otevreno)){
+    zajistiVysledky(u.id, ()=>{ if(otevrenaUdalost === id) otevriDetail(id, true); });
+  }
+
   const sk={jdu:[],mozna:[],nejdu:[],mlci:[]};
   let jdeHracu=0, jdeGolmanu=0;
   stav.profily.forEach(p=>{
@@ -2227,7 +2272,7 @@ async function otevriDetail(id, jenPrekresli){
         <b>${jdeGolmanu}</b> ${jdeGolmanu===1?'golman':(jdeGolmanu>=2&&jdeGolmanu<5)?'golmani':'golmanů'}${golmanuDost?'':` · chybí ${golmanuPotreba-jdeGolmanu}`}
       </span>
     </div>
-    ${u.typ === 'zapas' && stav.sestavaHotova ? hristeHTML(u) : ''}`;
+`;
 
   const kdy=(od)=>{
     if(!od.zmeneno) return '';
@@ -2301,6 +2346,8 @@ async function otevriDetail(id, jenPrekresli){
             </button>`).join('')}
         </div>`:''}
       ${probehla||u.zruseno?'':sestava}
+      ${u.typ==='zapas' && !u.zruseno ? hvezdyDetailHTML(u) : ''}
+      ${u.typ==='zapas' && !u.zruseno && stav.sestavaHotova ? hristeHTML(u) : ''}
       ${skupina('Jde', sk.jdu, 'var(--jdu)')
         ||`<div class="nadpis-sekce">Jde <span class="kolik">0</span></div><div class="karta"><p class="prazdno" style="padding:16px">Zatím nikdo.</p></div>`}
       ${blokHostu}
@@ -2803,6 +2850,59 @@ async function nactiStavHlasovani(id){
   return stav.hlasStav[id];
 }
 
+/* ---------- vyhlášení hvězd ---------- */
+
+const HVEZDA_ZNAK = ['★','★','★'];
+const tvarHlasu = (n) => n === 1 ? 'hlas' : n < 5 ? 'hlasy' : 'hlasů';
+
+function hvezdaRadek(v, mala, bezPortretu){
+  const p = stav.profily.find(x => x.id === v.hrac_id) || {};
+  const nahrada = p.role === 'golman' ? INDIAN_G : INDIAN;
+  const zdroj = v.cislo != null ? POSTAVICKA + v.cislo + '.webp' : nahrada;
+  return `
+    <div class="hv-radek ${mala ? 'mala' : ''} ${bezPortretu ? 'drobna' : ''}">
+      ${bezPortretu ? '' : `<span class="hv-portret">
+        <img src="${zdroj}" alt="" draggable="false"
+             onerror="this.onerror=null;this.src='${nahrada}'">
+      </span>`}
+      <span class="hv-znak" style="color:var(--hv${Math.min(v.poradi,3)})">★</span>
+      <span class="hv-kdo">
+        ${v.cislo != null ? `<b>#${v.cislo}</b>` : ''}
+        <span>${escapuj(v.jmeno)}</span>
+      </span>
+      <span class="hv-hlasu">${v.hlasu} ${tvarHlasu(+v.hlasu)}</span>
+    </div>`;
+}
+
+/* Hvězdy visí na Přehledu, dokud neproběhne další akce — typicky pondělní trénink. */
+function hvezdyJesteVisi(u){
+  return !stav.udalosti.some(x =>
+    !x.zruseno && x.zacatek > u.zacatek && new Date() >= (x.konec || x.zacatek));
+}
+
+/* Načte výsledky, když ještě nejsou, a po načtení překreslí. */
+function zajistiVysledky(id, potom){
+  if(stav.vysledky[id]) return true;
+  stav.vysledky[id] = [];
+  nactiVysledky(id).then(potom);
+  return false;
+}
+
+/* Celé pořadí do detailu zápasu. */
+function hvezdyDetailHTML(u){
+  const rady = zapasyUdalosti(u).filter(z => !z.otevreno);
+  if(!rady.length || !stav.vysledky[u.id]) return '';
+  const vice = zapasyUdalosti(u).length > 1;
+  return rady.map(z => {
+    const v = stav.vysledky[u.id].filter(x => x.zapas === z.c).sort((a,b)=>a.poradi-b.poradi);
+    if(!v.length) return '';
+    return `<div class="hv-blok">
+      <span class="hv-nadpis">Hvězdy zápasu${vice ? ' · vs. ' + escapuj(z.souper) : ''}</span>
+      ${v.map((x,i) => hvezdaRadek(x, i > 0)).join('')}
+    </div>`;
+  }).join('');
+}
+
 /* ---------- výzva a vítězové pod bannerem ---------- */
 
 function vykresliHlasovaciVyzvu(){
@@ -2837,24 +2937,27 @@ function vykresliHlasovaciVyzvu(){
   /* 2. je uzavřeno — ukaž vítěze */
   const uzavrene = zapasy.filter(z => !z.otevreno);
   if(uzavrene.length){
-    if(!stav.vysledky[u.id]){
-      stav.vysledky[u.id] = [];                 // ať se nespustí načítání dvakrát
-      nactiVysledky(u.id).then(vykresliHlasovaciVyzvu);
-      return;
-    }
+    if(!hvezdyJesteVisi(u)){ el.innerHTML = ''; return; }
+    if(!zajistiVysledky(u.id, vykresliHlasovaciVyzvu)) return;
+
+    /* První hvězda s postavičkou, druhá a třetí drobně pod ní. */
     const bloky = uzavrene.map(z => {
-      const vitezove = stav.vysledky[u.id].filter(v => v.zapas === z.c && v.vitez);
-      if(!vitezove.length) return '';
-      return `
-        <div class="hl-stitek">Hráč zápasu${zapasy.length>1 ? ' · '+escapuj(z.souper) : ''}</div>
-        ${vitezove.map(v => `
-          <div class="hl-radek-vitez">
-            ${v.cislo!=null ? `<span class="hl-ci">#${v.cislo}</span>` : ''}
-            <span class="hl-jm">${escapuj(v.jmeno)}</span>
-            <span class="hl-pocet">${v.hlasu} ${v.hlasu===1?'hlas':v.hlasu<5?'hlasy':'hlasů'}</span>
-          </div>`).join('')}`;
-    }).filter(Boolean).join('<div style="height:12px"></div>');
-    el.innerHTML = bloky ? `<div class="hl-vitezove">${bloky}</div>` : '';
+      const v = stav.vysledky[u.id].filter(x => x.zapas === z.c).sort((a,b)=>a.poradi-b.poradi);
+      if(!v.length) return '';
+      /* Při shodě může být „prvních" víc — ukážeme nejvýš čtyři a jen ten úplně
+         první dostane postavičku, jinak by Přehled zaplnily samé portréty. */
+      const vidno = v.slice(0, 4);
+      const navic = v.length - vidno.length;
+      return `${zapasy.length>1 ? `<span class="hv-souper">vs. ${escapuj(z.souper)}</span>` : ''}
+        ${vidno.map((x,i) => hvezdaRadek(x, false, i > 0)).join('')}
+        ${navic > 0 ? `<div class="hv-radek drobna"><span class="hv-kdo">
+           <span>a ${navic} ${navic < 5 ? 'další' : 'dalších'}</span></span></div>` : ''}`;
+    }).filter(Boolean).join('');
+
+    el.innerHTML = bloky
+      ? `<div class="nadpis-sekce">Hvězdy zápasu</div>
+         <button class="hv-sekce" onclick="otevriDetail(${u.id})">${bloky}</button>`
+      : '';
     return;
   }
 
