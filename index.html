@@ -12,7 +12,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Geist:wght@400..700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* barvy z dresů */
@@ -41,6 +41,9 @@
 
   --nav-h:70px;
   --r:24px;
+
+  /* Základní písmo. Výměna za jiné je otázka tohohle jednoho řádku. */
+  --pismo:'Geist',system-ui,-apple-system,sans-serif;
 }
 
 *{box-sizing:border-box}
@@ -50,7 +53,8 @@ body{
   background-image:linear-gradient(180deg,#0A1220 0,#06080C 320px);
   background-repeat:no-repeat;background-attachment:fixed;
   color:var(--bila);
-  font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.45;
+  font-family:var(--pismo);font-size:15px;line-height:1.45;
+  font-variant-numeric:tabular-nums;   /* ať sloupce v tabulkách nedrncají */
   -webkit-font-smoothing:antialiased;
 }
 button,a,input,select,textarea{touch-action:manipulation}
@@ -91,7 +95,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;
   margin:26px 4px 12px;display:flex;align-items:center;gap:10px;
 }
-.nadpis-sekce .kolik{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--bila-38)}
+.nadpis-sekce .kolik{font-family:var(--pismo);font-size:12px;font-weight:500;color:var(--bila-38)}
 .obrazovka > .nadpis-sekce:first-child{margin-top:4px}
 
 .karta{background:var(--panel);border-radius:var(--r);border:1px solid var(--linka)}
@@ -240,7 +244,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
   white-space:nowrap;
 }
 .tabulka td:first-child{
-  text-align:left;font-family:'Inter',sans-serif;font-weight:500;font-size:13.5px;color:var(--bila);
+  text-align:left;font-family:var(--pismo);font-weight:500;font-size:13.5px;color:var(--bila);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;
 }
 .tabulka tr.ja td{color:var(--nebeska)}
@@ -256,7 +260,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .pole input,.pole select,.pole textarea{
   width:100%;padding:13px 15px;border-radius:15px;
   border:1px solid var(--linka);background:var(--panel-2);color:var(--bila);
-  font-family:'Inter',sans-serif;font-size:14.5px;
+  font-family:var(--pismo);font-size:14.5px;
 }
 /* iOS si datum a čas centruje a dělá jim jinou výšku */
 .pole input[type="date"],.pole input[type="time"]{
@@ -276,7 +280,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 .pole input[type="time"]{
   -webkit-appearance:none;appearance:none;
   text-align:left;display:block;min-height:48px;line-height:1.25;
-  font-family:'Inter',sans-serif;font-size:14.5px;
+  font-family:var(--pismo);font-size:14.5px;
 }
 .pole input[type="date"]::-webkit-date-and-time-value,
 .pole input[type="time"]::-webkit-date-and-time-value{text-align:left}
@@ -453,7 +457,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .chat-hlava{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .chat-hlava .nadpis{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:17px}
 .chat-hlava .pocet-zprav{
-  font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--bila-38);
+  font-family:var(--pismo);font-size:12px;font-weight:500;color:var(--bila-38);
 }
 .chat-hlava .ikona-chat{width:20px;height:20px;stroke:var(--nebeska);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .zprava{display:flex;gap:10px;margin-bottom:14px;align-items:flex-end}
@@ -536,7 +540,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 .kb td.poradi{text-align:left;color:var(--bila-18);font-size:12px}
 .kb td.hrac{
-  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  text-align:left;font-family:var(--pismo);font-weight:500;color:var(--bila);
   overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
 }
 .kb td.body{color:var(--bila);font-weight:700;padding-left:6px}
@@ -577,7 +581,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .soutez col.c-skore{width:46px}
 .soutez col.c-body{width:30px}
 .soutez td.tym{
-  text-align:left;font-family:'Inter',sans-serif;font-weight:500;color:var(--bila);
+  text-align:left;font-family:var(--pismo);font-weight:500;color:var(--bila);
   overflow:hidden;text-overflow:ellipsis;font-size:13.5px;
 }
 .soutez td.tym span{display:flex;align-items:center;gap:7px;min-width:0}
