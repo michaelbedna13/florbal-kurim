@@ -646,6 +646,70 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
   .seznam .udalost,.dlazdice .d,.nejblizsi,.zprava,.volba button.zvoleno{animation:none}
 }
 
+/* ---------- soupiska: karty hráčů ---------- */
+:root{--zlata:#E8C56A;--stribrna:#C3CFDA;--bronz:#C48A5A}
+.soupiska-hlava{display:flex;align-items:baseline;gap:8px}
+.prepinac-skupin{margin-left:auto;display:flex;gap:4px;flex:none}
+.prepinac-skupin button{
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-38);
+  border-radius:9px;padding:5px 10px;font-family:var(--pismo);font-size:11.5px;font-weight:600;
+}
+.prepinac-skupin button.aktivni{background:var(--nebeska);border-color:var(--nebeska);color:#06121F}
+
+.pas-karet{
+  display:flex;gap:12px;overflow-x:auto;padding:12px 16px 16px;margin:0 -16px;
+  scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.pas-karet::-webkit-scrollbar{display:none}
+
+.karta-hrace{
+  scroll-snap-align:start;flex:none;position:relative;overflow:hidden;
+  width:316px;height:188px;border-radius:20px;flex-direction:column;
+  transform-origin:50% 60%;will-change:transform;
+  border:1px solid var(--linka);display:flex;background-color:var(--panel);
+  background:
+    radial-gradient(120% 140% at 8% 100%,rgba(124,182,224,.20),transparent 58%),
+    linear-gradient(150deg,#1B3350 0,#0E1826 100%);
+}
+.karta-hrace.nej{
+  border-color:rgba(232,197,106,.45);
+  background:
+    radial-gradient(120% 140% at 8% 100%,rgba(232,197,106,.20),transparent 58%),
+    linear-gradient(150deg,#241E12 0,#12151B 100%);
+}
+.kh-hlavicka{display:flex;align-items:flex-start;gap:7px;min-width:0;padding:12px 14px 0;position:relative;z-index:2}
+.kh-cislo{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:22px;color:var(--nebeska);flex:none;line-height:1;padding-top:2px}
+.kh-cislo i{font-style:normal;font-size:14px;opacity:.55;margin-right:1px}
+.nej .kh-cislo{color:var(--zlata)}
+.kh-jmeno{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:16px;line-height:1.1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:3px}
+.kh-skore{margin-left:auto;flex:none;text-align:right;line-height:1}
+.kh-skore b{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:21px;color:var(--nebeska);display:block}
+.nej .kh-skore b{color:var(--zlata)}
+.kh-skore i{display:block;font-style:normal;font-size:8.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--bila-38);margin-top:2px}
+
+.kh-telo{display:flex;flex:1;min-height:0}
+.kh-portret{position:relative;flex:none;width:104px;align-self:stretch;overflow:hidden;
+  display:flex;align-items:flex-end;justify-content:center}
+.kh-portret img{width:104px;height:auto;display:block}
+.kh-portret:after{content:"";position:absolute;inset:auto 0 0 0;height:22px;
+  background:linear-gradient(180deg,transparent,rgba(9,14,22,.9))}
+.kh-data{flex:1;min-width:0;padding:0 14px 12px 4px;display:flex;flex-direction:column;justify-content:flex-end}
+.kh-cisla{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.kh-cisla .b,.kh-hvezdy .b{text-align:center}
+.kh-cisla .h{display:block;font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:17px;line-height:1.05}
+.kh-cisla .p,.kh-hvezdy .p{display:block;font-size:8.5px;color:var(--bila-38);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kh-hvezdy{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:9px;
+  padding-top:8px;border-top:1px solid var(--linka)}
+.kh-hvezdy .h{display:flex;align-items:center;justify-content:center;gap:4px;
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;line-height:1}
+.kh-hvezdy .z{font-size:12px}
+.kh-hvezdy .b:nth-child(1) .z{color:var(--zlata)}
+.kh-hvezdy .b:nth-child(2) .z{color:var(--stribrna)}
+.kh-hvezdy .b:nth-child(3) .z{color:var(--bronz)}
+
 /* ---------- sestava na zápas ---------- */
 
 .hriste{
@@ -1069,6 +1133,15 @@ button.post-hrac:active{color:var(--bila)}
     <div class="nadpis-sekce">Tvoje sezóna</div>
     <div class="dlazdice" id="dlazdice"></div>
 
+    <div class="nadpis-sekce soupiska-hlava">
+      Soupiska
+      <span class="prepinac-skupin" id="prepinacSkupin">
+        <button class="aktivni" data-kdo="hraci">Hráči</button>
+        <button data-kdo="golmani">Golmani</button>
+      </span>
+    </div>
+    <div class="pas-karet" id="soupiska"></div>
+
     <div class="nadpis-sekce">Tabulka soutěže</div>
     <div class="karta karta-soutez" style="padding:16px 14px"></div>
   </section>
@@ -1378,7 +1451,7 @@ const stav = {
   sestavaHotova: false,     // je v databázi tabulka sestava?
   sestava: {},              // id události -> řádky sestavy
   mujHlas: {},        // "id události:číslo zápasu" -> komu jsem dal hlas
-  mvp: {},            // id hráče -> kolikrát byl hráčem zápasu
+  hvezdy: {},         // id hráče -> {prvni, druha, treti}
   vysledky: {},       // id události -> řádky z vysledky_hlasovani
   hlasStav: {}        // id události -> řádky ze stav_hlasovani
 };
@@ -1531,7 +1604,7 @@ async function odhlasit(){
    ============================================================ */
 
 async function nactiVse(){
-  const [profily, udalosti, prihlasky, hlasky, nastaveni, hoste, hlasovani, mvp, sestava] = await Promise.all([
+  const [profily, udalosti, prihlasky, hlasky, nastaveni, hoste, hlasovani, hvezdy, sestava] = await Promise.all([
     db.from('profily').select('*').order('jmeno'),
     db.from('udalosti').select('*').order('zacatek'),
     db.from('prihlasky').select('*'),
@@ -1539,7 +1612,7 @@ async function nactiVse(){
     db.from('nastaveni').select('*'),
     db.from('hoste').select('*').order('vytvoreno'),
     db.from('hlasovani').select('*'),
-    db.rpc('mvp_pocty'),
+    db.rpc('hvezdy_pocty'),
     db.from('sestava').select('*')
   ]);
 
@@ -1548,8 +1621,11 @@ async function nactiVse(){
   stav.hlasovaniHotovo = !hlasovani.error;
   stav.mujHlas = {};
   (hlasovani.data||[]).forEach(x=>{ stav.mujHlas[x.udalost_id+':'+x.zapas] = x.hrac_id; });
-  stav.mvp = {};
-  (mvp.data||[]).forEach(m=>{ if(m.mvp > 0) stav.mvp[m.hrac_id] = m.mvp; });
+  stav.hvezdy = {};
+  (hvezdy.data||[]).forEach(z=>{
+    if(z.prvni || z.druha || z.treti)
+      stav.hvezdy[z.hrac_id] = {prvni:+z.prvni, druha:+z.druha, treti:+z.treti};
+  });
 
   stav.sestavaHotova = !sestava.error;
   stav.sestava = {};
@@ -1872,12 +1948,12 @@ function vykresliKanadske(){
      jako zbytek tabulky. Dokud nikdo nevyhrál, sloupec se vůbec nezobrazí. */
   const mvpKlice = {};
   (stav.vsechnyProfily||[]).forEach(pr=>{
-    const n = stav.mvp[pr.id];
-    if(n) mvpKlice[klicJmena(pr.cf_jmeno || pr.jmeno)] = n;
+    const z = stav.hvezdy[pr.id];
+    if(z) mvpKlice[klicJmena(pr.cf_jmeno || pr.jmeno)] = z.prvni + z.druha + z.treti;
   });
   const jeMvp = Object.keys(mvpKlice).length > 0;
   const sloupecMvp = jeMvp ? '<col class="c-cislo">' : '';
-  const hlavickaMvp = jeMvp ? '<th title="Hráč zápasu">MVP</th>' : '';
+  const hlavickaMvp = jeMvp ? '<th title="Hvězdy zápasu">★</th>' : '';
   const bunkaMvp = (klic) => jeMvp ? `<td>${mvpKlice[klic] || 0}</td>` : '';
 
   const tabulkaHracu = !d.hraci?.length ? '' : `
@@ -3392,13 +3468,129 @@ async function odeberZeSestavy(hracId, lajna){
   if(otevrenaUdalost) otevriDetail(otevrenaUdalost, true);
 }
 
+/* ============================================================
+   SOUPISKA — karty hráčů
+   ============================================================ */
+
+const POSTAVICKA = 'hraci/postavicka-';   // hraci/postavicka-13.webp
+const maPostavicku = {};                  // číslo dresu -> true/false
+
+function pripravPostavicky(lidi){
+  return Promise.all(lidi.map(p => new Promise(hotovo => {
+    if(p.cislo == null || maPostavicku[p.cislo] !== undefined){ hotovo(); return; }
+    const o = new Image();
+    o.onload  = ()=>{ maPostavicku[p.cislo] = true;  hotovo(); };
+    o.onerror = ()=>{ maPostavicku[p.cislo] = false; hotovo(); };
+    o.src = POSTAVICKA + p.cislo + '.webp';
+  })));
+}
+
+const jeGolman = (p) => p.role === 'golman';
+
+/* Body: hráči v poli kanadské bodování, brankáři 3 za výhru a 1 za čisté konto.
+   K tomu oběma 3, 2 a 1 za hvězdu. */
+function skoreHrace(p){
+  const cf = cfProProfil(p) || {};
+  const h = stav.hvezdy[p.id] || {prvni:0, druha:0, treti:0};
+  const zaHvezdy = h.prvni*3 + h.druha*2 + h.treti;
+  return jeGolman(p)
+    ? (cf.vyhry ?? 0)*3 + (cf.cista_konta ?? 0) + zaHvezdy
+    : (cf.body ?? 0) + zaHvezdy;
+}
+
+function kartaHrace(p, nej){
+  const cf = cfProProfil(p) || {};
+  const h = stav.hvezdy[p.id] || {prvni:0, druha:0, treti:0};
+  const cisla = jeGolman(p)
+    ? [[cf.zapasy ?? 0,'Zápasy'], [cf.vyhry ?? 0,'Výhry'], [cf.cista_konta ?? 0,'Čistá konta']]
+    : [[cf.zapasy ?? 0,'Zápasy'], [cf.branky ?? 0,'Góly'], [cf.asistence ?? 0,'Asist.']];
+  const obrazek = (p.cislo != null && maPostavicku[p.cislo])
+    ? POSTAVICKA + p.cislo + '.webp'
+    : (jeGolman(p) ? INDIAN_G : INDIAN);
+
+  return `
+  <div class="karta-hrace ${nej ? 'nej' : ''}">
+    <div class="kh-hlavicka">
+      <span class="kh-cislo">${p.cislo != null ? `<i>#</i>${p.cislo}` : '—'}</span>
+      <span class="kh-jmeno">${escapuj(p.jmeno)}</span>
+      <span class="kh-skore"><b>${skoreHrace(p)}</b><i>bodů</i></span>
+    </div>
+    <div class="kh-telo">
+      <div class="kh-portret"><img src="${obrazek}" alt="" draggable="false"></div>
+      <div class="kh-data">
+        <div class="kh-cisla">${cisla.map(([v,t]) =>
+          `<span class="b"><span class="h">${v}</span><span class="p">${t}</span></span>`).join('')}</div>
+        <div class="kh-hvezdy">
+          ${[h.prvni, h.druha, h.treti].map((v,i) =>
+            `<span class="b"><span class="h"><span class="z">★</span>${v||0}</span>
+             <span class="p">${i+1}. hvězda</span></span>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let skupinaSoupisky = 'hraci';
+
+function vykresliSoupisku(){
+  const el = document.getElementById('soupiska');
+  if(!el || !stav.ja) return;
+
+  const lidi = stav.profily
+    .filter(p => skupinaSoupisky === 'golmani' ? jeGolman(p) : !jeGolman(p))
+    .sort((a,b) => skoreHrace(b) - skoreHrace(a) || a.jmeno.localeCompare(b.jmeno,'cs'));
+
+  if(!lidi.length){ el.innerHTML = '<p class="prazdno">Nikdo tu není.</p>'; return; }
+
+  el.innerHTML = lidi.map((p,i) => kartaHrace(p, i === 0 && skoreHrace(p) > 0)).join('');
+  zvyrazniKartu();
+  pripravPostavicky(lidi).then(()=>{
+    /* až se zjistí, které postavičky existují, překreslí se s nimi */
+    el.innerHTML = lidi.map((p,i) => kartaHrace(p, i === 0 && skoreHrace(p) > 0)).join('');
+    zvyrazniKartu();
+  });
+}
+
+/* Karta uprostřed pásu vystoupí — počítá se ze vzdálenosti od středu. */
+function zvyrazniKartu(){
+  const pas = document.getElementById('soupiska');
+  if(!pas || !pas.children.length) return;
+  const stred = pas.scrollLeft + pas.clientWidth / 2;
+  for(const k of pas.children){
+    const d = Math.abs(k.offsetLeft + k.offsetWidth/2 - stred) / k.offsetWidth;
+    const a = Math.min(d, 1);
+    k.style.transform = `scale(${1 - 0.04*a}) translateY(${2*a}px)`;
+    k.style.filter = `brightness(${1 - 0.10*a}) saturate(${1 - 0.12*a})`;
+    k.style.zIndex = String(10 - Math.round(a*10));
+  }
+}
+
+(function pripojSoupisku(){
+  const pas = document.getElementById('soupiska');
+  const prep = document.getElementById('prepinacSkupin');
+  if(!pas || !prep) return;
+  let ceka = false;
+  pas.addEventListener('scroll', ()=>{
+    if(ceka) return; ceka = true;
+    requestAnimationFrame(()=>{ ceka = false; zvyrazniKartu(); });
+  }, {passive:true});
+  window.addEventListener('resize', zvyrazniKartu);
+  prep.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    skupinaSoupisky = b.dataset.kdo;
+    prep.querySelectorAll('button').forEach(x => x.classList.toggle('aktivni', x === b));
+    pas.scrollLeft = 0;
+    vykresliSoupisku();
+  });
+})();
+
 function prekresli(){
   if(!stav.ja) return;
   vykresliVyzvu(); vykresliNejblizsi();
   vykresliDlazdice('dlazdice'); vykresliDlazdice('dlazdice2'); vykresliDlazdice('dlazdice3');
   vykresliSeznam(); vykresliTabulku(); vykresliSoutez(); vykresliKanadske();
   vykresliProfil(); vykresliNeodpovedele(); vykresliSpravuHracu();
-  vykresliHlasovaciVyzvu(); vykresliSpravuHlasovani();
+  vykresliHlasovaciVyzvu(); vykresliSpravuHlasovani(); vykresliSoupisku();
 }
 
 /* předvyplnit dnešek ve formuláři */
