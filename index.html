@@ -1373,6 +1373,10 @@ button.post-hrac:active{color:var(--bila)}
     <path fill-rule="evenodd" d="M13 1.4a7 7 0 100 14 7 7 0 000-14zM6.6 5.5h12.8v2.2H6.6z"/>
     <path d="M13 16.4c-4.7 0-8.6 3.3-9.6 7.8l-.8 3.7c-.2 1 .5 1.9 1.5 1.9h17.8c1 0 1.7-.9 1.5-1.9l-.8-3.7c-1-4.5-4.9-7.8-9.6-7.8z"/>
   </symbol>
+  <linearGradient id="hl-zaHracem" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0A2138" stop-opacity="0"/>
+    <stop offset="1" stop-color="#0A2138" stop-opacity=".55"/>
+  </linearGradient>
   <clipPath id="hl-telo"><rect x="14" y="14" width="572" height="772" rx="40"/></clipPath>
 </defs></svg>
 
@@ -2758,7 +2762,6 @@ document.addEventListener('keydown', e=>{
    HRÁČ ZÁPASU — hlasování
    ============================================================ */
 
-const HL_FOTKY = 'hraci/';        // hraci/13.webp, pojmenováno číslem dresu
 const HL_KROK  = 30;              // rozestup karet ve stupních
 const HL_MEZERA = 1.12;           // odstup středů sousedů v šířkách karty
 const HL_DOHLED = 3;              // kolik karet na každou stranu kreslit
@@ -2866,29 +2869,15 @@ function vykresliHlasovaciVyzvu(){
 
 /* ---------- karta hráče ---------- */
 
-const hlMaFotku = {};     // číslo dresu -> true/false, zjištěno předem
-
-function hlPripravFotky(hraci){
-  return Promise.all(hraci.map(p => new Promise(hotovo => {
-    if(p.cislo == null){ hotovo(); return; }
-    if(hlMaFotku[p.cislo] !== undefined){ hotovo(); return; }
-    const o = new Image();
-    o.onload  = ()=>{ hlMaFotku[p.cislo] = true;  hotovo(); };
-    o.onerror = ()=>{ hlMaFotku[p.cislo] = false; hotovo(); };
-    o.src = HL_FOTKY + p.cislo + '.webp';
-  })));
-}
-
 function hlKartaSVG(p){
-  const maFotku = p.cislo != null && hlMaFotku[p.cislo];
-  const obsah = maFotku
-    ? `<image href="${HL_FOTKY}${p.cislo}.webp" x="14" y="14" width="572" height="772"
-              preserveAspectRatio="xMidYMid slice"/>
-       <rect x="14" y="14" width="572" height="772" fill="url(#hl-clona)"/>`
-    : `<ellipse cx="300" cy="360" rx="190" ry="190" fill="url(#hl-zare)"/>
-       <text x="300" y="360" text-anchor="middle" dominant-baseline="central"
-             font-family="'Chakra Petch',sans-serif" font-weight="700"
-             font-size="290" fill="#F4FAFF" fill-opacity=".92">?</text>`;
+  /* Vlastní postavička podle čísla dresu, jinak obecná. */
+  const obrazek = (p.cislo != null && maPostavicku[p.cislo])
+    ? POSTAVICKA + p.cislo + '.webp'
+    : (p.role === 'golman' ? INDIAN_G : INDIAN);
+  const obsah = `
+    <rect x="14" y="380" width="572" height="406" fill="url(#hl-zaHracem)"/>
+    <image href="${obrazek}" x="8" y="4" width="584" height="782"
+           preserveAspectRatio="xMidYMax meet"/>`;
   const cislo = p.cislo != null
     ? `<tspan font-weight="700" fill="#7CB6E0">#${p.cislo}</tspan><tspan dx="20" font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`
     : `<tspan font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`;
@@ -3036,7 +3025,7 @@ async function otevriHlasovani(id){
   document.getElementById('hlasovani').classList.add('otevreno');
   document.body.style.overflow = 'hidden';
 
-  await hlPripravFotky(hl.hraci);
+  await pripravPostavicky(hl.hraci);
 
   document.getElementById('hl-kruh').innerHTML = hl.hraci.map((p,i)=>
     `<div class="hl-karta" data-i="${i}">${hlKartaSVG(p)}</div>`).join('');
