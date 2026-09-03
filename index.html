@@ -647,7 +647,13 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 }
 
 /* ---------- soupiska: karty hráčů ---------- */
-:root{--zlata:#E8C56A;--stribrna:#C3CFDA;--bronz:#C48A5A}
+:root{
+  --zlata:#E8C56A;--stribrna:#C3CFDA;--bronz:#C48A5A;
+  /* hvězdy mají vlastní odstíny — rozestoupené, ať je poznáš na první pohled */
+  --hv1:#FFC93C;   /* žlutá */
+  --hv2:#CBD8E4;   /* studená stříbrná */
+  --hv3:#D2732E;   /* měděná */
+}
 .soupiska-hlava{display:flex;align-items:baseline;gap:8px}
 .prepinac-skupin{margin-left:auto;display:flex;gap:4px;flex:none}
 .prepinac-skupin button{
@@ -706,9 +712,10 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .kh-hvezdy .h{display:flex;align-items:center;justify-content:center;gap:4px;
   font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:16px;line-height:1}
 .kh-hvezdy .z{font-size:12px}
-.kh-hvezdy .b:nth-child(1) .z{color:var(--zlata)}
-.kh-hvezdy .b:nth-child(2) .z{color:var(--stribrna)}
-.kh-hvezdy .b:nth-child(3) .z{color:var(--bronz)}
+.kh-hvezdy .z{text-shadow:0 0 9px currentColor}
+.kh-hvezdy .b:nth-child(1) .z{color:var(--hv1)}
+.kh-hvezdy .b:nth-child(2) .z{color:var(--hv2)}
+.kh-hvezdy .b:nth-child(3) .z{color:var(--hv3)}
 
 /* ---------- sestava na zápas ---------- */
 
