@@ -2184,11 +2184,11 @@ async function otevriDetail(id, jenPrekresli){
       <span class="stitek" style="color:${t.barva}"><i></i>${t.nazev}</span>
       <h2 class="detail-nazev">${nazevUdalosti(u)}${u.zruseno?' <span class="odznak zruseno" style="vertical-align:middle">zrušeno</span>':''}</h2>
       <p class="detail-radek"><b>${DNY[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}</b> · ${cas(u.zacatek)}</p>
-      <p class="detail-radek">${u.misto||''}${u.doma!==null&&u.doma!==undefined?(u.doma?' · doma':' · venku'):''}${u.sraz?` · sraz ${cas(u.sraz)}`:''}</p>
+      <p class="detail-radek">${u.misto||''}${u.sraz?`${u.misto?' · ':''}sraz ${cas(u.sraz)}`:''}</p>
       ${(u.vysledek1||u.vysledek2)?`<p class="detail-radek"><b>Výsledky:</b> ${[u.vysledek1,u.vysledek2].filter(Boolean).join(' · ')}</p>`:''}
       ${!probehla&&!u.zruseno?`<p class="detail-radek" style="margin-top:9px">
         <span style="color:${poUzaverce?'#E58AA0':'var(--bila-38)'}">
-          ${poUzaverce?'Uzávěrka byla':'Odpovědět do'} ${DNY_KR[uz.getDay()]} ${uz.getDate()}. ${MESICE[uz.getMonth()]} ${cas(uz)}
+          ${poUzaverce?'Uzávěrka byla:':'Odpovědět do:'} ${DNY_KR[uz.getDay()]} ${uz.getDate()}. ${MESICE[uz.getMonth()]} ${cas(uz)}
         </span></p>`:''}
       ${u.poznamka?`<p class="detail-poznamka">${u.poznamka}</p>`:''}
     </div>
