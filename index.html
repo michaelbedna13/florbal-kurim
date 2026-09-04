@@ -1508,7 +1508,9 @@ const stav = {
 };
 
 const jeTrener = () => stav.ja?.role === 'trener';
-const ROLE = {hrac:'Hráč', golman:'Golman', trener:'Trenér'};
+/* Divák appku jen sleduje — nepřihlašuje se, nepíše, nehlasuje. */
+const jeDivak  = () => stav.ja?.role === 'divak';
+const ROLE = {hrac:'Hráč', golman:'Golman', trener:'Trenér', divak:'Divák'};
 
 /* uzávěrka = předchozí den ve zvolenou hodinu, podle role */
 function uzaverkaPro(u, role){
@@ -1694,7 +1696,7 @@ async function nactiVse(){
     if(r.error){ toast('Chyba načítání: '+r.error.message); throw r.error; }
   }
 
-  stav.profily = profily.data.filter(p=>p.aktivni);
+  stav.profily = profily.data.filter(p => p.aktivni && p.role !== 'divak');
   stav.vsechnyProfily = profily.data;
 
   stav.udalosti = udalosti.data.map(u=>({
@@ -1886,14 +1888,14 @@ function vykresliNejblizsi(){
           <span><i style="background:var(--mozna)"></i>${p.mozna} možná</span>
           <span><i style="background:var(--nejdu)"></i>${p.nejdu} nejde</span>
         </div>
-        <div class="volba">
+        ${jeDivak() ? '' : `<div class="volba">
           ${['jdu','mozna','nejdu'].map(s=>`
             <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}"
                     onclick="event.stopPropagation();odpoved(${u.id},'${s}')">
               <span class="znak">${s==='jdu'?'✓':s==='mozna'?'?':'✕'}</span>
               <span class="popis">${s==='jdu'?'Jdu':s==='mozna'?'Možná':'Nejdu'}</span>
             </button>`).join('')}
-        </div>
+        </div>`}
       </div>
     </div>
     ${upozorneniNaZapas(u)}`;
@@ -1919,6 +1921,15 @@ function poradiVTymu(idHrace){
 }
 function vykresliDlazdice(kam){
   const el=document.getElementById(kam); if(!el) return;
+  /* Divák nemá vlastní docházku ani statistiky, sekci mu neukazujeme. */
+  const nadpis = el.previousElementSibling;
+  const jeNadpis = nadpis && nadpis.classList.contains('nadpis-sekce');
+  if(jeDivak()){
+    el.innerHTML = '';
+    if(jeNadpis) nadpis.style.display = 'none';   // hidden by přebilo CSS
+    return;
+  }
+  if(jeNadpis) nadpis.style.display = '';
   const s=statistikaHrace(stav.ja.id), poradi=poradiVTymu(stav.ja.id);
   const cf=cfProProfil(stav.ja) || {};
   const jeGolman = stav.ja.role==='golman';
@@ -2104,7 +2115,7 @@ function vykresliTabulku(){
 }
 
 function vykresliVyzvu(){
-  const c=cekajici().length;
+  const c = jeDivak() ? 0 : cekajici().length;
   const v=document.getElementById('vyzva'), b=document.getElementById('bubl');
   v.style.display=c?'flex':'none'; b.style.display=c?'grid':'none';
   document.getElementById('vyzva-pocet').textContent=c; b.textContent=c;
@@ -2237,6 +2248,10 @@ async function otevriDetail(id, jenPrekresli){
   if(u.typ === 'zapas' && zapasyUdalosti(u).some(z => !z.otevreno)){
     zajistiVysledky(u.id, ()=>{ if(otevrenaUdalost === id) otevriDetail(id, true); });
   }
+  if(u.typ === 'zapas'){
+    pripravPostavicky(kandidatiSestavy(u))
+      .then(zmena => { if(zmena && otevrenaUdalost === id) otevriDetail(id, true); });
+  }
 
   const sk={jdu:[],mozna:[],nejdu:[],mlci:[]};
   let jdeHracu=0, jdeGolmanu=0;
@@ -2304,7 +2319,7 @@ async function otevriDetail(id, jenPrekresli){
   const blokHostu = (hosteAkce.length || muzePridatHosta) ? `
     ${hosteAkce.length ? `<div class="karta ucastnici" style="margin-top:8px">
       ${hosteAkce.map(radekHosta).join('')}</div>` : ''}
-    ${muzePridatHosta ? `<button class="pridat-hosta" onclick="pridejHosta(${id})">+ Přidat hosta</button>` : ''}
+    ${muzePridatHosta && !jeDivak() ? `<button class="pridat-hosta" onclick="pridejHosta(${id})">+ Přidat hosta</button>` : ''}
   ` : '';
 
   const skupina=(n,pole,barva)=>pole.length?`
@@ -2337,7 +2352,7 @@ async function otevriDetail(id, jenPrekresli){
           </button>
           <button class="nebezpecna" onclick="smazUdalost(${id})">Smazat</button>
         </div>`:''}
-      ${!probehla&&!u.zruseno?`
+      ${!probehla&&!u.zruseno&&!jeDivak()?`
         <div class="volba tmava">
           ${['jdu','mozna','nejdu'].map(s=>`
             <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}" onclick="odpoved(${id},'${s}')">
@@ -2369,10 +2384,10 @@ async function otevriDetail(id, jenPrekresli){
               <span class="avatar">${iniciály(jmeno)}</span>
               <span><span class="autor">${jmeno}</span><span class="bublina">${escapuj(z.text)}</span></span>
             </div>`;}).join('')||'<p class="prazdno" style="padding:6px 0 10px">Zatím nikdo nic nenapsal.</p>'}
-          <button class="napsat-zpravu" onclick="otevriZpravu()">
+          ${jeDivak() ? '' : `<button class="napsat-zpravu" onclick="otevriZpravu()">
             <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
             Napsat zprávu
-          </button>
+          </button>`}
         </div>
       </div>
     </div>`;
@@ -2980,10 +2995,7 @@ function vykresliHlasovaciVyzvu(){
 /* ---------- karta hráče ---------- */
 
 function hlKartaSVG(p){
-  /* Vlastní postavička podle čísla dresu, jinak obecná. */
-  const obrazek = (p.cislo != null && maPostavicku[p.cislo])
-    ? POSTAVICKA + p.cislo + '.webp'
-    : (p.role === 'golman' ? INDIAN_G : INDIAN);
+  const obrazek = obrazekHrace(p);
   const obsah = `
     <rect x="14" y="380" width="572" height="406" fill="url(#hl-zaHracem)"/>
     <image href="${obrazek}" x="8" y="4" width="584" height="782"
@@ -3414,9 +3426,14 @@ function hristeHTML(u){
     <div class="hriste-rada ${rada.tr}">
       ${rada.posty.map(k => {
         const lidi = podle[k];
-        const golman = (k === 'brankar' && maGolmana);
-        const ikona = (golman || maIndiana)
-          ? `<img src="${golman ? INDIAN_G : INDIAN}" alt="" draggable="false">`
+        /* Když na postu někdo stojí, ukáže se jeho postavička. */
+        const kdo = lidi.length ? stav.profily.find(x => x.id === lidi[0].hrac_id) : null;
+        const golman = (k === 'brankar');
+        const zdroj = kdo
+          ? obrazekHrace(kdo)
+          : (golman && maGolmana ? INDIAN_G : (maIndiana ? INDIAN : null));
+        const ikona = zdroj
+          ? `<img src="${zdroj}" alt="" draggable="false">`
           : `<svg viewBox="0 0 26 30" aria-hidden="true"><use href="#ikona-hrac" fill="currentColor"/></svg>`;
         return `
         <div class="post ${lidi.length ? 'obsazeny' : ''}">
@@ -3575,13 +3592,21 @@ const POSTAVICKA = 'hraci/postavicka-';   // hraci/postavicka-13.webp
 const maPostavicku = {};                  // číslo dresu -> true/false
 
 function pripravPostavicky(lidi){
-  return Promise.all(lidi.map(p => new Promise(hotovo => {
-    if(p.cislo == null || maPostavicku[p.cislo] !== undefined){ hotovo(); return; }
+  const nove = lidi.filter(p => p.cislo != null && maPostavicku[p.cislo] === undefined);
+  if(!nove.length) return Promise.resolve(false);
+  return Promise.all(nove.map(p => new Promise(hotovo => {
     const o = new Image();
     o.onload  = ()=>{ maPostavicku[p.cislo] = true;  hotovo(); };
     o.onerror = ()=>{ maPostavicku[p.cislo] = false; hotovo(); };
     o.src = POSTAVICKA + p.cislo + '.webp';
-  })));
+  }))).then(()=> true);
+}
+
+/* Postavička hráče, jinak obecná podle role. */
+function obrazekHrace(p){
+  const nahrada = (p && p.role === 'golman') ? INDIAN_G : INDIAN;
+  return (p && p.cislo != null && maPostavicku[p.cislo])
+    ? POSTAVICKA + p.cislo + '.webp' : nahrada;
 }
 
 const jeGolman = (p) => p.role === 'golman';
@@ -3603,9 +3628,7 @@ function kartaHrace(p, nej){
   const cisla = jeGolman(p)
     ? [[cf.zapasy ?? 0,'Zápasy'], [cf.vyhry ?? 0,'Výhry'], [cf.cista_konta ?? 0,'Čistá konta']]
     : [[cf.zapasy ?? 0,'Zápasy'], [cf.branky ?? 0,'Góly'], [cf.asistence ?? 0,'Asist.']];
-  const obrazek = (p.cislo != null && maPostavicku[p.cislo])
-    ? POSTAVICKA + p.cislo + '.webp'
-    : (jeGolman(p) ? INDIAN_G : INDIAN);
+  const obrazek = obrazekHrace(p);
 
   return `
   <div class="karta-hrace ${nej ? 'nej' : ''}">
@@ -3643,11 +3666,7 @@ function vykresliSoupisku(){
 
   el.innerHTML = lidi.map((p,i) => kartaHrace(p, i === 0 && skoreHrace(p) > 0)).join('');
   zvyrazniKartu();
-  pripravPostavicky(lidi).then(()=>{
-    /* až se zjistí, které postavičky existují, překreslí se s nimi */
-    el.innerHTML = lidi.map((p,i) => kartaHrace(p, i === 0 && skoreHrace(p) > 0)).join('');
-    zvyrazniKartu();
-  });
+  pripravPostavicky(lidi).then(zmena => { if(zmena) vykresliSoupisku(); });
 }
 
 /* Karta uprostřed pásu vystoupí — počítá se ze vzdálenosti od středu. */
