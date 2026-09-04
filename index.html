@@ -38,6 +38,7 @@
   --trenink:#7CB6E0;       /* nebeská */
   --akce:#F2F7FB;          /* bílá jako venkovní dres */
   --zapas:#7CB6E0;         /* zápas má navíc gradient, viz .grad-zapas */
+  --fotbalek:#5FC49B;      /* letní fotbálky, aby nesplývaly s florbalem */
 
   --nav-h:70px;
   --r:24px;
@@ -987,6 +988,7 @@ button.post-hrac:active{color:var(--bila)}
 }
 .typ-chip.trenink{background:rgba(124,182,224,.16);color:var(--trenink)}
 .typ-chip.akce{background:rgba(242,247,251,.14);color:var(--akce)}
+.typ-chip.fotbalek{background:rgba(95,196,155,.16);color:var(--fotbalek)}
 .typ-chip.zapas{background:linear-gradient(90deg,#7CB6E0,#F2F7FB);color:#06121F}
 
 /* zápas dostane navíc rámeček, ať nesplyne */
@@ -1069,6 +1071,12 @@ button.post-hrac:active{color:var(--bila)}
 .hrac-radek.vyrazeny{opacity:.45}
 .hrac-jmeno{flex:1 1 auto;min-width:112px;font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hrac-ovladani{display:flex;align-items:center;gap:7px;margin-left:auto}
+.prepnout-pozici{
+  flex:none;width:29px;height:29px;border-radius:9px;font-size:12px;
+  font-family:'Chakra Petch',sans-serif;font-weight:700;
+  border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-18);
+}
+.prepnout-pozici.golman{background:rgba(222,148,64,.16);border-color:rgba(222,148,64,.45);color:var(--mozna)}
 .vyber-role{
   flex:none;padding:7px 21px 7px 8px;border-radius:10px;font-size:12.5px;
   border:1px solid var(--linka);background:var(--panel-2);color:var(--bila-60);
@@ -1198,6 +1206,7 @@ button.post-hrac:active{color:var(--bila)}
       <button data-filtr="trenink">Tréninky</button>
       <button data-filtr="zapas">Zápasy</button>
       <button data-filtr="akce">Akce</button>
+      <button data-filtr="fotbalek">Fotbálek</button>
       <button data-filtr="probehle">Proběhlé</button>
     </div>
     <div class="seznam" id="seznam"></div>
@@ -1477,7 +1486,9 @@ const TYPY = {
   zapas:  {nazev:'Zápas',   barva:'var(--zapas)',
            zare:'rgba(190,220,245,.22)', pruh:'linear-gradient(90deg,#7CB6E0,#F2F7FB)'},
   akce:   {nazev:'Akce',    barva:'var(--akce)',
-           zare:'rgba(242,247,251,.13)', pruh:'var(--akce)'}
+           zare:'rgba(242,247,251,.13)', pruh:'var(--akce)'},
+  fotbalek:{nazev:'Fotbálek', barva:'var(--fotbalek)',
+           zare:'rgba(67,183,140,.18)', pruh:'var(--fotbalek)'}
 };
 const DNY = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
 const DNY_KR = ['Ne','Po','Út','St','Čt','Pá','So'];
@@ -1508,7 +1519,22 @@ const stav = {
 const jeTrener = () => stav.ja?.role === 'trener';
 /* Divák appku jen sleduje — nepřihlašuje se, nepíše, nehlasuje. */
 const jeDivak  = () => stav.ja?.role === 'divak';
-const ROLE = {hrac:'Hráč', golman:'Golman', trener:'Trenér', divak:'Divák'};
+/* role = kategorie členství, pozice = post na hřišti. Dvě různé věci. */
+const ROLE = {trener:'Trenér', hrac:'Hráč', mladoch:'Mlaďoch', fotbalek:'Fotbálek', divak:'Divák'};
+const POZICE = {hrac:'Hráč v poli', golman:'Gólman'};
+
+/* Na co se která kategorie smí hlásit. */
+const SMI_NA = {
+  trener:  ['trenink','zapas','akce','fotbalek'],
+  hrac:    ['trenink','zapas','akce','fotbalek'],
+  mladoch: ['trenink'],
+  fotbalek:['fotbalek'],
+  divak:   []
+};
+const smiNa = (typ, role) => (SMI_NA[role || stav.ja?.role] || []).includes(typ);
+const jeGolman = (p) => p?.pozice === 'golman';
+/* Mláďata a fotbálkáři nepatří do soupisky áčka ani do statistik. */
+const jeVSoupisce = (p) => p.role === 'trener' || p.role === 'hrac';
 
 /* uzávěrka = předchozí den ve zvolenou hodinu, podle role */
 function uzaverkaPro(u, role){
@@ -1886,7 +1912,7 @@ function vykresliNejblizsi(){
           <span><i style="background:var(--mozna)"></i>${p.mozna} možná</span>
           <span><i style="background:var(--nejdu)"></i>${p.nejdu} nejde</span>
         </div>
-        ${jeDivak() ? '' : `<div class="volba">
+        ${!smiNa(u.typ) ? '' : `<div class="volba">
           ${['jdu','mozna','nejdu'].map(s=>`
             <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}"
                     onclick="event.stopPropagation();odpoved(${u.id},'${s}')">
@@ -1930,7 +1956,7 @@ function vykresliDlazdice(kam){
   if(jeNadpis) nadpis.style.display = '';
   const s=statistikaHrace(stav.ja.id), poradi=poradiVTymu(stav.ja.id);
   const cf=cfProProfil(stav.ja) || {};
-  const jeGolman = stav.ja.role==='golman';
+  const jeGolman = stav.ja.pozice === 'golman';
 
   // statistiky ze soutěže; než se odehraje první turnaj, jsou to nuly
   const spodni = jeGolman ? `
@@ -2131,7 +2157,8 @@ function vykresliNeodpovedele(){
   const el=document.getElementById('neodpovedeli'); if(!el) return;
   const u=budouci()[0];
   if(!u){ el.innerHTML='<p class="prazdno">Nic nadcházejícího.</p>'; return; }
-  const mlci=stav.profily.filter(p=>!stav.prihlasky[u.id]?.[p.id]);
+  const mlci=stav.profily.filter(p =>
+    !stav.prihlasky[u.id]?.[p.id] && smiNa(u.typ, p.role));
   el.innerHTML=`
     <p style="font-size:12.5px;color:var(--bila-38);margin:14px 0 4px">
       ${nazevUdalosti(u)} · ${DNY[u.zacatek.getDay()]} ${u.zacatek.getDate()}. ${MESICE[u.zacatek.getMonth()]}</p>
@@ -2156,6 +2183,10 @@ function vykresliSpravuHracu(){
         ${p.jmeno}${p.aktivni?'':' <span class="duvod">vyřazen</span>'}
       </span>
       <span class="hrac-ovladani">
+      <button class="prepnout-pozici ${p.pozice==='golman'?'golman':''}"
+              onclick="prepniPozici('${p.id}', '${p.pozice||'hrac'}')"
+              aria-label="${POZICE[p.pozice||'hrac']}"
+              title="${POZICE[p.pozice||'hrac']}">G</button>
       <select class="vyber-role" onchange="zmenRoli('${p.id}', this.value)">
         ${Object.entries(ROLE).map(([k,v])=>
           `<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}
@@ -2258,7 +2289,7 @@ async function otevriDetail(id, jenPrekresli){
     if(!od){ sk.mlci.push({jmeno:p.jmeno}); return; }
     sk[od.stav].push({jmeno:p.jmeno, ...od});
     if(od.stav==='jdu'){
-      if(p.role==='golman') jdeGolmanu++; else jdeHracu++;
+      if(p.pozice === 'golman') jdeGolmanu++; else jdeHracu++;
     }
   });
 
@@ -2350,7 +2381,7 @@ async function otevriDetail(id, jenPrekresli){
           </button>
           <button class="nebezpecna" onclick="smazUdalost(${id})">Smazat</button>
         </div>`:''}
-      ${!probehla&&!u.zruseno&&!jeDivak()?`
+      ${!probehla&&!u.zruseno&&smiNa(u.typ)?`
         <div class="volba tmava">
           ${['jdu','mozna','nejdu'].map(s=>`
             <button data-stav="${s}" class="${o&&o.stav===s?'zvoleno':''}" onclick="odpoved(${id},'${s}')">
@@ -2870,7 +2901,7 @@ const tvarHlasu = (n) => n === 1 ? 'hlas' : n < 5 ? 'hlasy' : 'hlasů';
 
 function hvezdaRadek(v, mala, bezPortretu){
   const p = stav.profily.find(x => x.id === v.hrac_id) || {};
-  const nahrada = p.role === 'golman' ? INDIAN_G : INDIAN;
+  const nahrada = p.pozice === 'golman' ? INDIAN_G : INDIAN;
   const zdroj = v.cislo != null ? POSTAVICKA + v.cislo + '.webp' : nahrada;
   return `
     <div class="hv-radek ${mala ? 'mala' : ''} ${bezPortretu ? 'drobna' : ''}">
@@ -3302,6 +3333,13 @@ async function uzavriHlasovani(id, zapas){
 
 /* ---------- Správa: číslo dresu ---------- */
 
+async function prepniPozici(id, ted){
+  const nova = ted === 'golman' ? 'hrac' : 'golman';
+  const {error} = await db.from('profily').update({pozice:nova}).eq('id', id);
+  if(error){ toast('Nepovedlo se: '+error.message); return; }
+  await nactiVse(); prekresli();
+}
+
 async function ulozCislo(id, hodnota){
   const t = String(hodnota).trim();
   const cislo = t === '' ? null : parseInt(t, 10);
@@ -3493,7 +3531,7 @@ function otevriVyberHrace(post, udalostId){
   let lidi = kandidatiSestavy(u).filter(p => kde[p.id] !== POSTY[post]);
   /* na brankářský post napřed golmany */
   if(post === 'brankar'){
-    lidi = lidi.sort((a,b) => (b.role === 'golman') - (a.role === 'golman'));
+    lidi = lidi.sort((a,b) => (b.pozice === 'golman') - (a.pozice === 'golman'));
   }
 
   document.getElementById('vyberObsah').innerHTML = `
@@ -3504,7 +3542,7 @@ function otevriVyberHrace(post, udalostId){
       return `<button class="vyber-radek" onclick="postavHrace('${p.id}')">
         <b>${p.cislo != null ? '#'+p.cislo : '—'}</b>
         <span class="tecka" style="background:${TECKA[odpoved]}"></span>
-        <span class="jm">${escapuj(p.jmeno)}${p.role === 'golman' ? ' · G' : ''}</span>
+        <span class="jm">${escapuj(p.jmeno)}${p.pozice === 'golman' ? ' · G' : ''}</span>
         ${kde[p.id] ? `<span class="kde">${kde[p.id]}</span>` : ''}
       </button>`;
     }).join('') : '<p class="prazdno">Nikdo přihlášený nezbývá.</p>'}`;
@@ -3602,12 +3640,11 @@ function pripravPostavicky(lidi){
 
 /* Postavička hráče, jinak obecná podle role. */
 function obrazekHrace(p){
-  const nahrada = (p && p.role === 'golman') ? INDIAN_G : INDIAN;
+  const nahrada = (p && p.pozice === 'golman') ? INDIAN_G : INDIAN;
   return (p && p.cislo != null && maPostavicku[p.cislo])
     ? POSTAVICKA + p.cislo + '.webp' : nahrada;
 }
 
-const jeGolman = (p) => p.role === 'golman';
 
 /* Body: hráči v poli kanadské bodování, brankáři 3 za výhru a 1 za čisté konto.
    K tomu oběma 3, 2 a 1 za hvězdu. */
@@ -3657,6 +3694,7 @@ function vykresliSoupisku(){
   if(!el || !stav.ja) return;
 
   const lidi = stav.profily
+    .filter(jeVSoupisce)
     .filter(p => skupinaSoupisky === 'golmani' ? jeGolman(p) : !jeGolman(p))
     .sort((a,b) => skoreHrace(b) - skoreHrace(a) || a.jmeno.localeCompare(b.jmeno,'cs'));
 
