@@ -296,7 +296,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 }
 .pole select option{background:var(--panel);color:var(--bila)}
 .dvojice{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.typ-prepinac{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.typ-prepinac{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:18px}
 .typ-prepinac button{
   border-radius:15px;padding:13px 4px;font-size:13px;font-weight:500;
   color:var(--bila-38);background:var(--panel-2);border:1px solid var(--linka);
@@ -646,6 +646,21 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){
   .seznam .udalost,.dlazdice .d,.nejblizsi,.zprava,.volba button.zvoleno{animation:none}
 }
+
+/* ---------- načítací obrazovka ---------- */
+#nacitani{
+  position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 45%,rgba(45,105,155,.20),transparent 55%),var(--cerna);
+}
+#nacitani img{
+  width:96px;height:96px;border-radius:24px;display:block;
+  animation:dycha 2.2s ease-in-out infinite;
+}
+@keyframes dycha{
+  0%,100%{transform:scale(1);          filter:drop-shadow(0 0 0 rgba(124,182,224,0))}
+  50%    {transform:scale(1.045);      filter:drop-shadow(0 0 22px rgba(124,182,224,.55))}
+}
+@media(prefers-reduced-motion:reduce){#nacitani img{animation:none}}
 
 /* ---------- vyhlášení hvězd zápasu ---------- */
 .hv-blok{margin-top:12px;padding:13px 14px 11px;border-radius:20px;
@@ -1237,6 +1252,7 @@ button.post-hrac:active{color:var(--bila)}
         <button class="aktivni" data-typ="trenink">Trénink</button>
         <button data-typ="zapas">Zápas</button>
         <button data-typ="akce">Akce</button>
+        <button data-typ="fotbalek">Fotbálek</button>
       </div>
       <div class="pole" id="pole-nazev" style="display:none">
         <label>Název akce</label><input type="text" id="f-nazev-akce" placeholder="Zakončení sezóny"></div>
@@ -1462,8 +1478,8 @@ button.post-hrac:active{color:var(--bila)}
 </div>
 
 <div class="toast" id="toast"></div>
-<div id="nacitani" style="position:fixed;inset:0;z-index:95;background:var(--cerna);display:flex;align-items:center;justify-content:center">
-  <span style="color:var(--bila-38);font-size:13.5px">Načítám…</span>
+<div id="nacitani">
+  <img src="logo-256.png" alt="Florbal Kuřim">
 </div>
 
 <script>
@@ -2286,7 +2302,8 @@ async function otevriDetail(id, jenPrekresli){
   let jdeHracu=0, jdeGolmanu=0;
   stav.profily.forEach(p=>{
     const od=stav.prihlasky[id]?.[p.id];
-    if(!od){ sk.mlci.push({jmeno:p.jmeno}); return; }
+    /* Kdo se na tenhle typ akce hlásit nesmí, ten ani nechybí. */
+    if(!od){ if(smiNa(u.typ, p.role)) sk.mlci.push({jmeno:p.jmeno}); return; }
     sk[od.stav].push({jmeno:p.jmeno, ...od});
     if(od.stav==='jdu'){
       if(p.pozice === 'golman') jdeGolmanu++; else jdeHracu++;
