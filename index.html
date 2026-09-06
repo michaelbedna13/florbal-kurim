@@ -1232,7 +1232,7 @@ button.post-hrac:active{color:var(--bila)}
       <button data-filtr="trenink">Tréninky</button>
       <button data-filtr="zapas">Zápasy</button>
       <button data-filtr="akce">Akce</button>
-      <button data-filtr="fotbalek">Fotbálky</button>
+      <button data-filtr="fotbalek">Fotbálek</button>
       <button data-filtr="probehle">Proběhlé</button>
     </div>
     <div class="seznam" id="seznam"></div>
@@ -1732,6 +1732,9 @@ async function nactiVse(){
     if(z.prvni || z.druha || z.treti)
       stav.hvezdy[z.hrac_id] = {prvni:+z.prvni, druha:+z.druha, treti:+z.treti};
   });
+
+  /* Postavičky prověříme hned po načtení, ať se nikde neprobliknou obecné. */
+  pripravPostavicky(stav.profily).then(zmena => { if(zmena) prekresli(); });
 
   stav.sestavaHotova = !sestava.error;
   stav.sestava = {};
@@ -3726,7 +3729,9 @@ function vykresliSoupisku(){
 
   el.innerHTML = lidi.map((p,i) => kartaHrace(p, i === 0 && skoreHrace(p) > 0)).join('');
   zvyrazniKartu();
-  pripravPostavicky(lidi).then(zmena => { if(zmena) vykresliSoupisku(); });
+  /* Prověřujeme rovnou všechny, ne jen zobrazenou skupinu — jinak by
+     po přepnutí na golmany probliklo pár snímků s obecnou postavičkou. */
+  pripravPostavicky(stav.profily).then(zmena => { if(zmena) vykresliSoupisku(); });
 }
 
 /* Karta uprostřed pásu vystoupí — počítá se ze vzdálenosti od středu. */
