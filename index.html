@@ -675,9 +675,14 @@ button.hv-blok:active{border-color:var(--nebeska)}
   background:linear-gradient(150deg,#2B5B8C 0,#12324F 100%);
   display:flex;align-items:flex-end;justify-content:center;
 }
-.hv-portret img{width:46px;height:auto;display:block}
+/* Postavička je na plátně malá a stojí celá — do kolečka ji přiblížíme
+   na hlavu a trup, jinak by z obličeje zbylo pár pixelů. */
+.hv-portret img{
+  position:absolute;left:50%;top:-6%;width:190%;height:auto;display:block;
+  transform:translateX(-50%);image-rendering:pixelated;
+}
 .hv-radek.mala .hv-portret{width:32px;height:32px;border-radius:10px}
-.hv-radek.mala .hv-portret img{width:32px}
+
 .hv-znak{font-size:15px;flex:none;line-height:1;text-shadow:0 0 9px currentColor}
 .hv-radek.mala .hv-znak{font-size:12px}
 .hv-kdo{flex:1;min-width:0;display:flex;align-items:baseline;gap:6px}
