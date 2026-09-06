@@ -889,42 +889,48 @@ button.post-hrac:active{color:var(--bila)}
   border:1px solid var(--linka);display:grid;place-items:center;font-size:17px;color:var(--bila-60);
 }
 .hl-podtitul{padding:0 16px;color:var(--bila-38);font-size:13px;margin:-4px 0 10px}
-.hl-zapasy{display:grid;gap:8px;padding:0 16px 4px}
-.hl-zapasy.dva{grid-template-columns:1fr 1fr}
+.hl-zapasy{display:flex;gap:22px;padding:0 16px 2px;justify-content:center}
 .hl-zapasy button{
-  border-radius:15px;padding:10px 8px;background:var(--panel-2);border:1px solid var(--linka);
-  text-align:center;color:var(--bila-38);transition:background .2s,color .2s,border-color .2s;
+  position:relative;background:none;border:none;padding:6px 2px 10px;
+  color:var(--bila-18);text-align:center;
 }
-.hl-zapasy .hl-kdo2{display:block;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px;line-height:1.15;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hl-zapasy .hl-stav{display:block;font-size:11px;font-weight:500;margin-top:3px;opacity:.85}
-.hl-zapasy button.aktivni{background:var(--nebeska);border-color:var(--nebeska);color:#06121F}
+.hl-zapasy .hl-kdo2{display:block;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;line-height:1.15}
+.hl-zapasy .hl-stav{display:block;font-size:10.5px;font-weight:500;margin-top:2px;opacity:.9}
+.hl-zapasy button.aktivni{color:var(--bila)}
+.hl-zapasy button.aktivni:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;
+  background:var(--nebeska);
+}
 .hl-zapasy button.hotovo .hl-stav{color:var(--jdu)}
-.hl-zapasy button.aktivni.hotovo .hl-stav{color:#06121F;opacity:.7}
 
+.hl-stred{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
 .hl-scena{
-  position:relative;flex:1;min-height:0;overflow:hidden;
-  perspective:1150px;perspective-origin:50% 47%;
+  position:relative;flex:none;overflow:hidden;
   touch-action:none;user-select:none;-webkit-user-select:none;
 }
-.hl-kruh{position:absolute;left:50%;top:47%;width:0;height:0;transform-style:preserve-3d}
+.hl-kruh{position:absolute;left:50%;top:0;width:0;height:100%}
 .hl-karta{
-  position:absolute;left:0;top:0;
-  width:var(--hl-kw);height:calc(var(--hl-kw) * 4 / 3);
-  margin-left:calc(var(--hl-kw) / -2);margin-top:calc(var(--hl-kw) * -2 / 3);
-  transform-style:preserve-3d;backface-visibility:hidden;will-change:transform,opacity;
+  position:absolute;left:0;top:0;height:100%;
+  width:var(--hl-kw);margin-left:calc(var(--hl-kw) / -2);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;
+  will-change:transform,opacity;
 }
-.hl-karta svg{width:100%;height:100%;display:block;border-radius:7%;
-  box-shadow:0 26px 44px -26px rgba(0,0,0,.95);pointer-events:none}
+.hl-karta img{width:100%;height:auto;display:block;pointer-events:none}
+.hl-popis{
+  display:flex;align-items:baseline;justify-content:center;gap:7px;
+  font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;line-height:1.1;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hl-popis b{font-weight:700;font-size:13.5px;color:var(--nebeska)}
 
-.hl-spodek{flex:none;padding:2px 16px calc(14px + env(safe-area-inset-bottom));text-align:center}
+.hl-spodek{flex:none;padding:14px 16px calc(14px + env(safe-area-inset-bottom));text-align:center}
 .hl-otazka{min-height:34px;display:flex;align-items:center;justify-content:center;
   font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:15px;color:var(--bila-60);margin-bottom:8px}
 .hl-hotovo{
   flex:1;min-height:0;display:none;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;padding:0 32px;gap:14px;
 }
-.hlasovani.odeslano .hl-scena,.hlasovani.odeslano .hl-spodek{display:none}
+.hlasovani.odeslano .hl-stred{display:none}
 .hlasovani.odeslano .hl-hotovo{display:flex}
 .hl-fajfka{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;
   background:rgba(67,183,140,.14);border:1px solid rgba(67,183,140,.4);
@@ -1221,7 +1227,7 @@ button.post-hrac:active{color:var(--bila)}
       <button data-filtr="trenink">Tréninky</button>
       <button data-filtr="zapas">Zápasy</button>
       <button data-filtr="akce">Akce</button>
-      <button data-filtr="fotbalek">Fotbálky</button>
+      <button data-filtr="fotbalek">Fotbálek</button>
       <button data-filtr="probehle">Proběhlé</button>
     </div>
     <div class="seznam" id="seznam"></div>
@@ -1458,11 +1464,13 @@ button.post-hrac:active{color:var(--bila)}
   <div class="hl-podtitul" id="hl-podtitul"></div>
   <div class="hl-zapasy" id="hl-zapasy"></div>
 
-  <div class="hl-scena" id="hl-scena"><div class="hl-kruh" id="hl-kruh"></div></div>
+  <div class="hl-stred">
+    <div class="hl-scena" id="hl-scena"><div class="hl-kruh" id="hl-kruh"></div></div>
 
-  <div class="hl-spodek">
+    <div class="hl-spodek">
     <div class="hl-otazka">Kdo byl podle tebe hráčem zápasu?</div>
     <button class="tlacitko-hlavni" id="hl-poslat" onclick="hlPosli()">Dát hlas</button>
+    </div>
   </div>
 
   <div class="hl-hotovo">
@@ -2877,9 +2885,8 @@ document.addEventListener('keydown', e=>{
    HRÁČ ZÁPASU — hlasování
    ============================================================ */
 
-const HL_KROK  = 30;              // rozestup karet ve stupních
-const HL_MEZERA = 1.12;           // odstup středů sousedů v šířkách karty
-const HL_DOHLED = 3;              // kolik karet na každou stranu kreslit
+const HL_ROZESTUP = 1.0;          // odstup středů sousedů v šířkách postavičky
+const HL_DOHLED = 3;              // kolik postaviček na každou stranu kreslit
 
 const skoncil     = (u) => new Date() >= (u.konec || u.zacatek);
 const jsemUcastnik = (u) => stav.prihlasky[u.id]?.[stav.ja?.id]?.stav === 'jdu';
@@ -3040,36 +3047,19 @@ function vykresliHlasovaciVyzvu(){
 
 /* ---------- karta hráče ---------- */
 
-function hlKartaSVG(p){
-  const obrazek = obrazekHrace(p);
-  const obsah = `
-    <rect x="14" y="380" width="572" height="406" fill="url(#hl-zaHracem)"/>
-    <image href="${obrazek}" x="8" y="4" width="584" height="782"
-           preserveAspectRatio="xMidYMax meet"/>`;
-  const cislo = p.cislo != null
-    ? `<tspan font-weight="700" fill="#7CB6E0">#${p.cislo}</tspan><tspan dx="20" font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`
-    : `<tspan font-weight="600" fill="#F1F7FC">${escapuj(p.jmeno)}</tspan>`;
+function hlKarta(p){
   return `
-<svg viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg">
-  <rect x="4" y="4" width="592" height="792" rx="48" fill="#0F2B49"/>
-  <g clip-path="url(#hl-telo)">
-    <rect x="14" y="14" width="572" height="772" fill="url(#hl-podklad)"/>
-    ${obsah}
-    <rect x="14" y="636" width="572" height="150" fill="url(#hl-lista)"/>
-    <rect x="14" y="636" width="572" height="2" fill="#8FC4E8" fill-opacity=".34"/>
-    <text class="hl-jmeno" x="300" y="713" text-anchor="middle" dominant-baseline="central"
-          font-family="'Chakra Petch',sans-serif" font-size="52">${cislo}</text>
-  </g>
-  <rect x="14" y="14" width="572" height="772" rx="40" fill="none"
-        stroke="#A8D2EF" stroke-opacity=".22" stroke-width="3"/>
-</svg>`;
+    <img src="${obrazekHrace(p)}" alt="" draggable="false">
+    <span class="hl-popis">
+      ${p.cislo != null ? `<b>#${p.cislo}</b>` : ''}${escapuj(p.jmeno)}
+    </span>`;
 }
 
 /* ---------- prstenec ---------- */
 
 const hl = {
   udalost:null, zapas:1, hraci:[], pozice:0, cil:0, rychlost:0,
-  tazeni:false, poslX:0, poslCas:0, bezi:false, posunuto:0, polomer:500, vybrany:-1
+  tazeni:false, poslX:0, poslCas:0, bezi:false, posunuto:0, rozestup:200, vybrany:-1
 };
 
 const HL_CITLIVOST = 88;    // pixelů na jednu kartu
@@ -3078,12 +3068,24 @@ const HL_PRAH      = 3.5;   // karet za sekundu, pod tím se nedojíždí
 
 function hlRozmery(){
   const scena = document.getElementById('hl-scena');
-  const r = scena.getBoundingClientRect();
-  if(!r.height) return;
-  const sirka = Math.min((r.height - 30) * 0.68, r.width * 0.55, 250);
+  const spodek = document.querySelector('.hl-spodek');
+  if(!scena || !document.getElementById('hlasovani').clientHeight) return;
+
+  /* Karta se řídí šířkou okna, ale nesmí přerůst místo, které po
+     spodním bloku zbude — jinak by se skupina rozjela mimo obrazovku. */
+  /* Výška prostředního bloku se sama řídí scénou, kterou tu teprve počítám,
+     takže dostupné místo beru z celé vrstvy minus všechno ostatní. */
+  const vrstva = document.getElementById('hlasovani');
+  let obsazeno = spodek.offsetHeight + 24;
+  for(const e of ['.hl-hlava','.hl-podtitul','.hl-zapasy'])
+    obsazeno += document.querySelector(e)?.offsetHeight || 0;
+  const misto = vrstva.clientHeight - obsazeno;
+  /* postavička je v poměru 4:5, pod ní ještě řádek se jménem */
+  const podleVysky = Math.max(120, (misto - 46) / 1.25);
+  const sirka = Math.min(scena.clientWidth * 0.56, 250, podleVysky);
+  scena.style.height = Math.round(sirka * 1.25 + 46) + 'px';
   scena.style.setProperty('--hl-kw', sirka + 'px');
-  hl.polomer = sirka * HL_MEZERA / Math.sin(HL_KROK * Math.PI / 180);
-  document.getElementById('hl-kruh').style.transform = `translateZ(${-hl.polomer}px)`;
+  hl.rozestup = sirka * HL_ROZESTUP;
 }
 
 function hlVykresli(){
@@ -3095,10 +3097,10 @@ function hlVykresli(){
     while(d >  n/2) d -= n;
     while(d < -n/2) d += n;
     const a = Math.abs(d), daleko = a > HL_DOHLED;
-    karty[i].style.transform  = `rotateY(${d * HL_KROK}deg) translateZ(${hl.polomer}px)`;
+    karty[i].style.transform  = `translateX(${d * hl.rozestup}px) scale(${1 - 0.20*Math.min(a,2)})`;
     karty[i].style.visibility = daleko ? 'hidden' : 'visible';
-    karty[i].style.opacity    = daleko ? 0 : Math.min(1, (HL_DOHLED - a) / 1.2);
-    karty[i].style.filter     = `brightness(${Math.max(.34, 1 - a * .26)})`;
+    karty[i].style.opacity    = daleko ? 0 : Math.min(1, (HL_DOHLED - a) / 1.3);
+    karty[i].style.filter     = `brightness(${Math.max(.32, 1 - a * .34)})`;
     karty[i].style.zIndex     = String(1000 - Math.round(a * 10));
   }
   hl.vybrany = ((Math.round(hl.pozice) % n) + n) % n;
@@ -3196,7 +3198,7 @@ async function otevriHlasovani(id){
   await pripravPostavicky(hl.hraci);
 
   document.getElementById('hl-kruh').innerHTML = hl.hraci.map((p,i)=>
-    `<div class="hl-karta" data-i="${i}">${hlKartaSVG(p)}</div>`).join('');
+    `<div class="hl-karta" data-i="${i}">${hlKarta(p)}</div>`).join('');
 
   hlPripojOvladani();
   hlRozmery();
