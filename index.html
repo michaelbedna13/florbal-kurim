@@ -2563,6 +2563,9 @@ let cekaNaDuvod=null;
 function odpoved(id, novyStav){
   const u=stav.udalosti.find(x=>x.id===id);
   const stary=mojeOdpoved(id), pozde=jePozde(u);
+  /* Stejná odpověď znovu není změna — jinak by se přepsal čas
+     a po uzávěrce by se z dávno přihlášeného stal opozdilec. */
+  if(stary && stary.stav === novyStav) return;
   const snizuje = stary && ZAVAZNOST[novyStav] < ZAVAZNOST[stary.stav];
 
   if(pozde && snizuje){
