@@ -1,4 +1,4 @@
-name: Aktualizace tabulky
+name: Aktualizace dat
 
 on:
   schedule:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  tabulka:
+  data:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,14 +25,20 @@ jobs:
       - name: Stažení tabulky
         run: python scripts/tabulka.py
 
+      # Když spadne jeden skript, druhý se stejně uloží.
+      - name: Stažení statistik hráčů
+        if: always()
+        run: python scripts/hraci.py
+
       - name: Uložení změn
+        if: always()
         run: |
           git config user.name  "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          if git diff --quiet tabulka.json; then
-            echo "Tabulka se nezměnila, není co ukládat."
+          if git diff --quiet tabulka.json hraci.json; then
+            echo "Data se nezměnila, není co ukládat."
           else
-            git add tabulka.json
-            git commit -m "Aktualizace tabulky soutěže"
+            git add tabulka.json hraci.json
+            git commit -m "Aktualizace tabulky a statistik"
             git push
           fi
