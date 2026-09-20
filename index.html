@@ -552,10 +552,7 @@ body.detail-otevren .navbar{opacity:0;pointer-events:none}
 .kb col.c-poradi{width:26px}
 .kb col.c-cislo{width:32px}
 .kb col.c-body{width:34px}
-.kb-nadpis{
-  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;
-  color:var(--bila-60);margin:20px 0 10px;
-}
+.kb-druha{margin-top:22px}
 @media (max-width:400px){
   .kb{font-size:12px}
   .kb td,.kb td.hrac{font-size:12.5px}
@@ -2091,8 +2088,7 @@ function vykresliKanadske(){
     </table>`;
 
   const tabulkaBrankaru = !d.brankari?.length ? '' : `
-    <div class="kb-nadpis">Brankáři</div>
-    <table class="kb">
+    <table class="kb kb-druha">
       <colgroup><col class="c-poradi"><col><col class="c-cislo"><col class="c-cislo"><col class="c-cislo">${sloupecMvp}<col class="c-body"></colgroup>
       <thead><tr><th></th><th class="hrac">Brankář</th><th>ZCH</th><th>BO</th><th>ø BO</th>${hlavickaMvp}<th class="body">SO</th></tr></thead>
       <tbody>${d.brankari.map((b,i)=>`
