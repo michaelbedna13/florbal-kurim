@@ -1574,6 +1574,15 @@ const jmenoHrace = (id) => stav.profily.find(p=>p.id===id)?.jmeno || 'Neznámý'
 const iniciály = (jmeno) => (jmeno||'').split(' ').filter(Boolean).map(s=>s[0]).join('').slice(0,2).toUpperCase();
 const cas = (d) => d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
 
+/* Data z Českého florbalu tahá robot. Když mu web přestane odpovídat, zůstane
+   v JSONu starý stav a appka by ho tvářila jako aktuální — tak u všeho, co je
+   víc než týden staré, připíšeme, jak moc. */
+const starostDat = (kdy) => {
+  const dni = Math.floor((Date.now() - kdy.getTime()) / 86400000);
+  if(!(dni > 7)) return '';
+  return ` — ${dni} dní zpátky`;
+};
+
 const mojeOdpoved = (id) => stav.prihlasky[id]?.[stav.ja.id] || null;
 const jePozde = (u) => new Date() > uzaverkaPro(u, stav.ja?.role);
 const budouci = () => stav.udalosti.filter(u=>u.zacatek>=new Date() && !u.zruseno)
@@ -2105,7 +2114,7 @@ function vykresliKanadske(){
 
   el.innerHTML = tabulkaHracu + tabulkaBrankaru + `
     <div class="soutez-pata">
-      <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+      <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}${starostDat(kdy)}</span>
       <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
     </div>`;
 }
@@ -2143,7 +2152,7 @@ async function vykresliSoutez(){
           </tr>`).join('')}</tbody>
       </table>
       <div class="soutez-pata">
-        <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}</span>
+        <span>Aktualizováno ${DNY_KR[kdy.getDay()]} ${kdy.getDate()}. ${MESICE[kdy.getMonth()]} ${cas(kdy)}${starostDat(kdy)}</span>
         <a href="${d.odkaz}" target="_blank" rel="noopener">Český florbal →</a>
       </div>`);
 

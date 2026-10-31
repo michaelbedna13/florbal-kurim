@@ -8,17 +8,22 @@ Skript to pozná a soubor nechá s prázdnými seznamy, aby appka
 mohla klidně spadnout zpátky na docházku.
 """
 
+import argparse
 import json
 import re
 import sys
 import unicodedata
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
 
 URL = "https://repre.ceskyflorbal.cz/team/detail/statistics/44265"
-VYSTUP = "hraci.json"
+
+# Ukládáme do kořene repozitáře, ne do toho, odkud se skript spustil.
+KOREN = Path(__file__).resolve().parent.parent
+VYSTUP = KOREN / "hraci.json"
 HLAVICKA = {"User-Agent": "FlorbalKurim-klubova-appka/1.0 (interni pouziti)"}
 
 # název sloupce na webu -> klíč v JSONu
@@ -99,11 +104,52 @@ def zpracuj(html):
     return hraci, brankari
 
 
-def main():
-    odpoved = requests.get(URL, headers=HLAVICKA, timeout=30)
-    odpoved.raise_for_status()
+def nacti_ze_souboru(cesta):
+    """Stránka uložená z prohlížeče; '-' čte ze standardního vstupu."""
+    if cesta == "-":
+        return sys.stdin.read()
+    try:
+        with open(cesta, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError as e:
+        raise SystemExit(f"Soubor {cesta} se nepodařilo přečíst: {e}")
 
-    hraci, brankari = zpracuj(odpoved.text)
+
+def stahni():
+    odpoved = requests.get(URL, headers=HLAVICKA, timeout=30)
+    if odpoved.status_code == 403:
+        raise SystemExit(
+            "Web odmítl stahování (HTTP 403 Forbidden).\n"
+            "Otevři si statistiky týmu v prohlížeči, ulož stránku (Ctrl+S) a spusť:\n"
+            f"  python scripts/{Path(__file__).name} --soubor ulozene-statistiky.html\n"
+            f"  {URL}")
+    odpoved.raise_for_status()
+    return odpoved.text
+
+
+def main():
+    volby = argparse.ArgumentParser(
+        description="Uloží statistiky hráčů a brankářů do hraci.json.")
+    volby.add_argument(
+        "--soubor", metavar="HTML",
+        help="místo stahování přečte stránku z uloženého souboru "
+             "('-' = standardní vstup)")
+    args = volby.parse_args()
+
+    html = nacti_ze_souboru(args.soubor) if args.soubor else stahni()
+
+    hraci, brankari = zpracuj(html)
+
+    # Ze souboru čteme, co nám kdo uloží. Prázdno znamená buď "sezóna
+    # nezačala" (to je v pořádku, tak to web ukazuje), nebo "uložil jsi
+    # špatnou stránku" — a to by tiše smazalo hotové statistiky. V ručním
+    # režimu proto radši nic nepřepisujeme a řekneme to.
+    if args.soubor and not hraci and not brankari:
+        raise SystemExit(
+            f"V souboru {args.soubor} nejsou žádné tabulky statistik — "
+            f"{VYSTUP.name} nechávám být.\n"
+            "Zkontroluj, že máš uloženou stránku se statistikami týmu:\n"
+            f"  {URL}")
 
     praha = timezone(timedelta(hours=1))
     data = {

@@ -9,7 +9,9 @@ Statická stránka na GitHub Pages, data v Supabase.
 ```
 index.html           celá appka, jeden soubor
 tabulka.json         tabulka soutěže, přepisuje ji robot
+hraci.json           statistiky hráčů a brankářů, taky od robota
 scripts/tabulka.py   stahovač tabulky z Českého florbalu
+scripts/hraci.py     stahovač statistik hráčů
 .github/workflows/   spouští stahovače dvakrát denně
 manifest.json        aby šla appka přidat na plochu
 logo.svg             klubové logo ve křivkách
@@ -26,7 +28,32 @@ CNAME                doména
 | Klubový kód, uzávěrky, hlášky, role | ve Správě přímo v appce |
 | Krátké názvy týmů v tabulce | `scripts/tabulka.py`, slovník `KRATKE` |
 | Odkaz na soutěž po skončení sezóny | `scripts/tabulka.py`, proměnná `URL` |
+| Ruční aktualizace tabulky, když robot nemůže | viz níž |
 | Pravidla přístupu k datům | Supabase → SQL Editor |
 
 ## Robot na tabulku
-Běží sám ráno a večer. Ručně: **Actions → Aktualizace tabulky → Run workflow**.
+Běží sám ráno a večer. Ručně: **Actions → Aktualizace dat → Run workflow**.
+
+## Když robot nemůže
+Od 4. 10. 2026 odpovídá Český florbal robotovi **HTTP 403 Forbidden** — web
+stahování ze serverů GitHubu odmítá, i když se v prohlížeči normálně načítá.
+V Actions je to vidět jako spadlý běh; v appce se u tabulky připíše, jak jsou
+data stará.
+
+Než se to vyřeší (ideálně domluvou s federací na přístupu k datům), jde tabulku
+aktualizovat ručně. Stránku stáhneš ty v prohlížeči, skript ji jen přečte:
+
+1. otevři soutěž a ulož stránku na disk (Ctrl+S, „pouze HTML“ stačí);
+2. v repozitáři spusť:
+
+```
+python scripts/tabulka.py --soubor ~/Downloads/soutez.html
+python scripts/hraci.py   --soubor ~/Downloads/statistiky.html
+```
+
+3. commitni `tabulka.json` a `hraci.json` a pushni — appka se narovná sama.
+
+Parsování i výsledný JSON jsou stejné jako u robota, včetně krátkých názvů
+ze slovníku `KRATKE`. Skripty píšou do kořene repozitáře, takže je můžeš
+spustit odkudkoli. Když v uložené stránce tabulku nenajdou, radši nic
+nepřepíšou a řeknou to.

@@ -23,20 +23,32 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Stažení tabulky
+        id: tabulka
         run: python scripts/tabulka.py
 
       # Když spadne jeden skript, druhý se stejně uloží.
       - name: Stažení statistik hráčů
+        id: hraci
         if: always()
         run: python scripts/hraci.py
 
       - name: Uložení změn
         if: always()
+        env:
+          STAV_TABULKA: ${{ steps.tabulka.outcome }}
+          STAV_HRACI: ${{ steps.hraci.outcome }}
         run: |
           git config user.name  "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           if git diff --quiet tabulka.json hraci.json; then
-            echo "Data se nezměnila, není co ukládat."
+            # Pozor na záměnu: "nic se nezměnilo" a "stahování spadlo, takže
+            # nebylo co měnit" vypadají v gitu stejně. Rozlišit je musíme podle
+            # toho, jak skončily skripty, jinak pád vypadá jako klid.
+            if [ "$STAV_TABULKA" != "success" ] || [ "$STAV_HRACI" != "success" ]; then
+              echo "::error::Stahování selhalo (tabulka: $STAV_TABULKA, hráči: $STAV_HRACI). V JSONu zůstal starý stav — appka ukazuje neaktuální data."
+            else
+              echo "Data se nezměnila, není co ukládat."
+            fi
           else
             git add tabulka.json hraci.json
             git commit -m "Aktualizace tabulky a statistik"
