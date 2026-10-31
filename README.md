@@ -12,6 +12,7 @@ tabulka.json         tabulka soutěže, přepisuje ji robot
 hraci.json           statistiky hráčů a brankářů, taky od robota
 scripts/tabulka.py   stahovač tabulky z Českého florbalu
 scripts/hraci.py     stahovač statistik hráčů
+scripts/rucne.sh     ruční aktualizace z uložených stránek
 .github/workflows/   spouští stahovače dvakrát denně
 manifest.json        aby šla appka přidat na plochu
 logo.svg             klubové logo ve křivkách
@@ -40,18 +41,27 @@ stahování ze serverů GitHubu odmítá, i když se v prohlížeči normálně 
 V Actions je to vidět jako spadlý běh; v appce se u tabulky připíše, jak jsou
 data stará.
 
-Než se to vyřeší (ideálně domluvou s federací na přístupu k datům), jde tabulku
-aktualizovat ručně. Stránku stáhneš ty v prohlížeči, skript ji jen přečte:
+Dokud to platí, aktualizuje se tabulka ručně. Stránku stáhneš ty v prohlížeči,
+skript ji jen přečte:
 
-1. otevři soutěž a ulož stránku na disk (Ctrl+S, „pouze HTML“ stačí);
+1. otevři soutěž a statistiky týmu a ulož stránky na disk (Ctrl+S, „pouze HTML“ stačí);
 2. v repozitáři spusť:
 
 ```
-python scripts/tabulka.py --soubor ~/Downloads/soutez.html
-python scripts/hraci.py   --soubor ~/Downloads/statistiky.html
+scripts/rucne.sh ~/Downloads/soutez.html ~/Downloads/statistiky.html
 ```
 
-3. commitni `tabulka.json` a `hraci.json` a pushni — appka se narovná sama.
+Naparsuje oba soubory, commitne a pushne — appka se narovná sama. Stačí i jeden
+soubor (`scripts/rucne.sh soutez.html`), jen statistiky dá `--hraci statistiky.html`
+a `--bez-push` nechá změny v pracovní kopii k prohlédnutí. Když některý stahovač
+spadne, necommitne se nic, takže v repozitáři nezůstane poloviční aktualizace.
+
+Pod tím jsou obyčejné stahovače, které jdou spustit i samostatně:
+
+```
+python scripts/tabulka.py --soubor soutez.html
+python scripts/hraci.py   --soubor statistiky.html
+```
 
 Parsování i výsledný JSON jsou stejné jako u robota, včetně krátkých názvů
 ze slovníku `KRATKE`. Skripty píšou do kořene repozitáře, takže je můžeš
