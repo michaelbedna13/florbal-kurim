@@ -13,6 +13,7 @@ hraci.json           statistiky hráčů a brankářů, taky od robota
 scripts/tabulka.py   stahovač tabulky z Českého florbalu
 scripts/hraci.py     stahovač statistik hráčů
 scripts/rucne.sh     ruční aktualizace z uložených stránek
+scripts/vytah.js     výtah dat z otevřené stránky (iPhone Zkratka)
 .github/workflows/   spouští stahovače dvakrát denně
 manifest.json        aby šla appka přidat na plochu
 logo.svg             klubové logo ve křivkách
@@ -57,6 +58,29 @@ Loga, zkratky a ID týmů už v JSONu jsou, takže se měnívají jen pořadí a
 `zapasy`, `vyhry`, `vyhry_p`, `prohry_p`, `prohry`, `body`,
 `branky_vstrelene`, `branky_obdrzene`, `rozdil` a `aktualizovano`.
 Kuřim má `"nas": true`, podle toho si ji appka v tabulce zvýrazní.
+
+### Jedním ťuknutím z iPhonu
+`scripts/vytah.js` přečte tabulku přímo z otevřené stránky a vyrobí hotový
+JSON — nic se nepřepisuje ručně, nic se nečte ze screenshotu. Jednorázové
+založení Zkratky:
+
+1. v Safari otevři
+   [vytah.js](https://raw.githubusercontent.com/michaelbedna13/florbal-kurim/main/scripts/vytah.js),
+   podrž prst na textu → Vybrat vše → Kopírovat;
+2. Zkratky → **+** → Přidat akci → **Spustit JavaScript na webové stránce**
+   a místo předvyplněného kódu vlož zkopírovaný;
+3. přidej akce **Zkopírovat do schránky** a **Zobrazit výsledek**;
+4. v detailu zkratky (ⓘ) zapni **Zobrazit v listu sdílení** a jako vstup
+   nech jen **Webové stránky Safari**. Pojmenuj ji třeba „Florbal data“.
+
+Použití: otevři v Safari tabulku soutěže nebo statistiky týmu → **Sdílet**
+→ „Florbal data“. Výsledek máš ve schránce; nalep ho do Claude Code a ten
+ho uloží a pushne. První řádek výstupu je jen shrnutí (kolik týmů / hráčů),
+JSON začíná od druhého. Poprvé se Zkratka zeptá, jestli smí na
+`repre.ceskyflorbal.cz` spustit skript — povol.
+
+Statistiky si přečte obě záložky najednou (hráči i brankáři jsou ve stránce
+oba), přepínat mezi nimi nemusíš.
 
 Dá se to i naklikat přímo na GitHubu (tužka u `tabulka.json`), ale přepisovat
 jedenáct týmů ručně v prohlížeči je otrava a snadno se v tom udělá chyba.
