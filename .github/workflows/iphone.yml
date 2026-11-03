@@ -1,0 +1,81 @@
+name: Data z iPhonu
+
+# iPhone dvakrát denně stáhne stránky Českého florbalu (jeho web pouští,
+# GitHub ne) a nahraje je přes API do složky vstup/. Tady se jen přečtou
+# stejným kódem jako dřív robot, uloží se JSON a vstupy se smažou, aby je
+# telefon mohl příště nahrát znovu (založení souboru nepotřebuje jeho SHA).
+
+on:
+  push:
+    branches: [main]
+    paths: ["vstup/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Telefon nahrává dva soubory = dva pushe. Běhy jdou po sobě, ne naráz,
+# jinak by se praly o stejné commity.
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+jobs:
+  zpracuj:
+    runs-on: ubuntu-latest
+    steps:
+      # Vždy nejnovější main, ne commit, který běh spustil — druhý běh tak
+      # uvidí, že první už svůj soubor zpracoval a smazal.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalace knihoven
+        run: pip install requests beautifulsoup4
+
+      - name: Tabulka soutěže
+        id: tabulka
+        run: |
+          if [ -f vstup/soutez.html ]; then
+            python scripts/tabulka.py --soubor vstup/soutez.html
+          else
+            echo "vstup/soutez.html tu není, přeskakuju."
+          fi
+
+      - name: Statistiky hráčů
+        id: hraci
+        if: always()
+        run: |
+          if [ -f vstup/statistiky.html ]; then
+            python scripts/hraci.py --soubor vstup/statistiky.html
+          else
+            echo "vstup/statistiky.html tu není, přeskakuju."
+          fi
+
+      # Vstupy mažeme i po pádu, jinak by je telefon příště nemohl nahrát.
+      - name: Uložení
+        if: always()
+        env:
+          STAV_TABULKA: ${{ steps.tabulka.outcome }}
+          STAV_HRACI: ${{ steps.hraci.outcome }}
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git rm -rq --ignore-unmatch vstup
+          git add tabulka.json hraci.json
+          if git diff --cached --quiet; then
+            echo "Není co ukládat."
+            exit 0
+          fi
+          git commit -qm "Aktualizace tabulky a statistik (iPhone)"
+          for pokus in 1 2 3 4; do
+            git pull --rebase -q origin main && git push -q origin HEAD:main && break
+            sleep $((pokus * 3))
+          done
+          if [ "$STAV_TABULKA" = "failure" ] || [ "$STAV_HRACI" = "failure" ]; then
+            echo "::error::Stránku z iPhonu se nepodařilo přečíst (tabulka: $STAV_TABULKA, hráči: $STAV_HRACI). Vstupy jsou smazané, příště se zkusí znovu."
+          fi

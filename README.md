@@ -14,7 +14,7 @@ scripts/tabulka.py   stahovač tabulky z Českého florbalu
 scripts/hraci.py     stahovač statistik hráčů
 scripts/rucne.sh     ruční aktualizace z uložených stránek
 scripts/vytah.js     výtah dat z otevřené stránky (iPhone Zkratka)
-.github/workflows/   spouští stahovače dvakrát denně
+.github/workflows/   tabulka.yml = robot (vypnutý plán), iphone.yml = data z iPhonu
 manifest.json        aby šla appka přidat na plochu
 logo.svg             klubové logo ve křivkách
 logo-256.png         logo v appce
@@ -33,16 +33,46 @@ CNAME                doména
 | Ruční aktualizace tabulky, když robot nemůže | `tabulka.json`, viz níž |
 | Pravidla přístupu k datům | Supabase → SQL Editor |
 
-## Robot na tabulku
-Běží sám ráno a večer. Ručně: **Actions → Aktualizace dat → Run workflow**.
+## Odkud se berou data
+Od 4. 10. 2026 web Českého florbalu odpovídá serverům GitHubu **403 Forbidden**,
+takže robot (`tabulka.yml`) už sám neběží — plánované spouštění je vypnuté,
+ručně se dá pustit dál (**Actions → Aktualizace dat → Run workflow**), kdyby
+web GitHub zase pustil.
 
-## Když robot nemůže
-Od 4. 10. 2026 odpovídá Český florbal robotovi **HTTP 403 Forbidden** — web
-stahování ze serverů GitHubu odmítá, i když se v prohlížeči normálně načítá.
-V Actions je to vidět jako spadlý běh; v appce se u tabulky připíše, jak jsou
-data stará.
+Telefonu ale web odpovídá normálně, i bez prohlížeče. Data proto nosí iPhone:
 
-Dokud to platí, přepisuje se tabulka ručně. Data jsou v `tabulka.json`
+### Automaticky z iPhonu
+Zkratka dvakrát denně stáhne obě stránky a nahraje je přes GitHub API do
+složky `vstup/`. Workflow `iphone.yml` je přečte stejnými stahovači jako dřív
+robot (`--soubor`), uloží JSON a `vstup/` smaže, aby šlo příště nahrát znovu.
+Telefon se hlásí jako Zkratky, nic nepředstírá.
+
+**Token** (jednou za rok): GitHub → Settings → Developer settings →
+Fine-grained tokens → Generate new token
+([přímý odkaz](https://github.com/settings/personal-access-tokens/new)).
+Repository access: *Only select repositories* → `florbal-kurim`;
+Permissions → Repository → **Contents: Read and write**, nic jiného.
+Token se ukáže jen jednou — rovnou ho vlož do Zkratky.
+
+**Zkratka „Florbal automat“** — pro každou ze dvou stránek tři akce:
+
+| # | akce | nastavení |
+|---|---|---|
+| 1 | Načíst obsah URL | adresa stránky (tabulka soutěže / statistiky týmu) |
+| 2 | Base64 | Kódovat, zalomení řádků: **Žádné** |
+| 3 | Načíst obsah URL | `https://api.github.com/repos/michaelbedna13/florbal-kurim/contents/vstup/soutez.html` (u statistik `…/vstup/statistiky.html`), Metoda **PUT**, záhlaví `Authorization` = `Bearer <token>`, tělo **JSON**: `message` = `Data z iPhonu`, `content` = výstup Base64 těsně nad |
+
+**Automatizace:** Zkratky → Automatizace → + → Denní čas → denně,
+**Spustit okamžitě** → „Florbal automat“. Dvakrát (ráno a večer).
+
+Když se běh nepovede (telefon zrovna bez signálu, chvilkový výpadek), nic se
+nerozbije — data se doplní při dalším. Když za rok vyprší token, Zkratka
+začne vracet `Bad credentials`; stačí vyrobit nový a přepsat ho v obou akcích.
+
+## Ručně
+Kdyby iPhone nějakou dobu nenosil (nebo to bylo potřeba hned po zápase),
+jde tabulka přepsat i ručně. V appce se u dat starších než týden připíše,
+jak jsou stará, takže se zpoždění nepřehlédne. Data jsou v `tabulka.json`
 a `hraci.json`, appka je jen zobrazuje — jde to tedy celé z prohlížeče.
 
 ### Jak to děláme

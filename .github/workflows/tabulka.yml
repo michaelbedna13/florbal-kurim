@@ -1,10 +1,14 @@
 name: Aktualizace dat
 
+# Plánované spouštění je vypnuté: od 4. 10. 2026 web GitHubu odpovídá 403
+# a běh by jen dvakrát denně padal. Data teď nosí iPhone (iphone.yml).
+# Ručně to jde spustit dál — kdyby web GitHub zase pustil, pozná se to tady.
 on:
-  schedule:
-    - cron: "0 5 * * *"
-    - cron: "0 20 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: data
+  cancel-in-progress: false
 
 permissions:
   contents: write
