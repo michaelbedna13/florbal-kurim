@@ -1,5 +1,5 @@
 {
- "aktualizovano": "2026-11-13T20:59+01:00",
+ "aktualizovano": "2026-11-14T12:00+01:00",
  "soutez": "Jihomoravská liga mužů",
  "odkaz": "https://repre.ceskyflorbal.cz/competition/detail/overview/6JM6?divisionId=5598&competitionFisId=4653",
  "tymy": [
@@ -56,6 +56,23 @@
   },
   {
    "poradi": 4,
+   "nazev": "TROOPERS Delta",
+   "kratky": "Troopers",
+   "zkratka": "TRP",
+   "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_1101_logo-616742187.png/w32h32ft1787651218.png",
+   "nas": false,
+   "zapasy": 5,
+   "vyhry": 2,
+   "vyhry_p": 2,
+   "prohry_p": 0,
+   "prohry": 1,
+   "body": 10,
+   "branky_vstrelene": 20,
+   "branky_obdrzene": 19,
+   "rozdil": 1
+  },
+  {
+   "poradi": 5,
    "nazev": "Florbal Kuřim",
    "kratky": "Kuřim",
    "zkratka": "KUR",
@@ -72,24 +89,24 @@
    "rozdil": 3
   },
   {
-   "poradi": 5,
+   "poradi": 6,
    "nazev": "Aligators F.A.T.R. Dubňany C",
    "kratky": "Aligators",
    "zkratka": "ALG",
    "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_739_logo-1867771649.png/w32h32ft1745568060.png",
    "nas": false,
-   "zapasy": 6,
+   "zapasy": 7,
    "vyhry": 3,
    "vyhry_p": 0,
    "prohry_p": 0,
-   "prohry": 3,
+   "prohry": 4,
    "body": 9,
-   "branky_vstrelene": 33,
-   "branky_obdrzene": 39,
-   "rozdil": -6
+   "branky_vstrelene": 37,
+   "branky_obdrzene": 46,
+   "rozdil": -9
   },
   {
-   "poradi": 6,
+   "poradi": 7,
    "nazev": "Hornets Brno ZŠ Horní C",
    "kratky": "Hornets",
    "zkratka": "ZSH",
@@ -104,23 +121,6 @@
    "branky_vstrelene": 26,
    "branky_obdrzene": 24,
    "rozdil": 2
-  },
-  {
-   "poradi": 7,
-   "nazev": "TROOPERS Delta",
-   "kratky": "Troopers",
-   "zkratka": "TRP",
-   "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_1101_logo-616742187.png/w32h32ft1787651218.png",
-   "nas": false,
-   "zapasy": 4,
-   "vyhry": 1,
-   "vyhry_p": 2,
-   "prohry_p": 0,
-   "prohry": 1,
-   "body": 7,
-   "branky_vstrelene": 13,
-   "branky_obdrzene": 15,
-   "rozdil": -2
   },
   {
    "poradi": 8,
