@@ -1,5 +1,5 @@
 {
- "aktualizovano": "2026-11-15T12:57+01:00",
+ "aktualizovano": "2026-11-15T15:00+01:00",
  "soutez": "Jihomoravská liga mužů",
  "odkaz": "https://repre.ceskyflorbal.cz/competition/detail/overview/6JM6?divisionId=5598&competitionFisId=4653",
  "tymy": [
@@ -27,15 +27,15 @@
    "zkratka": "SHT",
    "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_1114_logo-3413214422.png/w32h32ft1654035612.png",
    "nas": false,
-   "zapasy": 7,
-   "vyhry": 5,
+   "zapasy": 8,
+   "vyhry": 6,
    "vyhry_p": 0,
    "prohry_p": 1,
    "prohry": 1,
-   "body": 16,
-   "branky_vstrelene": 45,
-   "branky_obdrzene": 16,
-   "rozdil": 29
+   "body": 19,
+   "branky_vstrelene": 55,
+   "branky_obdrzene": 20,
+   "rozdil": 35
   },
   {
    "poradi": 3,
@@ -78,15 +78,15 @@
    "zkratka": "KUR",
    "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_786_logo-1920340615.jpg/w32h32ft1786964238.png",
    "nas": true,
-   "zapasy": 5,
+   "zapasy": 6,
    "vyhry": 3,
    "vyhry_p": 1,
    "prohry_p": 0,
-   "prohry": 1,
+   "prohry": 2,
    "body": 11,
-   "branky_vstrelene": 23,
-   "branky_obdrzene": 19,
-   "rozdil": 4
+   "branky_vstrelene": 27,
+   "branky_obdrzene": 29,
+   "rozdil": -2
   },
   {
    "poradi": 6,
@@ -124,6 +124,23 @@
   },
   {
    "poradi": 8,
+   "nazev": "Sokol Brno I EMKOCase GulliversB",
+   "kratky": "Gullivers",
+   "zkratka": "GUL",
+   "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_310_logo-3020095640.png/w32h32ft1665906474.png",
+   "nas": false,
+   "zapasy": 8,
+   "vyhry": 3,
+   "vyhry_p": 0,
+   "prohry_p": 0,
+   "prohry": 5,
+   "body": 9,
+   "branky_vstrelene": 32,
+   "branky_obdrzene": 49,
+   "rozdil": -17
+  },
+  {
+   "poradi": 9,
    "nazev": "FbC Panthers Pohořelice",
    "kratky": "Pohořelice",
    "zkratka": "POH",
@@ -140,38 +157,21 @@
    "rozdil": -14
   },
   {
-   "poradi": 9,
-   "nazev": "Sokol Brno I EMKOCase GulliversB",
-   "kratky": "Gullivers",
-   "zkratka": "GUL",
-   "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_310_logo-3020095640.png/w32h32ft1665906474.png",
-   "nas": false,
-   "zapasy": 7,
-   "vyhry": 2,
-   "vyhry_p": 0,
-   "prohry_p": 0,
-   "prohry": 5,
-   "body": 6,
-   "branky_vstrelene": 22,
-   "branky_obdrzene": 45,
-   "rozdil": -23
-  },
-  {
    "poradi": 10,
    "nazev": "TJ SOKOL LETOVICE",
    "kratky": "Letovice",
    "zkratka": "LTC",
    "logo": "https://repre.ceskyflorbal.cz/imgmin/data/fis/document/clubs_451_logo-2340043878.png/w32h32ft1651678841.png",
    "nas": false,
-   "zapasy": 6,
+   "zapasy": 7,
    "vyhry": 1,
    "vyhry_p": 0,
    "prohry_p": 0,
-   "prohry": 5,
+   "prohry": 6,
    "body": 3,
-   "branky_vstrelene": 16,
-   "branky_obdrzene": 38,
-   "rozdil": -22
+   "branky_vstrelene": 20,
+   "branky_obdrzene": 48,
+   "rozdil": -28
   },
   {
    "poradi": 11,
